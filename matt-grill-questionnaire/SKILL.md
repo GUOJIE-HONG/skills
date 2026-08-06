@@ -13,7 +13,7 @@ Use this skill as the question surface whenever a Matt grill skill reaches unres
 
    - Read the applicable repository instructions and inspect the current Git status. Preserve unrelated user changes.
    - Resolve the repository root from the active working directory or the repository named by the user.
-   - Inspect relevant source, specs, prior decisions, and existing files under `docs/questions/`. Use repo-aware discovery when available; use built-in search for HTML, Markdown, configuration, and other non-code files.
+   - Inspect relevant source, specs, prior decisions, and any existing questionnaire or handoff artifacts referenced by the context. Use repo-aware discovery when available; use built-in search for HTML, Markdown, configuration, and other non-code files.
    - Extract only decisions that are still unresolved in the active Matt grill. Keep confirmed decisions as a short recap instead of asking them again.
 
 2. Design the questions.
@@ -26,9 +26,9 @@ Use this skill as the question surface whenever a Matt grill skill reaches unres
 
 3. Create the HTML artifact.
 
-   - Ensure `<repo-root>/docs/questions/` exists; create it before writing the file when it is absent.
+   - Resolve the user's OS temporary directory and save outside the current workspace: on Windows, use `[System.IO.Path]::GetTempPath()`; on macOS, use `NSTemporaryDirectory()` or `FileManager.default.temporaryDirectory`; on Linux and other POSIX systems, use `$TMPDIR` when set, otherwise `/tmp`.
    - Start from [`assets/questionnaire-template.html`](assets/questionnaire-template.html), then replace every sample question, placeholder, title, topic, and storage key with the current grill context.
-   - Use a unique lowercase kebab-case filename such as `YYYY-MM-DD-<topic>-questionnaire.html`. Add a numeric suffix instead of overwriting an existing questionnaire.
+   - Use a unique lowercase kebab-case filename such as `<topic>-questionnaire-YYYYMMDD-HHmmss.html`. Add a numeric suffix instead of overwriting an existing questionnaire.
    - Keep the file self-contained: inline CSS and JavaScript, no network dependency, responsive question cards, a visible progress indicator, browser-side draft persistence, a reset action, and a copy action that has a fallback when Clipboard API access is unavailable.
    - Preserve a clear distinction between confirmed recap, required decisions, optional engineering decisions, and the generated reply area.
 
@@ -40,9 +40,9 @@ Use this skill as the question surface whenever a Matt grill skill reaches unres
 
 5. Validate and hand off.
 
-   - Verify the target file exists under `docs/questions/`, contains one valid HTML document, has no leftover template placeholders, and has unique question IDs/radio groups.
+   - Verify the target file exists under the resolved OS temp directory, contains one valid HTML document, has no leftover template placeholders, and has unique question IDs/radio groups.
    - Verify every question has options, a title, and a generated-output path; verify the buttons, progress counter, reset behavior, localStorage key, and copy fallback are wired to existing elements.
    - Return the file path as a clickable link and tell the user to open it, answer the questions, click `整理回復 prompt`, then paste the copied prompt back into the conversation.
    - Pause the grill workflow after the handoff. If the user replies directly in chat instead, reconcile that reply with the questionnaire output and continue only from the resulting decisions.
 
-The only bundled resource is the reusable HTML scaffold in `assets/`; keep the generated questionnaire in the user's repository, never in the skill directory.
+The only bundled resource is the reusable HTML scaffold in `assets/`; keep each generated questionnaire in the user's OS temp directory, never in the repository or the skill directory.
