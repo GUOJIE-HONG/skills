@@ -1,6 +1,8 @@
 ---
 name: matt-grill-questionnaire
 description: Create a clear HTML questionnaire with a copyable reply prompt when Matt grill needs user decisions.
+disable-model-invocation: true
+user-invocable: true
 ---
 
 # Matt Grill Questionnaire
