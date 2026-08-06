@@ -38,11 +38,20 @@ Use this skill as the question surface whenever a Matt grill skill reaches unres
    - End the generated text with explicit handoff rules: treat selected answers and notes as confirmed, do not guess unanswered required decisions, and continue the active Matt workflow only after the unresolved list is empty or the user has explicitly accepted the remaining recommendations.
    - Make `整理回復 prompt` generate the text and make `複製回復 prompt` copy it. A user should be able to paste the result into the same conversation without editing the HTML output.
 
-5. Validate and hand off.
+5. Validate the artifact.
 
    - Verify the target file exists under the resolved OS temp directory, contains one valid HTML document, has no leftover template placeholders, and has unique question IDs/radio groups.
    - Verify every question has options, a title, and a generated-output path; verify the buttons, progress counter, reset behavior, localStorage key, and copy fallback are wired to existing elements.
-   - Return the file path as a clickable link and tell the user to open it, answer the questions, click `整理回復 prompt`, then paste the copied prompt back into the conversation.
+
+6. Open the questionnaire automatically.
+
+   - Open the validated file in the user's default browser as soon as validation passes. Do not wait for the user to ask.
+   - Use the platform launcher: on Windows, `Start-Process <path>` in PowerShell or `cmd /c start "" "<path>"`; on macOS, `open "<path>"`; on Linux and other POSIX systems, `xdg-open "<path>"`. Always quote the path.
+   - If the launcher fails, is unavailable, or the environment is headless, say so in one sentence and fall back to the manual path handoff instead of retrying with other launchers.
+
+7. Hand off.
+
+   - Return the file path as a clickable link, state that it was opened automatically, and tell the user to answer the questions, click `整理回復 prompt`, then paste the copied prompt back into the conversation.
    - Pause the grill workflow after the handoff. If the user replies directly in chat instead, reconcile that reply with the questionnaire output and continue only from the resulting decisions.
 
 The only bundled resource is the reusable HTML scaffold in `assets/`; keep each generated questionnaire in the user's OS temp directory, never in the repository or the skill directory.
