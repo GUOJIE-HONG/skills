@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="questionnaire-key" content="replace-with-a-unique-storage-key">
+  <title>請替換成問卷標題</title>
+  <style>
+    :root {
+      --ground: #f4f4f1;
+      --surface: #fff;
+      --surface-2: #fafaf7;
+      --ink: #1a1b1e;
+      --ink-mid: #4e5057;
+      --ink-soft: #74767e;
+      --rule: #e2e1dc;
+      --accent: #c2570a;
+      --accent-wash: #fbf0e4;
+      --good: #2c6e52;
+      --good-wash: #e8f1ec;
+      --warn: #9c3628;
+      --shadow: 0 1px 2px rgba(26, 27, 30, .05), 0 8px 24px -18px rgba(26, 27, 30, .35);
+      --font-sans: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", "Hiragino Sans", "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, "Noto Sans Mono", monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ground: #141518;
+        --surface: #1c1e22;
+        --surface-2: #212429;
+        --ink: #ecebe7;
+        --ink-mid: #b4b6bc;
+        --ink-soft: #8a8c93;
+        --rule: #2e3138;
+        --accent: #ee8a38;
+        --accent-wash: #2c2117;
+        --good: #63bc94;
+        --good-wash: #1a2620;
+        --warn: #e28576;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -18px rgba(0, 0, 0, .8);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--ground);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+    .bar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--ground);
+      border-bottom: 1px solid var(--rule);
+    }
+    .bar-inner, .wrap { max-width: 800px; margin: 0 auto; }
+    .bar-inner { padding: 10px 20px; display: flex; align-items: center; gap: 14px; }
+    .bar-label, .eyebrow, .meta, .question-id {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: .06em;
+      color: var(--ink-soft);
+      font-variant-numeric: tabular-nums;
+    }
+    .bar-label { white-space: nowrap; }
+    .track { flex: 1; height: 4px; background: var(--rule); border-radius: 99px; overflow: hidden; }
+    .fill { height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .3s ease; }
+    .wrap { padding: 0 20px 96px; }
+    header { padding: 52px 0 8px; }
+    .eyebrow { margin: 0 0 14px; color: var(--accent); text-transform: uppercase; letter-spacing: .14em; }
+    h1 { margin: 0 0 18px; font-size: 34px; line-height: 1.3; letter-spacing: -.01em; }
+    h2 { margin: 0; font-size: 23px; line-height: 1.4; }
+    h3 { margin: 18px 0 8px; font-size: 20px; line-height: 1.5; }
+    p { margin: 0 0 14px; }
+    .lede, .section-lede { color: var(--ink-mid); max-width: 64ch; }
+    .howto, .recap, .case { padding: 16px 18px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface-2); color: var(--ink-mid); }
+    .howto { margin-top: 26px; font-size: 15px; }
+    .howto strong, .case strong { color: var(--ink); }
+    .sep { border: 0; border-top: 1px solid var(--rule); margin: 44px 0; }
+    .section-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+    .meta { letter-spacing: .08em; }
+    .recap { margin: 18px 0 0; background: var(--good-wash); border-color: var(--good); }
+    .recap ul { margin: 0; padding-left: 22px; }
+    .question { margin: 22px 0; padding: 26px 24px; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; box-shadow: var(--shadow); }
+    .question.optional { border-left: 4px solid var(--accent); }
+    .question-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .question-id { padding: 3px 8px; border-radius: 5px; background: var(--accent-wash); color: var(--accent); }
+    .question-kind { color: var(--ink-soft); font-size: 13px; }
+    .case { margin: 18px 0; }
+    .case-label { display: block; margin-bottom: 6px; color: var(--accent); font-size: 13px; font-weight: 700; }
+    fieldset { margin: 20px 0 0; padding: 0; border: 0; }
+    legend { margin-bottom: 10px; color: var(--ink-mid); font-size: 14px; }
+    .option { display: flex; gap: 12px; align-items: flex-start; margin: 10px 0; padding: 14px 15px; border: 1px solid var(--rule); border-radius: 9px; cursor: pointer; transition: border-color .15s ease, background .15s ease; }
+    .option:hover, .option:has(input:checked) { border-color: var(--accent); background: var(--accent-wash); }
+    .option input { flex: 0 0 auto; margin-top: 5px; accent-color: var(--accent); }
+    .option-title { display: block; font-weight: 650; }
+    .option-note { display: block; margin-top: 3px; color: var(--ink-mid); font-size: 14px; }
+    .option-key { display: inline-block; min-width: 24px; color: var(--accent); font-family: var(--font-mono); }
+    .recommendation { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 99px; background: var(--good-wash); color: var(--good); font-size: 12px; font-weight: 600; }
+    .note-wrap { margin-top: 18px; }
+    .note-label { display: block; margin-bottom: 6px; color: var(--ink-mid); font-size: 14px; }
+    textarea { width: 100%; min-height: 86px; resize: vertical; padding: 11px 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface-2); color: var(--ink); font: inherit; line-height: 1.6; }
+    textarea:focus, input:focus-visible, button:focus-visible { outline: 3px solid rgba(194, 87, 10, .28); outline-offset: 2px; }
+    .output { margin-top: 44px; padding: 24px; border: 1px solid var(--rule); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+    .button-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 12px; }
+    button { padding: 10px 16px; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent); color: #fff; font: inherit; font-weight: 650; cursor: pointer; }
+    button.secondary { background: transparent; color: var(--accent); }
+    .status { min-height: 24px; margin: 10px 0 0; color: var(--good); font-size: 14px; }
+    .status.missing { color: var(--warn); }
+    code { padding: 1px 4px; border-radius: 4px; background: var(--surface-2); font-family: var(--font-mono); font-size: .9em; }
+    @media (max-width: 560px) {
+      header { padding-top: 34px; }
+      h1 { font-size: 27px; }
+      .question, .output { padding: 20px 16px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .fill, .option { transition: none; } }
+  </style>
+</head>
+<body>
+  <div class="bar" aria-label="問卷進度">
+    <div class="bar-inner">
+      <span class="bar-label" id="counter">已回答 0 / 0</span>
+      <span class="track"><span class="fill" id="fill"></span></span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <header>
+      <p class="eyebrow">Matt grill · 決策問卷</p>
+      <h1>請替換成問卷標題</h1>
+      <p class="lede">請替換成這次 grill 的背景、目前已知事實，以及為什麼需要使用者做決定。</p>
+      <div class="howto">請逐題回答。必要決策會標示為<strong>必答</strong>；工程作法若沒有意見，可以採用頁面標示的建議。完成後按下方的<strong>整理回復 prompt</strong>，再複製回對話。</div>
+    </header>
+
+    <hr class="sep">
+
+    <section aria-labelledby="recap-title">
+      <div class="section-head">
+        <h2 id="recap-title">目前已確認</h2>
+        <span class="meta">可依 grill context 調整</span>
+      </div>
+      <p class="section-lede">把已經確認的前提放在這裡，讓使用者只需回答真正還沒定案的部分。</p>
+      <div class="recap">
+        <ul>
+          <li>請替換成已確認的決策；若沒有，刪除這個列表或改成「目前沒有先前決定」。</li>
+          <li>保留必要的檔案、symbol、API、資料欄位或限制，避免問題脫離實際上下文。</li>
+        </ul>
+      </div>
+    </section>
+
+    <hr class="sep">
+
+    <main id="questions" aria-label="待回答問題">
+      <div class="section-head">
+        <h2>需要你的決定</h2>
+        <span class="meta">請替換並增刪 question cards</span>
+      </div>
+      <p class="section-lede">每張卡片都應讓使用者知道情境、選項差異與選擇後果；問題數量依本次 grill 的實際決策範圍調整。</p>
+
+      <!-- Replace this sample card. Add one .question section per decision. -->
+      <section class="question" data-q="q1" data-title="請替換成第一個決策標題" data-required="true" data-recommendation="請替換成有證據支持的建議">
+        <div class="question-head">
+          <span class="question-id">Q1</span>
+          <span class="question-kind">必答 · 請替換</span>
+        </div>
+        <h3>請替換成一個需要使用者決定的具體問題？</h3>
+        <p>先描述目前已知的行為與限制。讓使用者知道這不是偏好題，而是會改變功能、契約、資料或流程的決定。</p>
+        <div class="case">
+          <span class="case-label">實際情境</span>
+          <p>請補上一個最小、具體、可想像的案例，並說明不同選擇會造成什麼結果。</p>
+        </div>
+        <fieldset>
+          <legend>請選擇一個答案</legend>
+          <label class="option">
+            <input type="radio" name="q1" value="A｜請替換成選項 A">
+            <span><span class="option-title"><span class="option-key">A</span>請替換成選項 A</span><span class="option-note">請說明選項 A 的影響、代價與適用條件。</span></span>
+          </label>
+          <label class="option">
+            <input type="radio" name="q1" value="B｜請替換成選項 B">
+            <span><span class="option-title"><span class="option-key">B</span>請替換成選項 B <span class="recommendation">我的建議</span></span><span class="option-note">請說明為什麼這是建議，以及它避開了什麼風險。</span></span>
+          </label>
+        </fieldset>
+        <div class="note-wrap">
+          <label class="note-label" for="note-q1">補充說明（可不填）</label>
+          <textarea id="note-q1" data-note="q1" placeholder="使用者可以補充實務限制、例外或團隊決定"></textarea>
+        </div>
+      </section>
+    </main>
+
+    <section class="output" aria-labelledby="output-title">
+      <h2 id="output-title">產生回復 prompt</h2>
+      <p>完成選擇後，按「整理回復 prompt」。即使有未回答項目，也可以先產生草稿；必要決策會在 prompt 中清楚列出。</p>
+      <div class="button-row">
+        <button type="button" id="generate">整理回復 prompt</button>
+        <button type="button" class="secondary" id="copy">複製回復 prompt</button>
+        <button type="button" class="secondary" id="reset">清空答案</button>
+      </div>
+      <textarea id="summary" readonly aria-label="可複製的回復 prompt" placeholder="按「整理回復 prompt」後，結果會出現在這裡"></textarea>
+      <p class="status" id="status" role="status"></p>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var meta = document.querySelector('meta[name="questionnaire-key"]');
+      var storageKey = (meta && meta.content) || ('questionnaire:' + location.pathname);
+
+      function questions() {
+        return Array.prototype.slice.call(document.querySelectorAll('.question[data-q]'));
+      }
+
+      function selected(section) {
+        var radio = section.querySelector('input[type="radio"]:checked');
+        return radio ? radio.value : '';
+      }
+
+      function note(section) {
+        var field = section.querySelector('textarea[data-note]');
+        return field ? field.value.trim() : '';
+      }
+
+      function save() {
+        var data = { answers: {}, notes: {} };
+        questions().forEach(function (section) {
+          var id = section.getAttribute('data-q');
+          var answer = selected(section);
+          var extra = note(section);
+          if (answer) data.answers[id] = answer;
+          if (extra) data.notes[id] = extra;
+        });
+        try { localStorage.setItem(storageKey, JSON.stringify(data)); } catch (e) {}
+      }
+
+      function restore() {
+        var raw;
+        try { raw = localStorage.getItem(storageKey); } catch (e) { return; }
+        if (!raw) return;
+        var data;
+        try { data = JSON.parse(raw); } catch (e) { return; }
+        questions().forEach(function (section) {
+          var id = section.getAttribute('data-q');
+          var answer = data.answers && data.answers[id];
+          if (answer) {
+            Array.prototype.forEach.call(section.querySelectorAll('input[type="radio"]'), function (radio) {
+              radio.checked = radio.value === answer;
+            });
+          }
+          var field = section.querySelector('textarea[data-note]');
+          if (field && data.notes && data.notes[id]) field.value = data.notes[id];
+        });
+      }
+
+      function progress() {
+        var list = questions();
+        var answered = list.filter(function (section) { return !!selected(section); }).length;
+        var counter = document.getElementById('counter');
+        var fill = document.getElementById('fill');
+        if (counter) counter.textContent = '已回答 ' + answered + ' / ' + list.length;
+        if (fill) fill.style.width = (list.length ? answered / list.length * 100 : 0) + '%';
+      }
+
+      function generate() {
+        var heading = document.querySelector('h1');
+        var topic = heading ? heading.textContent.trim() : document.title;
+        var lines = [
+          '請根據以下 Matt grill 問卷回覆繼續處理。',
+          '',
+          '【問卷主題】' + topic,
+          '',
+          '【決策回覆】'
+        ];
+        var missing = [];
+
+        questions().forEach(function (section) {
+          var id = section.getAttribute('data-q') || 'q?';
+          var titleElement = section.querySelector('h3');
+          var title = section.getAttribute('data-title') || (titleElement ? titleElement.textContent.trim() : id);
+          var answer = selected(section);
+          var extra = note(section);
+          var required = section.getAttribute('data-required') !== 'false';
+          var recommendation = section.getAttribute('data-recommendation') || '';
+
+          lines.push(id.toUpperCase() + '｜' + title);
+          if (answer) {
+            lines.push('     選擇：' + answer);
+          } else if (!required && recommendation) {
+            lines.push('     未回答：採用頁面建議「' + recommendation + '」');
+          } else {
+            lines.push('     未回答：請先確認，不要自行假設');
+            if (required) missing.push(id.toUpperCase());
+          }
+          if (extra) lines.push('     補充：' + extra.replace(/\n/g, '\n            '));
+          lines.push('');
+        });
+
+        lines.push('【回覆規則】');
+        lines.push('1. 將上面已選擇的答案與補充說明視為本輪已確認決策。');
+        lines.push('2. 未回答的必要決策先保留，不要自行猜測或開始依該決策實作。');
+        if (missing.length) {
+          lines.push('3. 仍待確認：' + missing.join('、') + '。');
+        } else {
+          lines.push('3. 必要決策已回答完畢；請摘要採用的決策、指出風險，並繼續原本的 Matt workflow。');
+        }
+
+        var output = document.getElementById('summary');
+        var status = document.getElementById('status');
+        output.value = lines.join('\n').trim();
+        status.textContent = missing.length ? '尚有必答題：' + missing.join('、') + '。可以先複製草稿，或回來補完後再複製。' : '必要決策已完成。複製後貼回原本的對話即可。';
+        status.className = missing.length ? 'status missing' : 'status';
+      }
+
+      function setStatus(message, missing) {
+        var status = document.getElementById('status');
+        status.textContent = message;
+        status.className = missing ? 'status missing' : 'status';
+      }
+
+      document.addEventListener('change', function (event) {
+        if (event.target.matches('input[type="radio"]')) { save(); progress(); }
+      });
+      document.addEventListener('input', function (event) {
+        if (event.target.matches('textarea[data-note]')) save();
+      });
+      document.getElementById('generate').addEventListener('click', generate);
+      document.getElementById('copy').addEventListener('click', function () {
+        var output = document.getElementById('summary');
+        if (!output.value) generate();
+        var text = output.value;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            setStatus('已複製回復 prompt，貼回原本的對話即可。', false);
+          }, function () { setStatus('自動複製失敗，請手動選取回復 prompt。', true); });
+          return;
+        }
+        output.removeAttribute('readonly');
+        output.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) {}
+        output.setAttribute('readonly', '');
+        setStatus(ok ? '已複製回復 prompt，貼回原本的對話即可。' : '複製失敗，請手動選取回復 prompt。', !ok);
+      });
+      document.getElementById('reset').addEventListener('click', function () {
+        questions().forEach(function (section) {
+          Array.prototype.forEach.call(section.querySelectorAll('input[type="radio"]'), function (radio) { radio.checked = false; });
+          var field = section.querySelector('textarea[data-note]');
+          if (field) field.value = '';
+        });
+        document.getElementById('summary').value = '';
+        setStatus('', false);
+        try { localStorage.removeItem(storageKey); } catch (e) {}
+        progress();
+      });
+
+      restore();
+      progress();
+    })();
+  </script>
+</body>
+</html>
