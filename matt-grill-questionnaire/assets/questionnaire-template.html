@@ -92,6 +92,8 @@
     .question-id { padding: 3px 8px; border-radius: 5px; background: var(--accent-wash); color: var(--accent); }
     .question-kind { color: var(--ink-soft); font-size: 13px; }
     .case { margin: 18px 0; }
+    .context { margin: 12px 0 0; padding-left: 21px; color: var(--ink-mid); }
+    .context li { margin: 5px 0; }
     .case-label { display: block; margin-bottom: 6px; color: var(--accent); font-size: 13px; font-weight: 700; }
     fieldset { margin: 20px 0 0; padding: 0; border: 0; }
     legend { margin-bottom: 10px; color: var(--ink-mid); font-size: 14px; }
@@ -185,7 +187,7 @@
       "id": "q1",
       "title": "範例問題標題",
       "required": true,
-      "context": "說明目前已知的行為與限制。",
+      "context": ["現況：目前的行為與限制。", "契約：已經講好的規則。"],
       "scenario": "一個最小、具體、可想像的案例。",
       "recommendation": "B",
       "options": [
@@ -220,13 +222,36 @@
         return Object.prototype.toString.call(value) === '[object Array]';
       }
 
+      // Every payload string is rendered with textContent, so markup is printed
+      // instead of applied. Only the purely typographic tags are caught: a grill
+      // may legitimately be about <div> or <script>, but never about <br>.
+      // The pattern lives inline because validate() runs above these declarations
+      // — a hoisted var would still be undefined by then.
+      function scanMarkup(value, path, found) {
+        if (typeof value === 'string') {
+          if (/<\/?(?:br|strong|em|b|i|u)\s*\/?>/i.test(value)) {
+            found.push(path + ' 夾帶了 HTML 標籤。所有文字都以純文字顯示，標籤會原樣印在頁面上；'
+              + '要分段請拆成多個 context 條目，不要用 <br> 或 <strong> 排版。');
+          }
+          return;
+        }
+        if (value && typeof value === 'object') {
+          var array = isArray(value);
+          Object.keys(value).forEach(function (key) {
+            scanMarkup(value[key], path + (array ? '[' + key + ']' : '.' + key), found);
+          });
+        }
+      }
+
       // Collect every problem rather than stopping at the first — one round trip
       // beats making the agent rebuild once per mistake.
       function validate(data) {
         var found = [];
+        scanMarkup(data, 'payload', found);
+
         var questions = data && data.questions;
-        if (!isArray(questions)) { return ['payload 的 questions 必須是陣列。']; }
-        if (!questions.length) { return ['payload 沒有任何問題（questions 是空的）。']; }
+        if (!isArray(questions)) { found.push('payload 的 questions 必須是陣列。'); return found; }
+        if (!questions.length) { found.push('payload 沒有任何問題（questions 是空的）。'); return found; }
 
         var seen = {};
         questions.forEach(function (question, index) {
@@ -243,6 +268,12 @@
           // A decision without a concrete situation is not answerable.
           if (!question.scenario) {
             found.push(label + ' 沒有 scenario；請給一個具體情境，說明不同選擇會走向什麼結果。');
+          }
+
+          // One short line per fact. A single prose blob is what makes agents
+          // reach for <br> to break it up again.
+          if (question.context != null && !isArray(question.context)) {
+            found.push(label + ' 的 context 必須是字串陣列，一則一句話，不是一整段文字。');
           }
 
           var options = isArray(question.options) ? question.options : [];
@@ -347,7 +378,13 @@
         section.appendChild(head);
 
         section.appendChild(el('h3', null, question.title));
-        if (question.context) section.appendChild(el('p', null, question.context));
+
+        var context = isArray(question.context) ? question.context : [];
+        if (context.length) {
+          var list = el('ul', 'context');
+          context.forEach(function (line) { list.appendChild(el('li', null, line)); });
+          section.appendChild(list);
+        }
 
         if (question.scenario) {
           var box = el('div', 'case');
