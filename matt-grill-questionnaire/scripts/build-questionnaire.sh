@@ -16,7 +16,10 @@ DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 TEMPLATE="$DIR/../assets/questionnaire-template.html"
 
 if [ -z "$OUT" ]; then
-  OUT="${TMPDIR:-/tmp}/grill-questionnaire-$(date +%Y%m%d-%H%M%S).html"
+  # The PID stops two builds in the same second from overwriting each other, and
+  # unlike a millisecond stamp it cannot collide at all: one build is one process.
+  # The PowerShell script names its files exactly the same way.
+  OUT="${TMPDIR:-/tmp}/grill-questionnaire-$(date +%Y%m%d-%H%M%S)-$$.html"
 fi
 
 # In valid JSON '<' can only occur inside a string, so replacing every one of them

@@ -30,8 +30,11 @@ if ($end -lt 0) { throw "template data block is never closed in $template" }
 $result = $html.Substring(0, $bodyStart) + "`n" + $json + "`n" + $html.Substring($end)
 
 if (-not $Out) {
+  # The PID stops two builds in the same second from overwriting each other, and
+  # unlike a millisecond stamp it cannot collide at all: one build is one process.
+  # The macOS script names its files exactly the same way.
   $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-  $Out = Join-Path ([System.IO.Path]::GetTempPath()) "grill-questionnaire-$stamp.html"
+  $Out = Join-Path ([System.IO.Path]::GetTempPath()) "grill-questionnaire-$stamp-$PID.html"
 }
 [System.IO.File]::WriteAllText($Out, $result, (New-Object System.Text.UTF8Encoding $false))
 $Out
