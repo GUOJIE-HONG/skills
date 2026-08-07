@@ -113,6 +113,12 @@
     .status { min-height: 24px; margin: 10px 0 0; color: var(--good); font-size: 14px; }
     .status.missing { color: var(--warn); }
     code { padding: 1px 4px; border-radius: 4px; background: var(--surface-2); font-family: var(--font-mono); font-size: .9em; }
+    .notice { margin: 14px 0 0; padding: 14px 16px; border: 1px solid var(--warn); border-radius: 10px; background: var(--surface-2); color: var(--warn); font-size: 15px; }
+    .notice strong { color: var(--warn); }
+    .fatal { margin: 52px 0; padding: 26px 24px; border: 1px solid var(--warn); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+    .fatal .eyebrow { color: var(--warn); }
+    .fatal-list { margin: 0 0 20px; padding-left: 22px; color: var(--ink-mid); }
+    .fatal-list li { margin: 9px 0; }
     @media (max-width: 560px) {
       header { padding-top: 34px; }
       h1 { font-size: 27px; }
@@ -135,6 +141,7 @@
       <h1 id="title"></h1>
       <p class="lede" id="lede"></p>
       <div class="howto">請逐題回答。若沒有意見，可以直接選頁面標示的<strong>建議</strong>；<strong>留白會被視為待確認，不會自動採用建議</strong>。也可以只填補充說明，由我依你的說明判斷。完成後按下方的<strong>整理回復 prompt</strong>，再複製回對話。</div>
+      <p class="notice" id="no-persist" hidden>這個瀏覽器不會保存草稿：重新整理或關閉頁面後，已填的答案會消失。請一次答完，或隨時先按下方的<strong>整理回復 prompt</strong> 把目前進度複製起來。</p>
     </header>
 
     <section id="recap-section" aria-labelledby="recap-title" hidden>
@@ -192,9 +199,105 @@
 
   <script>
     (function () {
-      var DATA = JSON.parse(document.getElementById('questionnaire-data').textContent);
-      var QUESTIONS = DATA.questions || [];
+      // The payload is validated here and nowhere else. Windows and macOS share no
+      // out-of-the-box scripting runtime, so the build scripts cannot run a common
+      // validator — but the browser is always present, or the questionnaire is
+      // pointless. See docs/adr/0001-only-out-of-the-box-runtimes.md.
+      var DATA = null;
+      var problems = [];
+      try {
+        DATA = JSON.parse(document.getElementById('questionnaire-data').textContent);
+      } catch (parseError) {
+        problems.push('payload 不是合法的 JSON：' + parseError.message);
+      }
+      if (DATA) problems = validate(DATA);
+      if (problems.length) { renderFatal(problems); return; }
+
+      var QUESTIONS = DATA.questions;
       var storageKey = DATA.storageKey || ('matt-grill-questionnaire:' + location.pathname);
+
+      function isArray(value) {
+        return Object.prototype.toString.call(value) === '[object Array]';
+      }
+
+      // Collect every problem rather than stopping at the first — one round trip
+      // beats making the agent rebuild once per mistake.
+      function validate(data) {
+        var found = [];
+        var questions = data && data.questions;
+        if (!isArray(questions)) { return ['payload 的 questions 必須是陣列。']; }
+        if (!questions.length) { return ['payload 沒有任何問題（questions 是空的）。']; }
+
+        var seen = {};
+        questions.forEach(function (question, index) {
+          var at = 'questions[' + index + ']';
+          var id = question && question.id;
+          if (!id) { found.push(at + ' 沒有 id。'); return; }
+
+          var label = at + '（' + id + '）';
+          if (Object.prototype.hasOwnProperty.call(seen, id)) {
+            found.push(label + ' 的 id 和前面的題目重複。');
+          }
+          seen[id] = true;
+
+          // A decision without a concrete situation is not answerable.
+          if (!question.scenario) {
+            found.push(label + ' 沒有 scenario；請給一個具體情境，說明不同選擇會走向什麼結果。');
+          }
+
+          var options = isArray(question.options) ? question.options : [];
+          if (options.length < 2) {
+            found.push(label + ' 至少要有兩個可區分的選項，目前只有 ' + options.length + ' 個。');
+          }
+          options.forEach(function (option, optionIndex) {
+            if (!option || !option.key || !option.title) {
+              found.push(label + ' 的 options[' + optionIndex + '] 缺少 key 或 title。');
+            }
+          });
+
+          if (question.recommendation) {
+            var matched = options.some(function (option) {
+              return option && option.key === question.recommendation;
+            });
+            if (!matched) {
+              found.push(label + ' 的 recommendation 是「' + question.recommendation
+                + '」，但沒有任何選項使用這個 key。');
+            }
+          }
+        });
+        return found;
+      }
+
+      function renderFatal(list) {
+        document.title = '問卷資料有誤 · Matt grill';
+        var bar = document.querySelector('.bar');
+        if (bar) bar.hidden = true;
+
+        var wrap = document.querySelector('.wrap');
+        wrap.textContent = '';
+
+        var box = el('section', 'fatal');
+        box.appendChild(el('p', 'eyebrow', 'Matt grill · 問卷資料有誤'));
+        box.appendChild(el('h1', null, '這份問卷沒有產生出來'));
+        box.appendChild(el('p', 'lede', 'payload 有下列問題，所以問卷完全沒有渲染——'
+          + '一份只能答一半的問卷比明確的錯誤更難處理。把下面整段貼回對話，修正 payload 後重新建置即可。'));
+
+        var ul = el('ul', 'fatal-list');
+        list.forEach(function (item) { ul.appendChild(el('li', null, item)); });
+        box.appendChild(ul);
+
+        var label = el('label', 'note-label', '可複製的錯誤說明');
+        label.setAttribute('for', 'fatal-copy');
+        box.appendChild(label);
+        var output = document.createElement('textarea');
+        output.id = 'fatal-copy';
+        output.readOnly = true;
+        output.value = '問卷 payload 有下列問題，請修正後重新建置：\n'
+          + list.map(function (item) { return '- ' + item; }).join('\n');
+        box.appendChild(output);
+
+        wrap.appendChild(box);
+      }
 
       function el(tag, className, text) {
         var node = document.createElement(tag);
@@ -304,6 +407,19 @@
       function note(id) {
         var field = document.querySelector('textarea[data-note="' + id + '"]');
         return field ? field.value.trim() : '';
+      }
+
+      // Safari can refuse localStorage on file:// URLs, and the questionnaire is
+      // always opened as a file. Losing a half-finished answer set silently is worse
+      // than not persisting it, so probe once and say so on the page.
+      function storageWorks() {
+        try {
+          localStorage.setItem('__grill_probe__', '1');
+          localStorage.removeItem('__grill_probe__');
+          return true;
+        } catch (e) {
+          return false;
+        }
       }
 
       function save() {
@@ -450,7 +566,7 @@
         progress();
       });
 
-      restore();
+      if (storageWorks()) restore(); else document.getElementById('no-persist').hidden = false;
       progress();
     })();
   </script>

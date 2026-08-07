@@ -1,44 +1,31 @@
-# Build a Matt grill questionnaire from a JSON payload and open it in the browser.
-# Usage: pwsh -File scripts/build-questionnaire.ps1 -Data <payload.json> [-Out <file.html>] [-NoOpen]
+# Build a Matt grill questionnaire from a JSON payload.
+# Usage: powershell.exe -File scripts/build-questionnaire.ps1 -Data <payload.json> [-Out <file.html>]
+#
+# This script only splices text: it never validates the payload and never opens a
+# browser. Payload rules live in the renderer, opening lives with the agent.
+# Windows PowerShell 5.1 syntax only — see docs/adr/0001-only-out-of-the-box-runtimes.md.
 param(
   [Parameter(Mandatory = $true)][string]$Data,
-  [string]$Out,
-  [switch]$NoOpen
+  [string]$Out
 )
 
 $ErrorActionPreference = 'Stop'
 
 $template = Join-Path $PSScriptRoot '../assets/questionnaire-template.html'
 $html = [System.IO.File]::ReadAllText((Resolve-Path -LiteralPath $template))
-$json = [System.IO.File]::ReadAllText((Resolve-Path -LiteralPath $Data)).Trim()
 
-# Fail fast on malformed payloads instead of shipping a broken or unanswerable questionnaire.
-$parsed = $json | ConvertFrom-Json
-if (-not $parsed.questions -or @($parsed.questions).Count -eq 0) { throw 'payload has no questions' }
-if ($json -match '</script') { throw 'payload contains "</script"; rewrite the text to avoid it' }
-
-$seen = @{}
-foreach ($q in @($parsed.questions)) {
-  $id = $q.id
-  if (-not $id) { throw 'every question needs an id' }
-  if ($seen.ContainsKey($id)) { throw "duplicate question id: $id" }
-  $seen[$id] = $true
-  # A decision without a concrete situation is not answerable — this is the point of the questionnaire.
-  if (-not $q.scenario) { throw "$id has no scenario; give a concrete situation showing what each choice leads to" }
-  if (@($q.options).Count -lt 2) { throw "$id needs at least two distinguishable options" }
-  foreach ($o in @($q.options)) {
-    if (-not $o.key -or -not $o.title) { throw "$id has an option missing key or title" }
-  }
-  if ($q.recommendation -and -not (@($q.options) | Where-Object { $_.key -eq $q.recommendation })) {
-    throw "$id recommends '$($q.recommendation)' but no option has that key"
-  }
-}
+# In valid JSON '<' can only occur inside a string, so replacing every one of them
+# is safe and stops the payload from closing the <script> element early.
+# 0x5C is a backslash; built this way so the six-character JSON escape is unambiguous.
+$escape = [string][char]0x5C + 'u003c'
+$json = [System.IO.File]::ReadAllText((Resolve-Path -LiteralPath $Data)).Trim().Replace('<', $escape)
 
 $openTag = '<script id="questionnaire-data" type="application/json">'
 $start = $html.IndexOf($openTag)
-if ($start -lt 0) { throw 'template marker not found' }
+if ($start -lt 0) { throw "template marker not found in $template" }
 $bodyStart = $start + $openTag.Length
 $end = $html.IndexOf('</script>', $bodyStart)
+if ($end -lt 0) { throw "template data block is never closed in $template" }
 
 $result = $html.Substring(0, $bodyStart) + "`n" + $json + "`n" + $html.Substring($end)
 
@@ -47,6 +34,8 @@ if (-not $Out) {
   $Out = Join-Path ([System.IO.Path]::GetTempPath()) "grill-questionnaire-$stamp.html"
 }
 [System.IO.File]::WriteAllText($Out, $result, (New-Object System.Text.UTF8Encoding $false))
-
-if (-not $NoOpen) { Start-Process -FilePath $Out }
 $Out
+
+# The path goes out before the launcher runs, and a launcher that fails must not
+# change the exit status: the file is already built and its path is what matters.
+try { Start-Process -FilePath $Out } catch { Write-Warning 'could not open a browser; the path above is ready to use' }

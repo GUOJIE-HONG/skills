@@ -9,7 +9,7 @@ user-invocable: true
 
 Question surface for a Matt grill. Take the decisions that are still open, write them as a JSON payload, and let the bundled script render and open the questionnaire.
 
-**Do not re-investigate the codebase for this skill.** Everything you need is already in the grill conversation. No git status, no repo scan, no post-build audit — the build script validates the payload and fails loudly if it is wrong.
+**Do not re-investigate the codebase for this skill.** Everything you need is already in the grill conversation. No git status, no repo scan, no post-build audit — the questionnaire page validates its own payload on load and refuses to render if anything is wrong.
 
 ## Workflow
 
@@ -17,7 +17,7 @@ Question surface for a Matt grill. Take the decisions that are still open, write
 
    `recap` is for what the user confirmed — never park an open decision there because the answer looks obvious to you. If it changes behavior, contract, data, or flow and the user has not ruled on it, it is a question. What you may leave out entirely is anything that changes none of those.
 
-2. **Write the payload.** Save JSON to the scratchpad or temp directory. Traditional Chinese prose; keep identifiers, paths, commands, and API names as-is. Never let any string contain `</script`.
+2. **Write the payload.** Save JSON to the scratchpad or temp directory. Traditional Chinese prose; keep identifiers, paths, commands, and API names as-is. Strings may contain anything, HTML tags included — the build script escapes them.
 
    ```json
    {
@@ -46,16 +46,18 @@ Question surface for a Matt grill. Take the decisions that are still open, write
 
    `recommendation` is display-only. **A blank question is never auto-resolved**, whatever `required` says — a recommendation only counts once the user clicks it or confirms it in chat. `required` controls how loudly the blank is reported, not whether you may decide it yourself.
 
-3. **Build and open.** One command; it validates the payload, renders the page, and launches the browser.
+3. **Build and open.** One command. It splices the payload into the template, writes the result to the OS temp directory with a timestamped filename, prints the path, then opens it in the browser.
 
    Use the **absolute path of this skill's own directory** — the grill runs from the user's project, not from here, so a relative `scripts/...` path will not resolve.
 
-   - Windows: `pwsh -File "<skill-dir>\scripts\build-questionnaire.ps1" -Data "<payload.json>"`
-   - macOS / Linux: `sh "<skill-dir>/scripts/build-questionnaire.sh" "<payload.json>"`
+   - Windows: `powershell.exe -File "<skill-dir>\scripts\build-questionnaire.ps1" -Data "<payload.json>"`
+   - macOS: `sh "<skill-dir>/scripts/build-questionnaire.sh" "<payload.json>"`
 
-   It writes to the OS temp directory with a timestamped filename and prints the path. Pass an explicit output path (`-Out` on Windows, second argument on POSIX) only when the user asks for one.
+   The path is printed before the browser is launched, and a launcher that fails does not fail the build. If you get a warning that the browser could not be opened, say so in one sentence and hand over the printed path — do not retry and do not try another launcher.
 
-   The script rejects a payload with no questions, a question missing `scenario` or `options`, duplicate ids, or a `</script` sequence. Fix the payload and re-run — do not hand-patch the generated HTML. If the launcher fails or the environment is headless, say so in one sentence and hand over the path instead of retrying other launchers.
+   Pass an explicit output path (`-Out` on Windows, second argument on macOS) only when the user asks for one. Never hand-patch the generated HTML — fix the payload and rebuild.
+
+   **The page checks the payload as it loads.** If anything is wrong it renders a list of the problems instead of the questionnaire, so the user hits the error immediately rather than answering half a form. If the user reports that page, fix the payload from the listed problems and rebuild. The checks are: at least one question; every question has an `id`, a `scenario`, and two or more options; ids are unique; every option has `key` and `title`; any `recommendation` matches an option key.
 
 4. **Hand off and stop.** Return the printed path as a clickable link, state that it was opened, and tell the user to answer, click `整理回復 prompt`, then paste the result back. Pause the grill until they reply. If they answer in chat instead, reconcile that with the questionnaire and continue from the resulting decisions.
 
@@ -63,7 +65,7 @@ Question surface for a Matt grill. Take the decisions that are still open, write
 
 ## Files
 
-- `assets/questionnaire-template.html` — the renderer: styling, progress bar, draft persistence, reply-prompt generation, copy fallback. It is **generic and never edited**; the build script only swaps the `questionnaire-data` JSON block.
-- `scripts/build-questionnaire.ps1`, `scripts/build-questionnaire.sh` — inject the payload, write to temp, open the browser.
+- `assets/questionnaire-template.html` — the renderer: **payload validation**, styling, progress bar, draft persistence, reply-prompt generation, copy fallback. It is **generic and never edited**; the build script only swaps the `questionnaire-data` JSON block.
+- `scripts/build-questionnaire.ps1`, `scripts/build-questionnaire.sh` — escape the payload, splice it in, write to temp, print the path. They only move text around; every rule about payload content lives in the renderer.
 
 Generated questionnaires live in the OS temp directory — never in the repository or the skill directory.
