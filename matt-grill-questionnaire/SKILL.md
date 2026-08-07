@@ -1,59 +1,69 @@
 ---
 name: matt-grill-questionnaire
-description: Create a clear HTML questionnaire with a copyable reply prompt when Matt grill needs user decisions.
+description: Turn unresolved Matt grill decisions into an HTML questionnaire and open it in the browser.
 disable-model-invocation: true
 user-invocable: true
 ---
 
 # Matt Grill Questionnaire
 
-Use this skill as the question surface whenever a Matt grill skill reaches unresolved decisions. Keep the grill context, but move the actual questions into a self-contained HTML file that the user can open, answer, and copy back.
+Question surface for a Matt grill. Take the decisions that are still open, write them as a JSON payload, and let the bundled script render and open the questionnaire.
+
+**Do not re-investigate the codebase for this skill.** Everything you need is already in the grill conversation. No git status, no repo scan, no post-build audit — the build script validates the payload and fails loudly if it is wrong.
 
 ## Workflow
 
-1. Establish the questionnaire context.
+1. **Collect the open decisions.** Use only what the grill has already established. Decisions the user already made go in `recap` as one-line reminders, not as questions.
 
-   - Read the applicable repository instructions and inspect the current Git status. Preserve unrelated user changes.
-   - Resolve the repository root from the active working directory or the repository named by the user.
-   - Inspect relevant source, specs, prior decisions, and any existing questionnaire or handoff artifacts referenced by the context. Use repo-aware discovery when available; use built-in search for HTML, Markdown, configuration, and other non-code files.
-   - Extract only decisions that are still unresolved in the active Matt grill. Keep confirmed decisions as a short recap instead of asking them again.
+   `recap` is for what the user confirmed — never park an open decision there because the answer looks obvious to you. If it changes behavior, contract, data, or flow and the user has not ruled on it, it is a question. What you may leave out entirely is anything that changes none of those.
 
-2. Design the questions.
+2. **Write the payload.** Save JSON to the scratchpad or temp directory. Traditional Chinese prose; keep identifiers, paths, commands, and API names as-is. Never let any string contain `</script`.
 
-   - Separate behavior or contract decisions that must be answered from implementation preferences that may safely use a recommendation.
-   - For every question, provide a stable ID, a precise title, the concrete situation, why the choice matters, two to four mutually distinguishable options, and the consequence of each option.
-   - Mark one recommendation when evidence supports it. Phrase it as a recommendation, not as a hidden default.
-   - Add an optional free-text note to every question that may need domain context. Make dependencies explicit and place dependent questions after the decision that unlocks them.
-   - Write questionnaire prose in Traditional Chinese by default. Keep identifiers, paths, commands, API names, and other technical terms in their original form.
+   ```json
+   {
+     "title": "問卷標題",
+     "lede": "這次 grill 的背景與為什麼需要使用者決定",
+     "storageKey": "matt-grill-questionnaire:<topic>-<YYYYMMDD-HHmmss>",
+     "recap": ["已確認的前提，一行一則；沒有就給空陣列"],
+     "questions": [
+       {
+         "id": "q1",
+         "title": "一個具體、可判斷的決策問題？",
+         "required": true,
+         "context": "目前已知的行為與限制，以及這個選擇會改變什麼。",
+         "scenario": "一個最小、具體、可想像的案例，說明不同選擇會走向什麼結果。",
+         "recommendation": "B",
+         "options": [
+           { "key": "A", "title": "選項 A", "note": "影響、代價、適用條件。" },
+           { "key": "B", "title": "選項 B", "note": "為什麼建議這個，它避開了什麼風險。" }
+         ]
+       }
+     ]
+   }
+   ```
 
-3. Create the HTML artifact.
+   Per question: a stable `id`, two to four mutually distinguishable options, and a `scenario` that makes the trade-off concrete — a question without a situation is not answerable. Set `required: false` for implementation preferences. Omit `recommendation` when the evidence does not support one. Order dependent questions after the decision that unlocks them.
 
-   - Resolve the user's OS temporary directory and save outside the current workspace: on Windows, use `[System.IO.Path]::GetTempPath()`; on macOS, use `NSTemporaryDirectory()` or `FileManager.default.temporaryDirectory`; on Linux and other POSIX systems, use `$TMPDIR` when set, otherwise `/tmp`.
-   - Start from [`assets/questionnaire-template.html`](assets/questionnaire-template.html), then replace every sample question, placeholder, title, topic, and storage key with the current grill context.
-   - Use a unique lowercase kebab-case filename such as `<topic>-questionnaire-YYYYMMDD-HHmmss.html`. Add a numeric suffix instead of overwriting an existing questionnaire.
-   - Keep the file self-contained: inline CSS and JavaScript, no network dependency, responsive question cards, a visible progress indicator, browser-side draft persistence, a reset action, and a copy action that has a fallback when Clipboard API access is unavailable.
-   - Preserve a clear distinction between confirmed recap, required decisions, optional engineering decisions, and the generated reply area.
+   `recommendation` is display-only. **A blank question is never auto-resolved**, whatever `required` says — a recommendation only counts once the user clicks it or confirms it in chat. `required` controls how loudly the blank is reported, not whether you may decide it yourself.
 
-4. Make the reply prompt complete.
+3. **Build and open.** One command; it validates the payload, renders the page, and launches the browser.
 
-   - The generated text must include the questionnaire topic, every question ID and title, the selected option, free-text notes, unanswered required decisions, and the recommendation used for unanswered optional decisions.
-   - End the generated text with explicit handoff rules: treat selected answers and notes as confirmed, do not guess unanswered required decisions, and continue the active Matt workflow only after the unresolved list is empty or the user has explicitly accepted the remaining recommendations.
-   - Make `整理回復 prompt` generate the text and make `複製回復 prompt` copy it. A user should be able to paste the result into the same conversation without editing the HTML output.
+   Use the **absolute path of this skill's own directory** — the grill runs from the user's project, not from here, so a relative `scripts/...` path will not resolve.
 
-5. Validate the artifact.
+   - Windows: `pwsh -File "<skill-dir>\scripts\build-questionnaire.ps1" -Data "<payload.json>"`
+   - macOS / Linux: `sh "<skill-dir>/scripts/build-questionnaire.sh" "<payload.json>"`
 
-   - Verify the target file exists under the resolved OS temp directory, contains one valid HTML document, has no leftover template placeholders, and has unique question IDs/radio groups.
-   - Verify every question has options, a title, and a generated-output path; verify the buttons, progress counter, reset behavior, localStorage key, and copy fallback are wired to existing elements.
+   It writes to the OS temp directory with a timestamped filename and prints the path. Pass an explicit output path (`-Out` on Windows, second argument on POSIX) only when the user asks for one.
 
-6. Open the questionnaire automatically.
+   The script rejects a payload with no questions, a question missing `scenario` or `options`, duplicate ids, or a `</script` sequence. Fix the payload and re-run — do not hand-patch the generated HTML. If the launcher fails or the environment is headless, say so in one sentence and hand over the path instead of retrying other launchers.
 
-   - Open the validated file in the user's default browser as soon as validation passes. Do not wait for the user to ask.
-   - Use the platform launcher: on Windows, `Start-Process <path>` in PowerShell or `cmd /c start "" "<path>"`; on macOS, `open "<path>"`; on Linux and other POSIX systems, `xdg-open "<path>"`. Always quote the path.
-   - If the launcher fails, is unavailable, or the environment is headless, say so in one sentence and fall back to the manual path handoff instead of retrying with other launchers.
+4. **Hand off and stop.** Return the printed path as a clickable link, state that it was opened, and tell the user to answer, click `整理回復 prompt`, then paste the result back. Pause the grill until they reply. If they answer in chat instead, reconcile that with the questionnaire and continue from the resulting decisions.
 
-7. Hand off.
+   When the reply comes back: answers and notes are confirmed. Anything the prompt marks 待確認 stays open — ask about it (one round, batched) rather than assuming; a question answered only by a note means judge from that note, not from your recommendation. Resume the grill once nothing is left open or the user has explicitly accepted the remaining recommendations.
 
-   - Return the file path as a clickable link, state that it was opened automatically, and tell the user to answer the questions, click `整理回復 prompt`, then paste the copied prompt back into the conversation.
-   - Pause the grill workflow after the handoff. If the user replies directly in chat instead, reconcile that reply with the questionnaire output and continue only from the resulting decisions.
+## Files
 
-The only bundled resource is the reusable HTML scaffold in `assets/`; keep each generated questionnaire in the user's OS temp directory, never in the repository or the skill directory.
+- `assets/questionnaire-template.html` — the renderer: styling, progress bar, draft persistence, reply-prompt generation, copy fallback. It is **generic and never edited**; the build script only swaps the `questionnaire-data` JSON block.
+- `scripts/build-questionnaire.ps1`, `scripts/build-questionnaire.sh` — inject the payload, write to temp, open the browser.
+
+Generated questionnaires live in the OS temp directory — never in the repository or the skill directory.
