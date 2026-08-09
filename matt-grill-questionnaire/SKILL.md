@@ -1,85 +1,96 @@
 ---
 name: matt-grill-questionnaire
-description: Turn unresolved Matt grill decisions into an HTML questionnaire and open it in the browser.
+description: Create and automatically open a temporary browser questionnaire that preserves each unresolved Matt grill question verbatim, then adds context and a concrete scenario to help the user understand the professional decision. Use for an explicit request or Matt grill handoff when honest choices and consequences are already established; do not use for general forms, research or diagnosis, implementation, already-answered decisions, or when no material decision remains.
 disable-model-invocation: true
-user-invocable: true
 ---
 
 # Matt Grill Questionnaire
 
-Question surface for a Matt grill. Take the decisions that are still open, write them as a JSON payload, and let the bundled script render and open the questionnaire.
+Turn an established Matt grill decision set into a compact browser handoff. The aid collects decisions; it does not discover facts or decide for the user.
 
-**Do not re-investigate the codebase for this skill.** Everything you need is already in the grill conversation. No git status, no repo scan, no post-build audit — the questionnaire page validates its own payload on load and refuses to render if anything is wrong.
+## 1. Check the handoff boundary
 
-## Workflow
+Proceed only when at least one unresolved user-owned decision can change behavior, contracts, data, or workflow, and the grill already contains enough evidence to state honest choices and consequences. If evidence is missing, return one consolidated list of gaps to the owning grill and stop. Do not inspect the repository or external sources for this skill.
 
-1. **Collect the open decisions.** Use only what the grill has already established. Decisions the user already made go in `recap` as one-line reminders, not as questions.
+Accept direct chat answers at any time. Reconcile them against the same decision set instead of forcing a browser aid.
 
-   `recap` is for what the user confirmed — never park an open decision there because the answer looks obvious to you. If it changes behavior, contract, data, or flow and the user has not ruled on it, it is a question. What you may leave out entirely is anything that changes none of those.
+## 2. Build the decision set
 
-2. **Write the payload.** Save JSON to the scratchpad or temp directory. Traditional Chinese; keep identifiers, paths, commands, and API names as-is.
+Keep confirmed facts in `recap`; keep every unresolved material matter in `questions`. Never reopen a confirmed decision or hide an open one in context. Give dependent questions a coherent order and split questions that contain separate decisions.
 
-   **Every string renders as plain text.** HTML is printed, not applied — `<br>` shows up on the page as the four characters `<br>`. The renderer refuses the payload if it finds `<br>`, `<strong>`, `<em>`, `<b>`, `<i>` or `<u>`. To break a thought into parts, add another `context` entry.
+Write a UTF-8 JSON payload in the OS temp directory. Its root fields are `title`,
+`lede`, `recap`, and `questions`. A question contains `id`, `title`,
+`sourceQuestion`, `required`, `context`, `scenario`, `options`, and optionally `recommendation`; an option
+contains `key`, `title`, and `note`. The builders reject missing, mistyped,
+unknown, over-budget, or structurally incomplete fields before creating or
+launching an artifact.
 
-   ```json
-   {
-     "title": "問卷標題",
-     "lede": "為什麼需要使用者決定，一句話",
-     "storageKey": "matt-grill-questionnaire:<topic>-<YYYYMMDD-HHmmss>",
-     "recap": ["已確認的前提，一行一則；沒有就給空陣列"],
-     "questions": [
-       {
-         "id": "q1",
-         "title": "一個具體、可判斷的決策問題？",
-         "required": true,
-         "context": ["現況：DB 十格比例欄位全可 NULL", "契約：儲存時任一為 null 回 400"],
-         "scenario": "只填了一格就按儲存，這次該成功還是失敗？",
-         "recommendation": "B",
-         "options": [
-           { "key": "A", "title": "選項 A", "note": "代價與適用條件。" },
-           { "key": "B", "title": "選項 B", "note": "它避開了什麼風險。" }
-         ]
-       }
-     ]
-   }
-   ```
+For each question:
 
-   Per question: a stable `id`, two to four mutually distinguishable options, and a `scenario` that makes the trade-off concrete — a question without a situation is not answerable. `context` is a list of one-fact lines, at most three, and only facts that change the answer. Set `required: false` for implementation preferences. Omit `recommendation` when the evidence does not support one. Order dependent questions after the decision that unlocks them.
+- Use a stable unique `id` matching `[A-Za-z][A-Za-z0-9_-]{0,63}` and unique
+  option keys matching the same pattern. Treat identities case-insensitively.
+- Use the grill's complete original question body directly as the
+  `sourceQuestion` value while constructing the payload. Treat that string as
+  immutable input data instead of retyping it from memory. This is a
+  single-copy operation even when the grill contains many long questions.
+- Provide one concrete `scenario`, up to three decision-relevant `context`
+  facts, and two to four distinguishable options after the original question.
+  They explain the decision; they never replace or redefine it.
+- State a concrete effect or cost in every option `note`.
+- Set `required: false` only to mark lower urgency. A blank answer remains unresolved either way.
+- Include `recommendation` only when established evidence supports it. It is advisory and never preselected.
 
-   **Writing the payload is the slow part of this skill, and length is the only reason.** You are writing for the person who just sat through the grill, so never restate what they already told you. Stay inside these budgets — a five-question questionnaire should land near 2,000 characters total, and going over is a sign the question is really two questions:
+Use Traditional Chinese for user-facing prose while preserving exact technical text. Rendered text has these hard budgets:
 
-   | 欄位 | 上限 |
-   | --- | --- |
-   | `lede` | 一句，40 字 |
-   | `recap` 每則 | 30 字，最多 6 則 |
-   | `title` | 30 字 |
-   | `context` 每則 | 40 字，最多 3 則 |
-   | `scenario` | 80 字 |
-   | 選項 `title` | 20 字 |
-   | 選項 `note` | 40 字 |
+| Field | Limit |
+| --- | --- |
+| `lede` | one sentence, 40 characters |
+| each `recap` item | 30 characters; at most 6 items |
+| question `title` | 30 characters |
+| `sourceQuestion` | unlimited; verbatim original question |
+| each `context` item | 40 characters; at most 3 items |
+| `scenario` | 80 characters |
+| option `title` | 20 characters |
+| option `note` | 40 characters |
 
-   `recommendation` is display-only. **A blank question is never auto-resolved**, whatever `required` says — a recommendation only counts once the user clicks it or confirms it in chat. `required` controls how loudly the blank is reported, not whether you may decide it yourself.
+Keep the supporting text for a five-question aid near 2,000 total characters;
+exclude verbatim `sourceQuestion` text from that budget. Build immediately
+after the payload is structurally complete; do not add a second manual
+comparison or rereading pass. The builder preserves the supplied string
+without transformation and validates that every question has one. Every
+payload string is inert text; use separate `context` items instead of
+formatting markup.
 
-3. **Build and open.** One command. It splices the payload into the template, writes the result to the OS temp directory with a timestamped filename, prints the path, then opens it in the browser.
+## 3. Build and open once
 
-   Use the **absolute path of this skill's own directory** — the grill runs from the user's project, not from here, so a relative `scripts/...` path will not resolve.
+Run the matching script once, using this skill directory's absolute path:
 
-   - Windows: `powershell.exe -File "<skill-dir>\scripts\build-questionnaire.ps1" -Data "<payload.json>"`
-   - macOS: `sh "<skill-dir>/scripts/build-questionnaire.sh" "<payload.json>"`
+- Windows: `powershell.exe -File "<skill-dir>\scripts\build-questionnaire.ps1" -Data "<payload.json>"`
+- macOS: `sh "<skill-dir>/scripts/build-questionnaire.sh" "<payload.json>"`
 
-   The path is printed before the browser is launched, and a launcher that fails does not fail the build. If you get a warning that the browser could not be opened, say so in one sentence and hand over the printed path — do not retry and do not try another launcher.
+Respect an environment-provided browser launcher or launch observer as the
+authoritative delivery path. On Windows, when the environment intercepts
+`Start-Process`, invoke the script in that same PowerShell session with the
+call operator (`& "<skill-dir>\scripts\build-questionnaire.ps1" ...`); a nested
+`powershell.exe -File` process would bypass the interceptor. Send the exact
+artifact to the harness once, record its observed result, and use no native or
+alternate launcher afterward. Without a harness, use the commands above so the
+builder performs its native automatic launch.
 
-   Pass an explicit output path (`-Out` on Windows, second argument on macOS) only when the user asks for one. Never hand-patch the generated HTML — fix the payload and rebuild.
+The script writes a unique artifact in the OS temp directory, prints `ARTIFACT=<absolute-path>`, then makes exactly one automatic browser-launch attempt. `LAUNCH=accepted` means the OS launcher accepted that request; it does not prove a visible tab. `LAUNCH=failed` is an honest degraded delivery: give the user the artifact link and do not retry or switch launchers. Use an explicit output path only when the user requested one.
 
-   **The page checks the payload as it loads.** If anything is wrong it renders a list of the problems instead of the questionnaire, so the user hits the error immediately rather than answering half a form. If the user reports that page, fix the payload from the listed problems and rebuild. The checks are: no formatting tags in any string; at least one question; every question has an `id`, a `scenario`, and two or more options; `context`, when present, is an array; ids are unique; every option has `key` and `title`; any `recommendation` matches an option key.
+The builder validates the complete payload before creating an artifact and reports all structural problems together. The page repeats the check before rendering as a defense against later tampering. Fix the payload and run one new build only after a validation failure; never hand-edit generated HTML.
 
-4. **Hand off and stop.** Return the printed path as a clickable link, state that it was opened, and tell the user to answer, click `整理回復 prompt`, then paste the result back. Pause the grill until they reply. If they answer in chat instead, reconcile that with the questionnaire and continue from the resulting decisions.
+## 4. Hand back and pause
 
-   When the reply comes back: answers and notes are confirmed. Anything the prompt marks 待確認 stays open — ask about it (one round, batched) rather than assuming; a question answered only by a note means judge from that note, not from your recommendation. Resume the grill once nothing is left open or the user has explicitly accepted the remaining recommendations.
+Return the clickable artifact path and the exact launch state. Ask the user to answer, select **整理回復 prompt**, and paste the result into the originating conversation. Pause the owning grill.
 
-## Files
+On return:
 
-- `assets/questionnaire-template.html` — the renderer: **payload validation**, styling, progress bar, draft persistence, reply-prompt generation, copy fallback. It is **generic and never edited**; the build script only swaps the `questionnaire-data` JSON block.
-- `scripts/build-questionnaire.ps1`, `scripts/build-questionnaire.sh` — escape the payload, splice it in, write to temp, print the path. They only move text around; every rule about payload content lives in the renderer.
+- Honor explicit choices and qualifications.
+- Keep a note-only response distinct. Interpret its note; if it states no
+  unambiguous decision, keep that question open. Never substitute displayed guidance.
+- Keep every completely blank question open, regardless of `required`, recommendation, or confidence.
+- Confirm all remaining open questions together. Resume the original workflow only when none remain, or when the user explicitly accepts the remaining displayed recommendations.
 
-Generated questionnaires live in the OS temp directory — never in the repository or the skill directory.
+Generated questionnaires and payloads belong in the OS temp directory, outside repositories, installed skills, and shared state.

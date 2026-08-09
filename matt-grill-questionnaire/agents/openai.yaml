@@ -1,7 +1,7 @@
 interface:
-  display_name: "Matt Grill 問卷"
-  short_description: "Create clear HTML questionnaires for Matt grill decisions"
-  default_prompt: "Use $matt-grill-questionnaire to turn Matt grill decisions into a clear HTML questionnaire."
+  display_name: "Matt Grill Questionnaire"
+  short_description: "Preserve original grill questions and add clear scenarios"
+  default_prompt: "Use $matt-grill-questionnaire to collect the unresolved decisions from this Matt grill in a browser questionnaire."
 
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
