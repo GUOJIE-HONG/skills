@@ -11,8 +11,12 @@ A directory containing a `SKILL.md` plus whatever resources it needs. The unit t
 _Avoid_: command, plugin, tool
 
 **Renderer**:
-The bundled HTML asset an agent materializes with questionnaire data. It owns the mechanical payload schema, limits, validation, and user-interface behavior.
+The bundled HTML asset that owns the mechanical payload schema, limits, validation, and user-interface behavior.
 _Avoid_: template, view
+
+**Builder**:
+The bundled platform adapter that combines a Payload with the Renderer, writes the Questionnaire to OS temporary storage, and requests a system-browser launch. It contains no questionnaire rules.
+_Avoid_: generator, compiler, launcher
 
 ### Matt grill questionnaire
 

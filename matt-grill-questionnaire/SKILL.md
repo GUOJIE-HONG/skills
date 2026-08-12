@@ -34,13 +34,13 @@ Use Traditional Chinese for user-facing prose while preserving exact technical t
 
 Use `assets/questionnaire-template.html` as the stable renderer and interaction contract. Its embedded validation is the single source of truth for payload fields, identifiers, limits, and structural completeness. Supply the decision data it requires without duplicating those mechanical rules in this file.
 
-Materialize one self-contained HTML questionnaire in the current operating system's temporary directory, outside repositories, installed skills, and shared state. Use the capabilities already available in the current environment to create the artifact and choose a unique path without overwriting an existing file.
+Delegate materialization and browser launch to the matching bundled `Builder` in `scripts/`. The `Builder` writes one self-contained HTML questionnaire to a unique path in the operating system's temporary directory, outside repositories, installed skills, and shared state.
 
-Make one best-effort attempt to open the questionnaire in a browser the user can access. Browser opening is not a delivery guarantee; a clickable absolute artifact path is. Confirm the artifact exists before handoff, and claim visible or rendered success only when it was observed.
+Treat the `Builder`'s `ARTIFACT` path as the delivery guarantee and its `LAUNCH` result as the final browser observation for that artifact. A failed launch degrades to the clickable artifact path instead of failing the questionnaire handoff.
 
 ## 4. Hand back and pause
 
-Return the clickable artifact path and report only the browser outcome actually observed. Ask the user to answer, select **整理回復 prompt**, and paste the result into the originating conversation. Pause the owning grill.
+Return the clickable artifact path and the `Builder`'s launch result. Ask the user to answer, select **整理回復 prompt**, and paste the result into the originating conversation. Pause the owning grill.
 
 On return:
 
