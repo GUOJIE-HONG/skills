@@ -7,15 +7,11 @@ A collection of agent skills. Each skill is a directory the agent loads to perfo
 ### Skill anatomy
 
 **Skill**:
-A directory containing a `SKILL.md` plus whatever assets and scripts it needs. The unit this repo distributes.
+A directory containing a `SKILL.md` plus whatever resources it needs. The unit this repo distributes.
 _Avoid_: command, plugin, tool
 
-**Build script**:
-A per-platform script that turns an agent-written input file into a finished artifact. It only moves text around — it holds no rules about what the input may contain.
-_Avoid_: generator, compiler
-
 **Renderer**:
-The generic HTML file a build script splices data into. It owns every rule about what the data may contain, and it is never edited per use.
+The bundled HTML asset an agent materializes with questionnaire data. It owns the mechanical payload schema, limits, validation, and user-interface behavior.
 _Avoid_: template, view
 
 ### Matt grill questionnaire
@@ -24,11 +20,14 @@ _Avoid_: template, view
 An interview that pushes the user through a design tree until nothing is left silently assumed.
 
 **Payload**:
-The JSON file the agent writes to describe one questionnaire — its title, recap, and questions. The only thing that changes between runs.
+The JSON value embedded in a questionnaire renderer — its title, recap, and questions. It is per-run content, not a required standalone file.
 _Avoid_: config, data file, input
 
 **Questionnaire**:
-The generated HTML page a user answers. Lives in the OS temp directory, never in a repository.
+A self-contained HTML page a user answers. Lives in the OS temp directory, never in a repository.
+
+**Delivery contract**:
+The user-visible outcome the skill guarantees: a clickable questionnaire path. Opening it in a browser is a best-effort convenience determined from the current environment.
 
 **Recap**:
 Decisions the user has already made, shown as one-line reminders. Never a place to park an open decision.
