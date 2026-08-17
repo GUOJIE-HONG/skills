@@ -31,7 +31,9 @@ Use Traditional Chinese for user-facing prose while preserving exact technical t
 
 `assets/questionnaire-template.html` is the renderer and interaction contract. Its embedded validation is the single source of truth for payload fields, identifiers, limits, and structural completeness; do not restate those mechanical rules here.
 
-Write the decision data as a JSON payload in the operating system's temporary directory, then run the builder that matches the current operating system. Paths are relative to this skill directory. Never hand-edit the template in place of a builder.
+Write the decision data as a JSON payload file in the operating system's temporary directory, using a file-writing tool, then run the builder that matches the current operating system. Paths are relative to this skill directory.
+
+The builder accepts a file path only. Never inline the payload into a shell command through a heredoc, `echo`, or `-c`: a shell command over roughly 8 KB is truncated in transit and dies with a shell syntax error, while the same command run outside the tool succeeds. Never hand-edit the template, and never copy an earlier questionnaire as a template, in place of a builder.
 
 Windows:
 
