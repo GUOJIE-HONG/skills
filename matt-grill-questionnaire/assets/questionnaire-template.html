@@ -299,8 +299,12 @@
             }
           }
         });
-        if (questions.length === 5 && total > 2400) {
-          found.push('五題問卷的動態文字超過 2,400 字（目前 ' + total + ' 字）；請拆分或縮短。');
+        // Scale with question count rather than checking one exact length: splitting an
+        // overlong question is the prescribed remedy, so it must not escape the budget.
+        var budget = questions.length * 480;
+        if (questions.length >= 5 && total > budget) {
+          found.push('問卷的動態文字超過 ' + budget + ' 字（' + questions.length
+            + ' 題 × 480；目前 ' + total + ' 字）；請縮短，或把後面的決定移到下一輪問卷。');
         }
         return found;
       }
