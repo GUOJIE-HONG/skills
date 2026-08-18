@@ -20,7 +20,7 @@ Keep confirmed facts in `recap` and every unresolved material matter in `questio
 
 For each question:
 
-- Carry the grill's complete original question body forward verbatim, as immutable input rather than a retyped summary.
+- Rewrite the grill's question as a `sourceQuestion` the reader can decide from without the transcript. Keep everything that can change the answer — the stake, the binding constraint, the worst case — and drop narration, restatement, and background the other fields already carry. When decision-bearing content still does not fit, the question is carrying more than one decision: split it rather than compress it away.
 - Add one concrete `scenario`, up to three decision-relevant `context` facts, and two to four distinguishable options. They explain the decision; they never replace or redefine it.
 - State a concrete effect or cost in every option `note`.
 - Include `recommendation` only when established evidence supports it. It is advisory and never preselected.
