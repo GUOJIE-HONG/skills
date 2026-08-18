@@ -264,7 +264,7 @@
             seen[foldedId] = true;
           }
           if (text(question, 'title', at, 30)) total += question.title.length;
-          text(question, 'sourceQuestion', at, 0);
+          if (text(question, 'sourceQuestion', at, 180)) total += question.sourceQuestion.length;
           if (!own(question, 'required') || typeof question.required !== 'boolean') found.push(at + '.required 必須是 boolean。');
           if (text(question, 'scenario', at, 80)) total += question.scenario.length;
           if (!isArray(question.context) || question.context.length < 1 || question.context.length > 3) {
@@ -299,8 +299,8 @@
             }
           }
         });
-        if (questions.length === 5 && total > 2000) {
-          found.push('五題問卷的動態文字超過 2,000 字（目前 ' + total + ' 字）；請拆分或縮短。');
+        if (questions.length === 5 && total > 2400) {
+          found.push('五題問卷的動態文字超過 2,400 字（目前 ' + total + ' 字）；請拆分或縮短。');
         }
         return found;
       }
@@ -386,7 +386,7 @@
         section.appendChild(el('h3', null, question.title));
 
         var source = el('div', 'source-question');
-        source.appendChild(el('span', 'source-question-label', 'Grill 原始問題（逐字）'));
+        source.appendChild(el('span', 'source-question-label', '這題在問什麼'));
         source.appendChild(el('p', null, question.sourceQuestion));
         section.appendChild(source);
 
