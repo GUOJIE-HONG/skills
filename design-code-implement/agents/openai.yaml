@@ -1,0 +1,6 @@
+interface:
+  display_name: "Design Code Implement"
+  short_description: "Explore repo conventions, then choose between grounded implementation directions"
+  default_prompt: "Use $design-code-implement to explore this repository's architectural conventions and offer implementation directions for the spec before any code is written."
+policy:
+  allow_implicit_invocation: false
