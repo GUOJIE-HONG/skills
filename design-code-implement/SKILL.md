@@ -45,7 +45,7 @@ Give every sub-agent the same tool preference:
 Require every sub-agent to report exactly three things per finding:
 
 1. **The existing convention** — what this repository already does for this aspect.
-2. **The evidence** — file and line (`src/orders/handler.ts:42`). A claim without a path is not usable.
+2. **The evidence** — file and line (`path/to/file.ts:42`). A claim without a path is not usable.
 3. **The tension** — where the new requirement collides with that convention. If there is none, say so explicitly.
 
 The tension field is the point of the exercise. Conventions with no tension are context; tensions are where directions come from.
