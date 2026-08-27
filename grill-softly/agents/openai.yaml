@@ -1,0 +1,5 @@
+interface:
+  display_name: "Grill Softly"
+  short_description: "Grill a design within its evidence, and write its docs"
+policy:
+  allow_implicit_invocation: false
