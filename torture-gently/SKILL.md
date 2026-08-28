@@ -1,20 +1,31 @@
 ---
 name: torture-gently
-description: Grill the user about a plan, decision, or idea — but only along branches the repo shows evidence for. Use when the user wants to stress-test their thinking without the questioning sprawling past the original requirement.
+description: Grill the user about a plan, decision, or idea along grounded, decision-relevant branches. Use when the user wants to stress-test their thinking without speculative or out-of-scope questioning.
 ---
 
 Interview the user until you reach a shared understanding. Map this as a **design tree**: every decision branches into the decisions that hang off it.
 
 Work the tree in **rounds**. The **frontier** is every decision whose prerequisites are already settled: the questions you can ask _now_ without guessing at answers you haven't heard yet. Ask the whole frontier in one round: number each question and give your recommended answer. Then wait for the user's answers before the next round.
 
-Before a question joins a round it must clear the **evidence gate**. Search the repo and find the concrete artefact showing this branch can actually occur: code, config, schemas, migrations, tests, docs, or design assets committed to the repo. Name that artefact as `path` or `path:line` in the question itself. Something the repo does not already reach for is out of scope no matter how plausible it sounds — a third party offering a capability is not evidence that this project uses it, and "integrations like this usually need X" is not evidence at all. A branch with no repo artefact behind it does not exist: drop it silently. No parking lot, no list of what you skipped, no mention in a later round, no caveat in your summary. Reason only from the branches that survived the gate.
+Set the **evidence horizon** before building the tree. It contains the current conversation, sources the user provides or names, existing work artefacts, and first-party or official sources for the products, systems, processes, policies, or plans in scope. Expand it to industry research, competitors, communities, or expert sources only when the user asks for broader research. When evidence needs to be shown, identify it with the most precise locator available: a `path:line`, URL, document section, ticket, or concise reference to a user statement.
+
+Classify each candidate branch internally as **Current** (an existing requirement, behaviour, or constraint), **Option** (credibly supported but not adopted), or **Risk** (a credible path that may require treatment). Match authority to the claim: official contracts establish external facts, current artefacts or runtime establish current state, and the user decides the desired direction. Evidence that a capability exists may open an Option branch; it does not make that capability a requirement. When relevant authorities conflict, put the unresolved decision to the user.
+
+Before a question joins the frontier, it must clear the **question gate**:
+
+1. **Evidence** — a credible, traceable source supports the branch.
+2. **Plausibility** — there is a credible path for it to occur or be adopted.
+3. **Materiality** — the answer would change a decision, risk treatment, acceptance condition, or deliverable.
+4. **Responsibility** — it belongs to the responsibility of the product, system, process, policy, plan, or other subject being discussed.
+
+Human behaviour qualifies only when the evidence makes it a material responsibility of that subject. A merely imaginable event, or a question whose answer changes nothing, does not enter the tree. Within the evidence horizon, visit every branch that clears the gate.
+
+Before asking, identify the **decision target**, evidence role and source, effect, and boundary internally. Treat the user's answer as settling only that target. Express the target and any necessary effect naturally in the question; do not expose these checks as a fixed output form. Show an evidence locator only when it aids understanding or verification.
 
 Format a round like so:
 
 ```
 ❓ **Q1** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
-
-📎 <the repo artefact this question rests on: `path` or `path:line`, and what it shows>
 
 ➡️ <your recommended answer>
 
@@ -22,13 +33,11 @@ Format a round like so:
 
 ❓ **Q2** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
 
-📎 <the repo artefact this question rests on: `path` or `path:line`, and what it shows>
-
 ➡️ <your recommended answer>
 ```
 
-Each round the user answers reshapes the tree: settled decisions push the frontier outward and unblock questions that depended on them. Recompute the frontier, run the evidence gate over it again, and ask the next round. A question whose answer depends on another question still open in this round belongs to a _later_ round, not this one.
+Each round the user answers reshapes the tree: settled decisions push the frontier outward and unblock questions that depended on them. Recompute the frontier, run the question gate over it again, and ask the next round. A question whose answer depends on another question still open in this round belongs to a _later_ round, not this one.
 
-Finding _facts_ is your job, never the user's. When a frontier question needs a fact from the environment (filesystem, tools, etc.), dispatch a sub-agent to find it; don't ask the user for anything you could look up yourself. Don't block on it: a running exploration is an unsettled prerequisite, so only the questions downstream of it wait for the sub-agent to report; ask the rest of the frontier now. The _decisions_ are the user's: put each to them and wait.
+Finding _facts_ is your job, never the user's. Use the available environment, tools, and authoritative sources; delegate only when the fact-finding is independently bounded and delegation is useful. Ask the user only for inaccessible private information, preferences, and decisions. An unresolved fact is an unsettled prerequisite, so ask the rest of the frontier while only its downstream questions wait.
 
-The session is done when the frontier is empty: every evidenced branch of the design tree visited. Do not act on it until the user confirms you have reached a shared understanding.
+The session is done when the frontier is empty: every branch within the evidence horizon that cleared the question gate has been visited. Do not act on it until the user confirms you have reached a shared understanding.
