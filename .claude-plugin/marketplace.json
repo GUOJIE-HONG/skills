@@ -1,0 +1,22 @@
+{
+  "name": "guojie526",
+  "owner": {
+    "name": "GUOJIE526",
+    "url": "https://github.com/GUOJIE526"
+  },
+  "description": "GUOJIE526's agent skills for the stage before code, as an installable Claude Code plugin.",
+  "plugins": [
+    {
+      "name": "guojie-skills",
+      "source": "./",
+      "description": "Find a direction, interview along evidenced branches, choose an implementation direction, then land a small change with proportionate validation.",
+      "category": "engineering",
+      "keywords": [
+        "skills",
+        "grilling",
+        "design",
+        "implementation"
+      ]
+    }
+  ]
+}

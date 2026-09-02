@@ -1,0 +1,28 @@
+{
+  "name": "guojie-skills",
+  "version": "0.1.0",
+  "description": "Skills for the stage before code: find a direction when you cannot start, interview along evidenced branches, choose an implementation direction, then land a small change with proportionate validation. Extends mattpocock-skills.",
+  "author": {
+    "name": "GUOJIE526",
+    "url": "https://github.com/GUOJIE526"
+  },
+  "homepage": "https://github.com/GUOJIE526/skills",
+  "repository": "https://github.com/GUOJIE526/skills",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "grilling",
+    "design",
+    "implementation",
+    "evidence",
+    "zh-tw"
+  ],
+  "skills": [
+    "./dont-know-how",
+    "./grill-softly",
+    "./torture-gently",
+    "./matt-grill-questionnaire",
+    "./design-code-implement",
+    "./implement-small-change"
+  ]
+}
