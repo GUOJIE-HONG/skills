@@ -1,10 +1,10 @@
-# GUOJIE526 Skills
+# GUOJIE-HONG Skills
 
 [English](./README.md) | **繁體中文**
 
 六個給 agent 用的 skill，鎖定「寫程式之前」那一段：不知道從哪開始時找方向、沿著有證據的分枝訪談、選定實作方向、以及用相稱的驗證把一個小改動落地。
 
-這套 skill 建立在 [Matt Pocock 的 skills](https://github.com/mattpocock/skills) 之上，是延伸而不是取代。其中三個會直接呼叫他的 skill，所以請先安裝他那一套（見[前置需求](#前置需求mattpocock-skills)）。
+這套 skill 建立在 [Matt Pocock 的 skills](https://github.com/mattpocock/skills) 之上，是延伸而不是取代。其中兩個會直接呼叫他的 skill，所以請先安裝他那一套（見[前置需求](#前置需求mattpocock-skills)）。
 
 所有 skill 都遵守同一條規則：**只講證據，不猜**。每個主張都附定位（`path:line`、URL、文件章節或使用者的陳述），查不到的事就明說是未知。
 
@@ -16,9 +16,8 @@
 | --- | --- | --- |
 | `grill-softly` | `domain-modeling` | 訪談過程中同步寫詞彙表與 ADR |
 | `implement-small-change` | `grill-with-docs`、`diagnosing-bugs` | 「小改動」其實藏有範圍、或原因不明時的交接 |
-| `matt-grill-questionnaire` | 一場 grill 的決策集合 | 問卷由 Matt 式 grill 尚未解決的問題產生 |
 
-另外三個（`dont-know-how`、`torture-gently`、`design-code-implement`）可獨立運作。
+另外四個（`dont-know-how`、`torture-gently`、`show-grill-clearly`、`design-code-implement`）可獨立運作。
 
 ## 安裝
 
@@ -28,22 +27,22 @@
 
 這個 repo 本身就是一個單一 plugin 的市集。它沒有上 Claude Code 的官方市集，所以先加一次市集，再安裝：
 
-```
-/plugin marketplace add GUOJIE526/skills
-/plugin install guojie-skills@guojie526
+```text
+/plugin marketplace add GUOJIE-HONG/skills
+/plugin install guojie-skills@guojie-hong
 ```
 
 在終端機執行：
 
 ```bash
-claude plugin marketplace add GUOJIE526/skills
-claude plugin install guojie-skills@guojie526
+claude plugin marketplace add GUOJIE-HONG/skills
+claude plugin install guojie-skills@guojie-hong
 ```
 
 plugin 是唯讀、由 Claude Code 管理的套件。要拿新版本：
 
 ```bash
-claude plugin update guojie-skills@guojie526
+claude plugin update guojie-skills@guojie-hong
 ```
 
 ### skills.sh（Claude Code、Codex 與其他 agent）
@@ -51,13 +50,13 @@ claude plugin update guojie-skills@guojie526
 [skills.sh](https://skills.sh) 會把 skill 檔案複製到你的專案或家目錄，成為你可以自行修改的一般檔案：
 
 ```bash
-npx skills@latest add GUOJIE526/skills
+npx skills@latest add GUOJIE-HONG/skills
 ```
 
 安裝器會在 **Guojie Skills** 標題下列出六個 skill，勾你要的即可；也可以指名只裝一個：
 
 ```bash
-npx skills@latest add GUOJIE526/skills --skill grill-softly
+npx skills@latest add GUOJIE-HONG/skills --skill grill-softly
 ```
 
 檔案不會在你不知情時被更新。要拉最新版就執行 `npx skills update`。
@@ -69,7 +68,7 @@ flowchart LR
     A["/dont-know-how<br/>這個任務我不知道從哪開始"] --> B["/grill-softly<br/>把決策問清楚，<br/>同步寫詞彙表與 ADR"]
     B --> C["/design-code-implement<br/>決定怎麼做"]
     C --> D["/implement-small-change<br/>用聚焦的檢查落地"]
-    B -. 訪談卡住 .-> E["/matt-grill-questionnaire<br/>在瀏覽器作答，<br/>把回覆貼回對話"]
+    B -. 訪談卡住 .-> E["/show-grill-clearly<br/>在瀏覽器作答，<br/>把回覆貼回對話"]
     E -.-> B
     B -. 使用 .-> F["torture-gently<br/>訪談引擎"]
     D -. 藏有範圍 .-> B
@@ -109,7 +108,7 @@ flowchart LR
 
 **它不做什麼**。在你確認雙方已達成共識之前，不會照結論動手。
 
-### `/matt-grill-questionnaire`
+### `/show-grill-clearly`
 
 **什麼時候用**：一場 grill 留下了未決的問題，用表單作答比在對話裡回答方便，或是必須由別人來回答。
 

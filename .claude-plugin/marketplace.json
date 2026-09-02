@@ -1,10 +1,10 @@
 {
-  "name": "guojie526",
+  "name": "guojie-hong",
   "owner": {
-    "name": "GUOJIE526",
-    "url": "https://github.com/GUOJIE526"
+    "name": "GUOJIE-HONG",
+    "url": "https://github.com/GUOJIE-HONG"
   },
-  "description": "GUOJIE526's agent skills for the stage before code, as an installable Claude Code plugin.",
+  "description": "GUOJIE-HONG's agent skills for the stage before code, as an installable Claude Code plugin.",
   "plugins": [
     {
       "name": "guojie-skills",

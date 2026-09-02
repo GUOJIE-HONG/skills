@@ -1,5 +1,5 @@
 #!/bin/sh
-# Materialize and open one Matt grill questionnaire on macOS.
+# Materialize and open one grill questionnaire on macOS.
 # Usage: sh scripts/build-questionnaire.sh <payload.json> [out.html]
 set -eu
 

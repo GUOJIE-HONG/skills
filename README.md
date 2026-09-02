@@ -1,10 +1,10 @@
-# GUOJIE526 Skills
+# GUOJIE-HONG Skills
 
 **English** | [繁體中文](./README.zh-TW.md)
 
 Six agent skills for the stage *before* code is written: finding a direction when you cannot start, interviewing along evidenced branches, choosing an implementation direction, and landing a small change with proportionate validation.
 
-They are built on top of [Matt Pocock's skills](https://github.com/mattpocock/skills) and extend that set rather than replace it. Three of them call his skills directly, so install his set first (see [Prerequisite](#prerequisite-mattpocock-skills)).
+They are built on top of [Matt Pocock's skills](https://github.com/mattpocock/skills) and extend that set rather than replace it. Two of them call his skills directly, so install his set first (see [Prerequisite](#prerequisite-mattpocock-skills)).
 
 Every skill follows one rule: **evidence, never guesswork**. Claims carry a locator (`path:line`, URL, document section, or a user statement), and anything not established is reported as unknown.
 
@@ -16,9 +16,8 @@ Install [mattpocock-skills](https://github.com/mattpocock/skills) before this se
 | --- | --- | --- |
 | `grill-softly` | `domain-modeling` | glossary and ADR writing during the interview |
 | `implement-small-change` | `grill-with-docs`, `diagnosing-bugs` | hand-off when a "small" change turns out to have hidden scope or an uncertain cause |
-| `matt-grill-questionnaire` | a grilling session's decision set | the questionnaire is built from unresolved questions of a Matt-style grill |
 
-The other three (`dont-know-how`, `torture-gently`, `design-code-implement`) run on their own.
+The other four (`dont-know-how`, `torture-gently`, `show-grill-clearly`, `design-code-implement`) run on their own.
 
 ## Install
 
@@ -28,22 +27,22 @@ Pick **one** route. Installing both leaves you with every skill twice.
 
 This repo is its own single-plugin marketplace. It is not listed in Claude Code's official marketplace, so add the marketplace once, then install:
 
-```
-/plugin marketplace add GUOJIE526/skills
-/plugin install guojie-skills@guojie526
+```text
+/plugin marketplace add GUOJIE-HONG/skills
+/plugin install guojie-skills@guojie-hong
 ```
 
 From the terminal:
 
 ```bash
-claude plugin marketplace add GUOJIE526/skills
-claude plugin install guojie-skills@guojie526
+claude plugin marketplace add GUOJIE-HONG/skills
+claude plugin install guojie-skills@guojie-hong
 ```
 
 The plugin is a managed, read-only bundle. Pull new releases with:
 
 ```bash
-claude plugin update guojie-skills@guojie526
+claude plugin update guojie-skills@guojie-hong
 ```
 
 ### skills.sh (Claude Code, Codex, and other agents)
@@ -51,13 +50,13 @@ claude plugin update guojie-skills@guojie526
 [skills.sh](https://skills.sh) copies the skill files into your project or home directory as ordinary files you own and can edit:
 
 ```bash
-npx skills@latest add GUOJIE526/skills
+npx skills@latest add GUOJIE-HONG/skills
 ```
 
 The installer lists the six skills under the heading **Guojie Skills**. Take the ones you want, or one by name:
 
 ```bash
-npx skills@latest add GUOJIE526/skills --skill grill-softly
+npx skills@latest add GUOJIE-HONG/skills --skill grill-softly
 ```
 
 Nothing updates behind your back. Pull the latest with `npx skills update`.
@@ -69,7 +68,7 @@ flowchart LR
     A["/dont-know-how<br/>I cannot start this task"] --> B["/grill-softly<br/>settle the decisions,<br/>write the glossary and ADRs"]
     B --> C["/design-code-implement<br/>pick how to build it"]
     C --> D["/implement-small-change<br/>land it with focused checks"]
-    B -. interview stalls .-> E["/matt-grill-questionnaire<br/>answer in the browser,<br/>paste the reply back"]
+    B -. interview stalls .-> E["/show-grill-clearly<br/>answer in the browser,<br/>paste the reply back"]
     E -.-> B
     B -. uses .-> F["torture-gently<br/>the interview engine"]
     D -. hidden scope .-> B
@@ -109,7 +108,7 @@ You do not have to run the whole chain. Each skill accepts its input in whatever
 
 **What it does not do.** Act on the outcome until you confirm a shared understanding has been reached.
 
-### `/matt-grill-questionnaire`
+### `/show-grill-clearly`
 
 **Use it when** a grilling session has left unresolved decisions that are easier to answer in a form than in chat, or that someone else has to answer.
 

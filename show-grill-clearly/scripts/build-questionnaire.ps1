@@ -1,4 +1,4 @@
-# Materialize and open one Matt grill questionnaire on Windows.
+# Materialize and open one grill questionnaire on Windows.
 # Usage: powershell.exe -File scripts/build-questionnaire.ps1 -Data <payload.json> [-Out <file.html>]
 param(
   [Parameter(Mandatory = $true)][string]$Data,

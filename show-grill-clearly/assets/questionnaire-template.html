@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Matt grill 決策問卷</title>
+  <title>Grill 決策問卷</title>
   <style>
     :root {
       --ground: #f4f4f1;
@@ -142,7 +142,7 @@
 
   <div class="wrap">
     <header>
-      <p class="eyebrow">Matt grill · 決策問卷</p>
+      <p class="eyebrow">Grill · 決策問卷</p>
       <h1 id="title"></h1>
       <p class="lede" id="lede"></p>
       <div class="howto">請逐題回答。若沒有意見，可以直接選頁面標示的<strong>建議</strong>；<strong>留白會被視為待確認，不會自動採用建議</strong>。也可以只填補充說明，由我依你的說明判斷。完成後按下方的<strong>整理回復 prompt</strong>，再複製回對話。</div>
@@ -198,7 +198,7 @@
       if (problems.length) { renderFatal(problems); return; }
 
       var QUESTIONS = DATA.questions;
-      var storageKey = 'matt-grill-questionnaire:' + location.pathname;
+      var storageKey = 'show-grill-clearly:' + location.pathname;
       var storageReady = false;
 
       function isArray(value) {
@@ -310,7 +310,7 @@
       }
 
       function renderFatal(list) {
-        document.title = '問卷資料有誤 · Matt grill';
+        document.title = '問卷資料有誤 · Grill';
         var bar = document.querySelector('.bar');
         if (bar) bar.hidden = true;
 
@@ -318,7 +318,7 @@
         wrap.textContent = '';
 
         var box = el('section', 'fatal');
-        box.appendChild(el('p', 'eyebrow', 'Matt grill · 問卷資料有誤'));
+        box.appendChild(el('p', 'eyebrow', 'Grill · 問卷資料有誤'));
         box.appendChild(el('h1', null, '這份問卷沒有產生出來'));
         box.appendChild(el('p', 'lede', 'payload 有下列問題，所以問卷完全沒有渲染——'
           + '一份只能答一半的問卷比明確的錯誤更難處理。把下面整段貼回對話，修正 payload 後重新產生問卷即可。'));
@@ -360,8 +360,8 @@
       }
 
       function renderHead() {
-        document.getElementById('title').textContent = DATA.title || 'Matt grill 決策問卷';
-        document.title = DATA.title || 'Matt grill 決策問卷';
+        document.getElementById('title').textContent = DATA.title || 'Grill 決策問卷';
+        document.title = DATA.title || 'Grill 決策問卷';
         var lede = document.getElementById('lede');
         if (DATA.lede) lede.textContent = DATA.lede; else lede.hidden = true;
 
@@ -532,7 +532,7 @@
 
       function generate() {
         var lines = [
-          '請根據以下 Matt grill 問卷回覆繼續處理。',
+          '請根據以下 grill 問卷回覆繼續處理。',
           '',
           '【問卷主題】' + (DATA.title || document.title),
           '',
