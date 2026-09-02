@@ -1,0 +1,22 @@
+{
+  "name": "guojie-hong",
+  "owner": {
+    "name": "GUOJIE-HONG",
+    "url": "https://github.com/GUOJIE-HONG"
+  },
+  "description": "GUOJIE-HONG's agent skills for the stage before code, as an installable Claude Code plugin.",
+  "plugins": [
+    {
+      "name": "guojie-skills",
+      "source": "./",
+      "description": "Find a direction, interview along evidenced branches, choose an implementation direction, then land a small change with proportionate validation.",
+      "category": "engineering",
+      "keywords": [
+        "skills",
+        "grilling",
+        "design",
+        "implementation"
+      ]
+    }
+  ]
+}

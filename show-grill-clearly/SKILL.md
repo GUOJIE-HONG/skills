@@ -1,12 +1,12 @@
 ---
-name: matt-grill-questionnaire
-description: Turn unresolved Matt grill decisions into a temporary browser questionnaire that preserves the original questions and produces a copyable reply prompt.
+name: show-grill-clearly
+description: Turn the unresolved decisions of a grilling session into a temporary browser questionnaire, so questions that are hard to follow in chat become clear, while preserving the original questions and producing a copyable reply prompt.
 disable-model-invocation: true
 ---
 
-# Matt Grill Questionnaire
+# Show Grill Clearly
 
-Turn an established Matt grill decision set into a browser handoff. The aid collects decisions; it does not discover facts or decide for the user.
+Turn an established grill decision set into a browser handoff. The aid collects decisions; it does not discover facts or decide for the user.
 
 ## 1. Confirm the handoff
 

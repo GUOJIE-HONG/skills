@@ -1,0 +1,7 @@
+interface:
+  display_name: "Show Grill Clearly"
+  short_description: "Preserve original grill questions and add clear scenarios"
+  default_prompt: "Use $show-grill-clearly to collect the unresolved decisions from this grill in a browser questionnaire."
+
+policy:
+  allow_implicit_invocation: false
