@@ -82,8 +82,6 @@ Write `design.md`.
 - The existing conventions this work must follow, each with its evidence path.
 - Nothing else. **Do not write the rejected directions, and do not write their rationale.** A downstream implementing agent reads this file as instructions; describing an approach that is not being taken invites it to be taken.
 
-**Language**: Traditional Chinese prose. Preserve technical terms, paths, identifiers, and code verbatim.
-
 **If `design.md` already exists**: read it first, then update it — carry forward whatever still holds. Never overwrite it unseen.
 
 **ADR**: offer one only when all three are true — the decision is hard to reverse, a future reader will wonder why it was made, and it was a genuine trade-off between real alternatives. Offer it; do not create it unasked. Most implementation directions fail at least one of the three.
