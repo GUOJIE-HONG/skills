@@ -84,7 +84,7 @@ You do not have to run the whole chain. Each skill accepts its input in whatever
 
 **Use it when** you face a task you cannot start: an unfamiliar system, protocol, library, or integration.
 
-**What it does.** Scans the repo for what the project already owns that touches the task. Asks you only for what search cannot reach: counterpart documents, sample code, test environments, credentials, constraints. Then gathers evidence itself, in order of authority (project dependencies, official sources, then community sources cross-checked against something official). Returns at least three directions, each with its evidence, strengths and weaknesses, when it fits, and what remains unconfirmed, and closes with a recommendation.
+**What it does.** Scans the repo for what the project already owns that touches the task. Asks only for inaccessible information that could change a direction, its feasibility, or a material risk: counterpart documents, sample code, test environments, credential availability, and constraints. It asks how access is obtained, never for secret values. Then it gathers evidence itself, in order of authority (project dependencies, official sources, then community sources cross-checked against something official). It returns every real direction the evidence supports—normally at least three, but fewer when another would be manufactured—with each direction's evidence, strengths and weaknesses, fit, unknowns, and a recommendation.
 
 **What it does not do.** Implement anything. Choosing is your decision.
 
@@ -104,7 +104,7 @@ You do not have to run the whole chain. Each skill accepts its input in whatever
 
 **Use it when** you want to stress-test your thinking without being dragged into hypothetical or out-of-scope questioning. This is the interview engine behind `grill-softly`, and the only model-invoked skill in the set.
 
-**What it does.** Maps the decision as a design tree and asks in rounds: every question whose prerequisites are settled goes into the current round, numbered, with a recommended answer. Before a question is asked it must clear a four-part gate: evidence, plausibility, materiality, and responsibility. Fact-finding is the agent's job; you are asked only for private information, preferences, and decisions. The session ends when no gated branch remains unvisited.
+**What it does.** Maps the decision as a design tree and asks in rounds: every question whose prerequisites are settled goes into the current round, numbered, with a recommended answer. Before a question is asked it must clear a four-part gate: evidence, plausibility, materiality, and responsibility. Fact-finding is the agent's job; you are asked only for private information, preferences, and decisions. After each round it checkpoints changed decisions, blockers, parked branches, and the next frontier. Changing an upstream decision reopens every dependent conclusion, and a paused session returns a checkpoint that can be resumed without re-asking decisions whose premises still hold. The session ends only when no gated branch remains unvisited and every parked branch has been resolved, removed from scope, or explicitly accepted as open.
 
 **What it does not do.** Act on the outcome until you confirm a shared understanding has been reached.
 
