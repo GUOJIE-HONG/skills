@@ -1,10 +1,10 @@
 ---
 name: dont-know-how
-description: Find direction for a task you don't know how to start. Scans the repo, asks for what the user holds, gathers evidence, and returns at least three grounded approaches.
+description: Find direction for a task you don't know how to start. Scans the repo, asks only for material unknowns the user holds, and returns the grounded approaches the evidence supports.
 disable-model-invocation: true
 ---
 
-The user faces a task they cannot start: an unfamiliar system, protocol, library, or integration. Your deliverable is **direction**, given in the conversation: at least three evidenced approaches, with a recommendation. Implementation is out of scope; stop once the directions are delivered.
+The user faces a task they cannot start: an unfamiliar system, protocol, library, or integration. Your deliverable is **direction**, given in the conversation: the real evidenced approaches the sources support, with a recommendation. Implementation is out of scope; stop once the directions are delivered.
 
 One rule governs every step: **evidence, never guesswork**. Every claim carries a locator: a `path:line`, a URL, a document section, or a user statement. A fact you could not establish is reported as unknown, not filled in.
 
@@ -18,7 +18,9 @@ Done when every asset found is listed with its locator, or the absence of anythi
 
 ## 2. Ask what the user holds
 
-Ask only for what search cannot reach: documents from the counterpart, sample code, test environments and credentials, contacts, and constraints. Build the round from [`references/questions.md`](references/questions.md): pick the template matching the task shape, drop questions the scan already answered, and word each remaining question in the task's own terms.
+Ask only for what search cannot reach, and only when the answer could change a candidate direction, its feasibility, or a material risk: documents from the counterpart, sample code, test environments and credential availability, contacts, and constraints. If no remaining question clears that gate, skip this step and continue to step 3.
+
+Build the round from [`references/questions.md`](references/questions.md): pick the template matching the task shape, drop questions the scan already answered or the directions do not depend on, and word each remaining question in the task's own terms. For credentials, ask only whether suitable access exists, how it is obtained, and who manages it. Keep passwords, API keys, private keys, tokens, and certificate secrets out of the conversation.
 
 Then wait for the answer.
 
@@ -41,7 +43,7 @@ Done when every candidate direction rests on sources you can cite, and every ope
 
 ## 4. Return the directions
 
-Reply in the conversation with at least three directions. For each:
+Reply with every distinct direction the evidence credibly supports. Aim for at least three when three real alternatives exist. If the evidence supports only one or two, return those and explain why another direction would be manufactured rather than useful. For each:
 
 - what it is, in a sentence or two
 - the evidence it rests on, with locators

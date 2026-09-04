@@ -23,7 +23,7 @@ An AD server, a third-party API, a payment gateway, a partner's service.
 1. **Documents from the counterpart**: any integration guide, API spec, interface contract, or onboarding email from the party that owns the system?
 2. **Sample code**: any example the counterpart or a previous team wrote, in any language?
 3. **Reachable environment**: a test or sandbox host, its address, and how to reach it (VPN, allowlist, port)?
-4. **Credentials**: a test account, service account, API key, or certificate, and who issues them?
+4. **Credential access**: does suitable test access exist, how is it requested, and who manages it? Ask for the access path, never the password, API key, private key, token, or certificate secret itself.
 5. **Protocol or interface**: has the counterpart named how to talk to it (LDAP, SAML, REST, SOAP, a vendor SDK)?
 6. **Contact**: a person on the counterpart side who answers technical questions?
 7. **Constraints**: deadline, security review, allowed languages or hosting, data that must stay on-premise?
