@@ -38,6 +38,12 @@ Format a round like so:
 
 Each round the user answers reshapes the tree: settled decisions push the frontier outward and unblock questions that depended on them. Recompute the frontier, run the question gate over it again, and ask the next round. A question whose answer depends on another question still open in this round belongs to a _later_ round, not this one.
 
+Before the next round, give a compact **checkpoint** containing only what changed: decisions settled in the last answer, earlier decisions reopened or replaced, unresolved facts that block branches, branches the user parked, and the next frontier. Do not repeat unchanged decisions.
+
+When an answer contradicts or replaces an upstream decision, invalidate every downstream conclusion whose premise no longer holds. Name the material consequences, return those branches to the tree, and re-run the question gate before treating them as settled again. A deferred branch is **parked**, not visited; it leaves the session open unless the user removes it from the evidence horizon or explicitly accepts proceeding with it unresolved.
+
+If the user pauses or asks to continue elsewhere, return a resumable checkpoint with the evidence horizon, settled decisions, reopened decisions, unresolved facts, parked branches, and next frontier. On resume, rebuild the tree from that checkpoint, account for any changed evidence, and continue without re-asking a decision unless its premise was invalidated.
+
 Finding _facts_ is your job, never the user's. Use the available environment, tools, and authoritative sources; delegate only when the fact-finding is independently bounded and delegation is useful. Ask the user only for inaccessible private information, preferences, and decisions. An unresolved fact is an unsettled prerequisite, so ask the rest of the frontier while only its downstream questions wait.
 
-The session is done when the frontier is empty: every branch within the evidence horizon that cleared the question gate has been visited. Do not act on it until the user confirms you have reached a shared understanding.
+The session is done when the frontier is empty and no parked branch remains within the evidence horizon without an explicit decision to leave it unresolved. Every other branch that cleared the question gate has been visited. Do not act on the outcome until the user confirms you have reached a shared understanding.
