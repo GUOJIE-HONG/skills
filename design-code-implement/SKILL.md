@@ -86,12 +86,26 @@ Write `design.md`.
 
 **ADR**: offer one only when all three are true — the decision is hard to reverse, a future reader will wonder why it was made, and it was a genuine trade-off between real alternatives. Offer it; do not create it unasked. Most implementation directions fail at least one of the three.
 
-## 6. Hand back and stop
+## 6. Measure the footprint per ticket
+
+When the spec came with tickets (a `to-tickets` issue directory beside it), map the chosen direction's footprint onto them before handing back. This is the reading a small model needs most: a ticket that writes to many projects at once is where it drifts.
+
+1. Read the repository's project definitions once (`*.csproj` and their `ProjectReference` entries, workspace globs in `package.json`, `go.mod`) and record the dependency chain inner-most first. A **project** is a unit that declares its own dependencies; test projects count.
+2. For each ticket, list the projects the chosen direction creates in or edits to meet that ticket's acceptance criteria, including the test project that proves each change. Every project cited comes from the direction's footprint or a convention in `design.md`; a project with no such source is not listed.
+3. Mark each ticket **over** or **within** the two-project line.
+
+Without tickets, skip this section and hand back with the direction alone.
+
+## 7. Hand back and stop
 
 Report:
 
 - The chosen direction in a short summary.
 - The path to `design.md`.
-- One command the user can run next, typically `$implement-small-change` for a bounded change or `$implement` for a larger one.
+- When §6 ran: the dependency chain in one line, then each ticket with its footprint and its over/within mark.
+- One command the user can run next:
+  - any ticket over the line → `$to-tasks` on the feature directory, which splits tickets into tasks of at most two projects;
+  - every ticket within the line → `$implement-task` on the feature directory;
+  - no tickets → `$implement-small-change` for a bounded change or `$implement` for a larger one.
 
-Then stop. Do not start implementing, even when the direction is obvious. Changing gear is the user's call.
+Then stop. Do not start implementing or splitting, even when the next step is obvious. Changing gear is the user's call.
