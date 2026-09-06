@@ -9,7 +9,7 @@
     {
       "name": "guojie-skills",
       "source": "./",
-      "description": "Find a direction, interview along evidenced branches, choose an implementation direction, then land a small change with proportionate validation.",
+      "description": "Find a direction, interview along evidenced branches, choose an implementation direction, split tickets into two-project tasks, then land each change with proportionate validation.",
       "category": "engineering",
       "keywords": [
         "skills",

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Implement Task"
+  short_description: "Work to-tasks task files one per fresh sub-agent, inside each task's boundary"
+  default_prompt: "Use $implement-task on this feature directory to work the task frontier, one task per fresh sub-agent, each confined to the projects its task names."
+policy:
+  allow_implicit_invocation: false

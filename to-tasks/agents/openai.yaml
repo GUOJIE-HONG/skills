@@ -1,0 +1,6 @@
+interface:
+  display_name: "To Tasks"
+  short_description: "Split each ticket into tasks that write to at most two projects"
+  default_prompt: "Use $to-tasks to split the tickets in this feature directory into implementation tasks that each write to at most two projects, nested under their ticket."
+policy:
+  allow_implicit_invocation: false
