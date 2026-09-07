@@ -152,9 +152,9 @@ flowchart LR
 
 ### `/implement-task`
 
-`/to-tasks` 的樹發布好了，要一個一個做，而且每個都在新的 context 裡。用這個。
+`/to-tasks` 的樹發布好了，要依相依關係執行，讓已解除阻擋的獨立 task 各自在新的 context 並行實作。用這個。
 
-給它一個 task 檔，它自己照 `execute.md` 做：讀 task、父 ticket 和 `design.md`，把 task 標成 claimed，邊界內有測試專案就先寫測試看它變紅，跑 task 那一條驗證指令，是 ticket 最後一個 task 就再跑 ticket 的驗收條件，一個 task 一個 commit，最後用固定格式回報。給它一張 ticket 或整個功能目錄，它就改當調度：掃 frontier（blocker 都 done 的 task），每個派一個新 sub-agent，brief 只有 task 路徑和 `execute.md` 路徑兩行，等回報，ticket 最後一個 task 過了就把 ticket 標 done。它自己的 context 只留回報。frontier 清空後，它從第一個 task 之前的 commit 起跑一次 `/code-review`，把分開驗證過的東西合起來讀一遍，發現的問題原樣放進回報。
+給它一個 task 檔，它自己照 `execute.md` 檢查 blocker、在邊界內實作、驗證並提交。給它一張 ticket 或整個功能目錄，它就改當調度：依可用名額把 ready task 派給不同 sub-agent，各自在獨立 worktree 工作。主代理逐一整合完成的 commit，在合併後的程式碼上驗證通過，才解鎖下游 task；同樣涉及 `Tests` 專案不會因此一律串行。ticket 的所有 task 整合完成後，由主代理統一跑 ticket 驗收並標成 done。正常收尾時對整合結果跑一次 `/code-review`。失敗或尚未整合的工作會保留 worktree、路徑與 commit，供後續接手。
 
 它不會寫到 task 邊界外面。task 做到一半發現要改別的專案，就把那個改動退掉、在 Comments 記下哪個專案和為什麼、狀態改 `needs-triage`、整個迴圈停下來。要不要放寬邊界是 `design.md` 或拆法的問題，由你決定。review 找到的問題它也只回報不動手，每一條要變成 ticket 底下的回補 task 還是改 `design.md`，等你說。
 
