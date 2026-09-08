@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `implement-task`: run-created worktrees now live only under `<repo>.worktrees/` next to the main checkout, one per task named `<NN>-<MM>-<task-slug>`, so cleanup can tell run-created worktrees from pre-existing ones by location.
+
 ## 0.2.0
 
 - New skill `to-tasks`: splits each `to-tickets` ticket into implementation tasks that write to at most two projects, nested under the ticket, published only after the user approves the tree.
