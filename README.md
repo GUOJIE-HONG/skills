@@ -71,7 +71,7 @@ flowchart LR
     B --> C["/design-code-implement<br/>pick how to build it"]
     C --> D["/implement-small-change<br/>land it with focused checks"]
     C -- tickets over two projects --> G["/to-tasks<br/>split each ticket into<br/>two-project tasks"]
-    G --> H["/implement-task<br/>one task per fresh sub-agent,<br/>inside its boundary"]
+    G --> H["/implement-task<br/>one ticket per fresh sub-agent,<br/>tasks as its checklist"]
     B -. interview stalls .-> E["/show-grill-clearly<br/>answer in the browser,<br/>paste the reply back"]
     E -.-> B
     B -. uses .-> F["torture-gently<br/>the interview engine"]
@@ -142,9 +142,9 @@ When the spec came with `to-tickets` tickets, it finishes by reading the repo's 
 
 ### `/to-tasks`
 
-**Use it when** `/design-code-implement` has reported tickets whose footprint spans more than two projects, and you want each ticket cut into pieces a small model can finish in one fresh context without drifting across the codebase.
+**Use it when** `/design-code-implement` has reported tickets whose footprint spans more than two projects, and you want each ticket cut into short, verifiable steps a small model can follow without drifting across the codebase.
 
-**What it does.** Reads `design.md`, the tickets, and the repo's project definitions (`*.csproj` references, workspace globs, `go.mod`) to build the dependency chain. For each ticket it lists the projects the chosen direction writes to, each cited to a `design.md` convention, then cuts that footprint into tasks: at most two writable projects per task, the test project counting as one, ordered inner-most first with blocking edges among siblings, one grounded validation command each. A ticket that already fits in two projects becomes a single task. It shows you the whole tree and writes nothing until you approve it; then it publishes one file per task under the ticket (`issues/01-slug/01-task.md`), or sub-issues on a real tracker. Every task file opens with its boundary: write only inside these projects, and stop with a `needs-triage` note when the work needs anything else.
+**What it does.** Reads `design.md`, the tickets, and the repo's project definitions (`*.csproj` references, workspace globs, `go.mod`) to build the dependency chain. For each ticket it lists the projects the chosen direction writes to, each cited to a `design.md` convention, then cuts that footprint into tasks: at most two writable projects per task, the test project counting as one, ordered inner-most first with blocking edges among siblings, one grounded validation command each. A ticket that already fits in two projects becomes a single task. It shows you the whole tree and writes nothing until you approve it; then it publishes one file per task under the ticket (`issues/01-slug/01-task.md`), or sub-issues on a real tracker. Every task file opens with its boundary: the projects this step writes to, inside the ticket's overall footprint; a change needed in a project no task of the ticket names stops the work with a `needs-triage` note.
 
 **What it does not do.** Touch the ticket files, invent a validation command it cannot ground, or split a ticket when `design.md` is missing; it points you back to `/design-code-implement` instead.
 
@@ -152,11 +152,11 @@ When the spec came with `to-tickets` tickets, it finishes by reading the repo's 
 
 ### `/implement-task`
 
-**Use it when** `/to-tasks` has published a tree and you want independent ready tasks implemented in parallel, each in a fresh context.
+**Use it when** `/to-tasks` has published a tree and you want independent ready tickets implemented in parallel, each ticket in one fresh context that works its tasks in order.
 
-**What it does.** Given a single task file, it follows `execute.md` directly, checking blockers, implementing within the boundary, validating, and committing the task. Given a ticket or feature directory, it dispatches ready tasks to fresh sub-agents in separate worktrees, up to available capacity. It integrates completed task commits one at a time, validates the combined tree, and only then releases dependent tasks. Sharing a project such as `Tests` does not by itself serialize tasks. Once all tasks of a ticket are integrated, the orchestrator runs ticket acceptance and marks the ticket done. It runs `/code-review` over the integrated change set when the run ends normally. Failed or unintegrated work is retained with paths and commits for resumption.
+**What it does.** Given a single task file, it follows `execute.md` directly, checking blockers, implementing within the boundary, validating, and committing the task. Given a ticket or feature directory, it dispatches ready tickets to fresh sub-agents in separate worktrees, up to available capacity; each worker reads the ticket, `design.md`, and every task once, then does the tasks in order with one validation and one commit per task, so a worker that runs out of context is replaced by a fresh one resuming from the last commit. The orchestrator merges each finished ticket branch back with `git merge --no-ff`, runs ticket acceptance on the merged tree, marks the ticket done, and recomputes the frontier without asking. Sharing a project such as `Tests` does not by itself serialize tickets. When the run ends normally it runs `/code-review` once over the merged change set and has one fix worker fix every finding inside the run's footprint. Failed or unmerged work is retained with paths and commits for resumption.
 
-**What it does not do.** Write outside a task's boundary. A task that needs a change elsewhere reverts that edit, records the project and reason under Comments, sets `needs-triage`, and stops the whole loop; widening the boundary is a `design.md` or split decision, and that is yours. Review findings are reported, not fixed; each becomes a follow-up task or a `design.md` change on your say.
+**What it does not do.** Write outside a ticket's footprint. A task that needs a change in a project no task of its ticket names reverts that edit, records the project and reason under Comments, sets `needs-triage`, and fails that ticket; other running tickets finish and merge, no new ones start, and widening the footprint is a `design.md` or split decision, and that is yours. Review findings outside the run's footprint are reported, not fixed; each becomes a follow-up task or a `design.md` change on your say.
 
 ## Versioning
 
