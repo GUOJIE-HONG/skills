@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>implement-task 改為一張 ticket 一個 worker 的流程</title>
+<style>
+body{margin:0;background:#f6f7f9;font-family:"Segoe UI","Microsoft JhengHei",system-ui,sans-serif;color:#222}
+.wrap{max-width:1000px;margin:24px auto;padding:0 16px}
+h1{font-size:20px;margin:0 0 4px}
+h2{font-size:16px;margin:28px 0 6px}
+p{margin:0 0 16px;font-size:14px;color:#555}
+ul.dec{margin:0 0 20px;padding:0 0 0 20px;font-size:14px;line-height:1.6}
+ul.dec b{color:#222}
+svg{width:100%;height:auto;background:#fff;border:1px solid #e1e4e8;border-radius:8px}
+.box{fill:#fff;stroke:#444;stroke-width:1.5}
+.dia{fill:#fff;stroke:#444;stroke-width:1.5}
+.green{fill:#d4edda;stroke:#28a745}
+.blue{fill:#dbe9ff;stroke:#2f6fd6}
+.yellow{fill:#fff3cd;stroke:#b8860b}
+.red{fill:#f8d7da;stroke:#dc3545}
+.grey{fill:#f1f3f5;stroke:#888;stroke-dasharray:5 4}
+text{font-size:13px;text-anchor:middle;dominant-baseline:middle}
+.lbl{font-size:12px;fill:#666}
+.edge{fill:none;stroke:#444;stroke-width:1.5;marker-end:url(#arr)}
+.loop{fill:none;stroke:#28a745;stroke-width:2;marker-end:url(#arrg)}
+.retry{fill:none;stroke:#2f6fd6;stroke-width:2;stroke-dasharray:6 4;marker-end:url(#arrb)}
+.legend{font-size:12px;fill:#444;text-anchor:start}
+</style></head><body><div class="wrap">
+<h1>implement-task：一張 ticket 一個 worker</h1>
+<p>派工單位從 task 改成 ticket。ticket 之間依 blocking edges 平行，ticket 內由同一個 worker 序列做完每個 task。整合改成 merge 整條 ticket 分支回原本的分支，完成一張不停不問。</p>
+
+<h2>共識</h2>
+<ul class="dec">
+<li><b>派工單位</b>：一張 ticket 一個 worktree 加一個 fresh sub-agent；frontier 是 blockers 全部 done 的 ticket。</li>
+<li><b>task 的角色</b>：worker 的 checklist 兼短目標。照順序做、各跑自己的 Validation、各自一個 commit。to-tasks 保留。</li>
+<li><b>邊界</b>：整張 ticket 所有 task 的專案聯集。同 ticket 內可回頭補改；跨出才 needs-triage。</li>
+<li><b>整合</b>：orchestrator 自己 <code>git merge --no-ff</code>，然後跑 ticket acceptance、tick checkbox、票設 done、commit tracker，重算 frontier。</li>
+<li><b>失敗</b>：那張 ticket 整張不合併、保留 worktree 與分支；不派新 ticket，但進行中的 worker 做完照常合併；失敗 ticket 的下游不派。</li>
+<li><b>context 用完</b>：worker 回報 claimed 加 checkpoint（最後一個已 commit 的 task）；orchestrator 派新 worker 到同一個 worktree 從下一個 task 接續。</li>
+<li><b>code-review</b>：所有 ticket 合併完才跑一次。發現全部交給一個修復 worker（邊界是本輪所有 ticket footprint 的聯集），修完合併、重跑驗證；超出範圍的才回報。</li>
+<li><b>單 task 入口</b>：保留，直接跑 execute.md 做那一個 task。</li>
+</ul>
+
+<h2>Orchestrator 主迴圈</h2>
+<p>綠線是回到「計算 frontier」的循環，藍色虛線是「同一個 worktree 接續」的續派。正常出口只有一個：frontier 空且沒有 worker。</p>
+<svg viewBox="0 0 1000 1180" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#444"/></marker>
+<marker id="arrg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#28a745"/></marker>
+<marker id="arrb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2f6fd6"/></marker>
+</defs>
+
+<!-- A -->
+<rect class="box" x="230" y="20" width="340" height="46" rx="6"/>
+<text x="400" y="43">解析輸入 / 建 ticket dependency graph</text>
+<!-- B frontier -->
+<rect class="box green" x="270" y="110" width="260" height="46" rx="6"/>
+<text x="400" y="133">計算 frontier（ready 的 ticket）</text>
+<!-- C -->
+<polygon class="dia" points="400,195 500,235 400,275 300,235"/>
+<text x="400" y="235">frontier 有 ticket?</text>
+<!-- D dispatch -->
+<rect class="box" x="200" y="315" width="400" height="66" rx="6"/>
+<text x="400" y="336">派工：每張 ticket 一個 worktree + fresh sub-agent</text>
+<text x="400" y="358" class="lbl">依 ticket 編號填滿 slot；worker 在裡面逐 task 做（見下圖）</text>
+<!-- E workers? -->
+<polygon class="dia" points="760,195 860,235 760,275 660,235"/>
+<text x="760" y="235">還有 worker 在跑?</text>
+<!-- M normal end -->
+<rect class="box green" x="640" y="20" width="240" height="66" rx="6"/>
+<text x="760" y="43">正常結束 → 結尾 code-review</text>
+<text x="760" y="64" class="lbl">見最下方「收尾」</text>
+<!-- F wait -->
+<rect class="box" x="290" y="420" width="220" height="46" rx="6"/>
+<text x="400" y="443">等任一 worker 回報</text>
+<!-- G -->
+<polygon class="dia" points="400,505 500,545 400,585 300,545"/>
+<text x="400" y="545">回報是什麼?</text>
+<!-- resume node -->
+<rect class="box blue" x="640" y="500" width="280" height="66" rx="6"/>
+<text x="780" y="521">claimed + checkpoint（context 用完）</text>
+<text x="780" y="543" class="lbl">派新 worker 到同一個 worktree 接續下一個 task</text>
+<!-- H merge -->
+<rect class="box" x="230" y="625" width="340" height="46" rx="6"/>
+<text x="400" y="648">git merge --no-ff ticket 分支 → 原本的分支</text>
+<!-- I acceptance -->
+<rect class="box" x="250" y="710" width="300" height="46" rx="6"/>
+<text x="400" y="733">在合併後的樹上跑 ticket acceptance</text>
+<!-- J -->
+<polygon class="dia" points="400,795 500,835 400,875 300,835"/>
+<text x="400" y="835">acceptance 通過?</text>
+<!-- K ticket done -->
+<rect class="box green" x="230" y="915" width="340" height="66" rx="6"/>
+<text x="400" y="936">tick checkbox、票設 done、commit tracker</text>
+<text x="400" y="958" class="lbl">這裡不是終點，直接回去重算 frontier</text>
+<!-- X failure mode -->
+<rect class="box red" x="640" y="700" width="300" height="108" rx="6"/>
+<text x="790" y="722">失敗模式（needs-triage / 驗證失敗）</text>
+<text x="790" y="744" class="lbl">那張 ticket 不合併，保留 worktree 與分支</text>
+<text x="790" y="765" class="lbl">不派新 ticket；進行中的 worker 做完照常合併</text>
+<text x="790" y="786" class="lbl">全部收完 → §4 回報，列出 ready / blocked</text>
+
+<!-- edges main column -->
+<path class="edge" d="M400,66 L400,110"/>
+<path class="edge" d="M400,156 L400,195"/>
+<path class="edge" d="M400,275 L400,315"/><text x="418" y="295" class="lbl">有</text>
+<path class="edge" d="M500,235 L660,235"/><text x="580" y="222" class="lbl">沒有</text>
+<path class="edge" d="M760,195 L760,86"/><text x="785" y="140" class="lbl">沒有</text>
+<path class="edge" d="M760,275 L760,443 L510,443"/><text x="785" y="360" class="lbl">有</text>
+<path class="edge" d="M400,381 L400,420"/>
+<path class="edge" d="M400,466 L400,505"/>
+<path class="edge" d="M400,585 L400,625"/><text x="418" y="605" class="lbl">done</text>
+<path class="edge" d="M400,671 L400,710"/>
+<path class="edge" d="M400,756 L400,795"/>
+<path class="edge" d="M400,875 L400,915"/><text x="418" y="895" class="lbl">是</text>
+<!-- resume edges -->
+<path class="edge" d="M500,545 L640,533"/><text x="570" y="522" class="lbl">claimed</text>
+<path class="retry" d="M780,566 L780,640 L960,640 L960,348 L600,348"/><text x="980" y="500" class="lbl" transform="rotate(90 980 500)">同一 worktree 續派</text>
+<!-- failure edges -->
+<path class="edge" d="M470,573 L610,573 L610,730 L640,730"/><text x="540" y="590" class="lbl">needs-triage</text>
+<path class="edge" d="M500,835 L620,835 L620,780 L640,780"/><text x="560" y="822" class="lbl">否</text>
+<!-- failure mode keeps waiting for running workers -->
+<path class="edge" d="M940,754 L975,754 L975,443 L510,443"/><text x="740" y="830" class="lbl">仍等進行中的 worker 回報</text>
+<!-- loop edge back to B -->
+<path class="loop" d="M230,948 L120,948 L120,133 L270,133"/><text x="175" y="935" class="lbl">重算 frontier（不問用戶）</text>
+
+<!-- legend -->
+<rect x="640" y="1010" width="16" height="16" class="box green"/><text x="664" y="1018" class="legend">frontier / 正常出口</text>
+<rect x="640" y="1035" width="16" height="16" class="box blue"/><text x="664" y="1043" class="legend">context 用完的續派，不算失敗</text>
+<rect x="640" y="1060" width="16" height="16" class="box red"/><text x="664" y="1068" class="legend">失敗模式：停派新的，收完再交回</text>
+
+<!-- tail: review -->
+<rect class="box grey" x="40" y="1010" width="560" height="150" rx="6"/>
+<text x="320" y="1032" style="font-weight:600">收尾（frontier 空且沒有 worker 之後）</text>
+<text x="320" y="1058" class="lbl">1. 以 run 開始時的 commit 為基準跑 $code-review</text>
+<text x="320" y="1080" class="lbl">2. 發現全部交給一個修復 worker，邊界 = 本輪所有 ticket footprint 的聯集</text>
+<text x="320" y="1102" class="lbl">3. merge 修復分支、重跑受影響的驗證</text>
+<text x="320" y="1124" class="lbl">4. 超出聯集的發現回報給用戶；清掉已整合且乾淨的 run-created worktree</text>
+<text x="320" y="1146" class="lbl">5. §4 回報 all done，然後停</text>
+</svg>
+
+<h2>Worker：做一張 ticket（execute.md 的 delegated mode）</h2>
+<p>一次讀完 ticket、design.md、所有 task 和規則檔，然後逐 task 跑「claimed → 實作 → Validation → commit」。每個 commit 都是存檔點。</p>
+<svg viewBox="0 0 1000 640" xmlns="http://www.w3.org/2000/svg">
+<!-- read -->
+<rect class="box" x="200" y="20" width="400" height="66" rx="6"/>
+<text x="400" y="41">讀 ticket、design.md、所有 task、規則檔（一次）</text>
+<text x="400" y="63" class="lbl">邊界 = 這張 ticket 所有 task 的專案聯集</text>
+<!-- next task -->
+<rect class="box green" x="270" y="130" width="260" height="46" rx="6"/>
+<text x="400" y="153">取下一個 task（照編號）</text>
+<!-- any left? -->
+<polygon class="dia" points="400,215 500,255 400,295 300,255"/>
+<text x="400" y="255">還有 task?</text>
+<!-- done report -->
+<rect class="box green" x="640" y="215" width="280" height="80" rx="6"/>
+<text x="780" y="237">回報 done</text>
+<text x="780" y="259" class="lbl">ticket acceptance 交給 orchestrator</text>
+<text x="780" y="280" class="lbl">附每個 task 的 commit hash</text>
+<!-- claim -->
+<rect class="box" x="290" y="335" width="220" height="46" rx="6"/>
+<text x="400" y="358">Status → claimed，實作</text>
+<!-- in boundary? -->
+<polygon class="dia" points="400,420 520,460 400,500 280,460"/>
+<text x="400" y="460">改動都在 ticket 邊界內?</text>
+<!-- validate + commit -->
+<rect class="box" x="230" y="540" width="340" height="66" rx="6"/>
+<text x="400" y="561">跑該 task 的 Validation，tick Done-when</text>
+<text x="400" y="583" class="lbl">一個 task 一個 commit（訊息含 NN.MM）= 存檔點</text>
+<!-- needs-triage -->
+<rect class="box red" x="640" y="420" width="280" height="80" rx="6"/>
+<text x="780" y="442">回報 needs-triage，停</text>
+<text x="780" y="464" class="lbl">撤回邊界外的改動，寫進 Comments</text>
+<text x="780" y="485" class="lbl">前面已 commit 的 task 留在分支上</text>
+<!-- context out -->
+<rect class="box blue" x="640" y="540" width="280" height="66" rx="6"/>
+<text x="780" y="561">context 快用完 → 回報 claimed + checkpoint</text>
+<text x="780" y="583" class="lbl">checkpoint = 最後一個已 commit 的 task</text>
+
+<!-- edges -->
+<path class="edge" d="M400,86 L400,130"/>
+<path class="edge" d="M400,176 L400,215"/>
+<path class="edge" d="M400,295 L400,335"/><text x="418" y="315" class="lbl">有</text>
+<path class="edge" d="M500,255 L640,255"/><text x="570" y="242" class="lbl">沒有</text>
+<path class="edge" d="M400,381 L400,420"/>
+<path class="edge" d="M400,500 L400,540"/><text x="418" y="520" class="lbl">是</text>
+<path class="edge" d="M520,460 L640,460"/><text x="580" y="447" class="lbl">否</text>
+<path class="edge" d="M570,573 L640,573"/><text x="605" y="560" class="lbl">若剩餘</text>
+<path class="loop" d="M230,573 L150,573 L150,153 L270,153"/><text x="190" y="560" class="lbl">下一個 task</text>
+</svg>
+</div></body></html>
