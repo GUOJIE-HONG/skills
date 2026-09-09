@@ -1,6 +1,6 @@
 interface:
   display_name: "Implement Task"
-  short_description: "Run independent tasks in parallel by dependency order"
-  default_prompt: "Use $implement-task on this feature directory to run independent ready tasks in parallel isolated worktrees, then integrate and validate them before starting dependent tasks."
+  short_description: "Run independent tickets in parallel, one sub-agent per ticket, by dependency order"
+  default_prompt: "Use $implement-task on this feature directory to run independent ready tickets in parallel isolated worktrees, one fresh sub-agent per ticket working its tasks in order, then merge and accept each ticket before starting its dependents."
 policy:
   allow_implicit_invocation: false

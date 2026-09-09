@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # To Tasks
 
-A ticket from `to-tickets` is a tracer bullet: one end-to-end behaviour, deliberately layer-agnostic. Implementing it usually means creating or editing files across several projects at once, and that is where a small model in a long session drifts. This skill turns each ticket into **tasks**: implementation slices whose **footprint** (the projects they write to) is at most two projects, ordered along the dependency graph, each sized for one fresh context window.
+A ticket from `to-tickets` is a tracer bullet: one end-to-end behaviour, deliberately layer-agnostic. Implementing it usually means creating or editing files across several projects at once, and that is where a small model in a long session drifts. This skill turns each ticket into **tasks**: implementation slices whose **footprint** (the projects they write to) is at most two projects, ordered along the dependency graph, each a short step the ticket's worker finishes, validates, and commits before starting the next.
 
 Tasks nest under their ticket:
 
@@ -64,7 +64,7 @@ Walk each ticket's sorted footprint and cut it into tasks:
 - **Footprint limit**: each task writes to at most two projects. A production project and the test project that proves it is the usual pair.
 - **Dependency order**: an earlier task never depends on a later one. Give each task its **blocking edges** among tasks of the same ticket. Cross-ticket order is already carried by the ticket's own blocking edges; tasks reference only siblings.
 - **One validation**: each task names the single narrowest command that proves it: a build of the affected project, one test file or filter, one migration command, one HTTP call. Take the commands from `design.md`, the repository's instruction files, or the test project's own documentation; a command you cannot ground stays out.
-- **Fresh-context size**: each task must be finishable, validated, and committed within one fresh context window. When a two-project slice is still too large, split it by behaviour inside the same footprint.
+- **Checkpoint size**: each task must be finishable, validated, and committed as one step; its commit is where a worker that ran out of context resumes. When a two-project slice is still too large for one step, split it by behaviour inside the same footprint.
 - **Concrete**: tasks name files, symbols, and behaviour. This is the reverse of the ticket rule; tickets avoid paths because they outlive the code, tasks are executed next and their paths come straight from `design.md`.
 
 A ticket whose whole footprint already fits in two projects becomes exactly one task, carrying the same concrete detail. Downstream then sees one shape for every piece of work.
@@ -107,7 +107,7 @@ Leave the ticket files untouched.
 
 ## Boundary
 
-Every edit lands in these projects: `<Project A>`, `<Project B>`. Read any project; write only here. When the work turns out to need a change elsewhere, stop, record which project and why under Comments, set Status to needs-triage, and leave the change unmade.
+Every edit lands in these projects: `<Project A>`, `<Project B>`. Read any project; write only inside this ticket's footprint, the projects its tasks name. A change an earlier sibling missed in its own project is fixed in place and noted under that sibling's Comments. When the work turns out to need a change in a project no task of this ticket names, stop, record which project and why under Comments, set Status to needs-triage, and leave the change unmade.
 
 ## What to change
 
