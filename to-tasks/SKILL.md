@@ -1,6 +1,6 @@
 ---
 name: to-tasks
-description: Split each ticket into implementation tasks that write to at most two projects, nested under the ticket. Use after to-tickets and design-code-implement, before any code is written.
+description: Split each ticket into implementation tasks that write to at most two projects, nested under the ticket. Use after to-tickets once design.md records the chosen direction, before any code is written.
 disable-model-invocation: true
 ---
 
@@ -30,7 +30,7 @@ Read, in this order:
 3. Every ticket file. Note each ticket's number, blocking edges, and acceptance criteria.
 4. `spec.md`, when present, for the behaviour the acceptance criteria refer to.
 
-`design.md` missing means the direction is undecided. Say so, name `$design-code-implement` as the next step, and stop; splitting an undecided design produces tasks that will be thrown away.
+`design.md` missing means the direction is undecided. Say so and stop; splitting an undecided design produces tasks that will be thrown away.
 
 Do not ask the user for facts discoverable from the repository or these files.
 
@@ -44,6 +44,8 @@ Where to look, by ecosystem:
 - JavaScript / TypeScript monorepos: the workspace globs in `package.json` or `pnpm-workspace.yaml`, then each package's dependencies on sibling packages.
 - Go: `go.mod` modules and `go.work`.
 - Anything else: the build system's unit of compilation that has its own dependency declaration.
+
+Projects `design.md` says to create do not exist on disk yet. Add each to the list with the dependencies `design.md` gives it, citing that line; a new project whose dependencies `design.md` leaves open is a gap to raise in §5, not one to guess.
 
 A **project** is a unit that declares its own dependencies. Test projects are projects. When the repository is a single project, the boundary is the top-level directory that a module system or the build treats as a unit; say which rule you applied.
 

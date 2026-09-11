@@ -69,8 +69,8 @@ npx skills@latest add GUOJIE-HONG/skills --skill grill-softly
 flowchart LR
     A["/dont-know-how<br/>這個任務我不知道從哪開始"] --> B["/grill-softly<br/>把決策問清楚，<br/>同步寫詞彙表與 ADR"]
     B --> C["/design-code-implement<br/>決定怎麼做"]
-    C --> D["/implement-small-change<br/>用聚焦的檢查落地"]
-    C -- ticket 跨超過兩個專案 --> G["/to-tasks<br/>把每張 ticket 切成<br/>兩個專案內的 task"]
+    D["/implement-small-change<br/>用聚焦的檢查落地"]
+    C -. design.md .-> G["/to-tasks<br/>把每張 ticket 切成<br/>兩個專案內的 task"]
     G --> H["/implement-task<br/>一張 ticket 一個新 sub-agent，<br/>task 是它的 checklist"]
     B -. 訪談卡住 .-> E["/show-grill-clearly<br/>在瀏覽器作答，<br/>把回覆貼回對話"]
     E -.-> B
@@ -120,15 +120,15 @@ flowchart LR
 
 規格已經說了要做什麼，但還沒決定怎麼做。這個 skill 卡在那個位置，動手寫程式之前。
 
-它先讀 `CONTEXT.md` 和相關的 ADR，然後派最多五個 sub-agent 平行去看 repo 在規格觸及的地方實際上怎麼做事：層怎麼切、錯誤怎麼往上傳、資料從哪進從哪出、測試放哪。每個 sub-agent 回報三樣東西：現有慣例、證據路徑、以及新需求跟慣例撞在哪。撞的地方才是重點，沒撞的只是背景。
+它先讀 `CONTEXT.md`、相關的 ADR、repo 的指示檔，以及規格旁的 `to-tickets` ticket，然後派最多五個 sub-agent 平行去看 repo 在規格觸及的地方實際上怎麼做事：層怎麼切、錯誤怎麼往上傳、資料從哪進從哪出、測試放哪。每個 sub-agent 回報三樣東西：現有慣例、證據路徑、以及新需求跟慣例撞在哪。撞的地方才是重點，沒撞的只是背景。
 
-從那些撞點它會給至少三個方向。第一個永遠是保守基線，完全照現有慣例做，不開新接縫。另外的方向從實際摩擦長出來，不是套模板。每個方向都寫四樣：定位、會碰哪些檔案和接縫、代價、以及在什麼條件下選它是錯的。最後一項是強制的，一個方向如果講不出什麼時候不該選它，就是還沒想清楚。
+從那些撞點它會給至少三個方向。第一個永遠是保守基線，完全照現有慣例做，不開新接縫。另外的方向從實際摩擦長出來，不是套模板。每個方向都寫四樣：定位、會碰哪些檔案和接縫、代價、以及在什麼條件下選它是錯的。最後一項是強制的，一個方向如果講不出什麼時候不該選它，就是還沒想清楚。列完後會給一個建議方向，但選擇還是你的。
 
-選定後寫進規格旁邊的 `design.md`，只寫要做的事。被否決的方向和理由不寫，因為下游讀這份檔案的 agent 會把它當指令，寫了不做的方案等於邀請它去做。
+如果 repo 裡沒有架構可以繼承（從 0 開始），方向改從外部來源長出來：先看專案相依套件，再看官方文件和官方樣板，最後才是交叉確認過的社群資料，每個說法都附 URL。基線改成官方對這個技術棧的預設做法。每個方向要寫出它會訂下的慣例，而 repo 指示檔裡的規則照樣要遵守。
 
-如果 repo 的慣例已經把做法定死，湊不出三個真的方向，它會直說並指向 `/implement-small-change`，不會硬湊。它自己不寫產品程式碼。
+選定後寫進規格旁邊的 `design.md`，只寫要做的事；從 0 開始的話，也寫進選定方向訂下的慣例。被否決的方向和理由不寫，因為下游讀這份檔案的 agent 會把它當指令，寫了不做的方案等於邀請它去做。
 
-規格旁邊如果有 `to-tickets` 產的 ticket，它收尾前會多做一件事：讀 repo 的專案定義建出相依鏈，把選定方向的足跡對到每張 ticket，標出哪些 ticket 要寫超過兩個專案。有超過的推薦 `/to-tasks`，都沒超過推薦 `/implement-task`。它自己不拆。
+如果 repo 的慣例已經把做法定死，湊不出三個真的方向，它會直說並停下，不會硬湊。它自己不寫產品程式碼，也不推薦要用什麼方式實作，那是你的決定。
 
 ### `/implement-small-change`
 
@@ -142,13 +142,13 @@ flowchart LR
 
 ### `/to-tasks`
 
-`/design-code-implement` 報告說有些 ticket 的足跡跨了三個以上專案，而你要交給小模型做，希望它有一步一步可驗證的短目標，不會跨整個 codebase 漂掉。用這個。
+`design.md` 已經寫好，有些 ticket 跨了三個以上專案，而你要交給小模型做，希望它有一步一步可驗證的短目標，不會跨整個 codebase 漂掉。用這個。
 
-它讀 `design.md`、所有 ticket，還有 repo 的專案定義（csproj 的 ProjectReference、workspace 設定、go.mod），建出相依鏈。每張 ticket 先列出選定方向會寫到哪些專案，每個專案都要有 `design.md` 慣例的出處，沒出處的不算。然後把足跡切成 task：一個 task 最多寫兩個專案，測試專案算一個；由內往外排，同一 ticket 內的 task 標 Blocked by；每個 task 一條找得到出處的驗證指令。本來就在兩個專案內的 ticket 就只產一個 task，下游看到的形狀一致。
+它讀 `design.md`、所有 ticket，還有 repo 的專案定義（csproj 的 ProjectReference、workspace 設定、go.mod），建出相依鏈；`design.md` 說要新建的專案也會加進去。每張 ticket 先列出選定方向會寫到哪些專案，每個專案都要有 `design.md` 慣例的出處，沒出處的不算。然後把足跡切成 task：一個 task 最多寫兩個專案，測試專案算一個；由內往外排，同一 ticket 內的 task 標 Blocked by；每個 task 一條找得到出處的驗證指令。本來就在兩個專案內的 ticket 就只產一個 task，下游看到的形狀一致。
 
 整棵樹先列給你看，你點頭之前一個檔案都不寫。點頭後一個 task 一個檔，掛在 ticket 底下（`issues/01-slug/01-task.md`），真實 tracker 就開 sub-issue。每個 task 檔開頭就是邊界：這一步寫哪幾個專案，整張 ticket 的 task 加起來就是它的足跡；需要改到足跡外的專案就停下來留一筆 `needs-triage`。
 
-它不動 ticket 檔，不編造找不到出處的驗證指令。`design.md` 不在就不拆，叫你先回去跑 `/design-code-implement`。
+它不動 ticket 檔，不編造找不到出處的驗證指令。`design.md` 不在就不拆，直接說明並停下。
 
 ### `/implement-task`
 

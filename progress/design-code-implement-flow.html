@@ -12,6 +12,7 @@ svg{width:100%;height:auto;background:#fff;border:1px solid #e1e4e8;border-radiu
 .blue{fill:#d1ecf1;stroke:#17a2b8;stroke-width:2.5}
 .red{fill:#f8d7da;stroke:#dc3545}
 .gray{fill:#f1f3f5;stroke:#868e96}
+.yellow{fill:#fff3cd;stroke:#e0a800}
 text{font-size:13px;text-anchor:middle;dominant-baseline:middle}
 .t{font-weight:600}
 .lbl{font-size:12px;fill:#666}
@@ -19,109 +20,115 @@ text{font-size:13px;text-anchor:middle;dominant-baseline:middle}
 .legend{font-size:12px;fill:#444;text-anchor:start}
 </style></head><body><div class="wrap">
 <h1>design-code-implement 流程</h1>
-<p>決定「怎麼做」而不是「做什麼」。整個 skill 不寫 production code，結束時只留下一份 design.md。藍色是需要用戶決定的節點，紅色是提前結束，綠色是正常交回。</p>
-<svg viewBox="0 0 1040 1180" xmlns="http://www.w3.org/2000/svg">
+<p>決定「怎麼做」而不是「做什麼」。整個 skill 不寫 production code，結束時只留下一份 design.md。藍色是需要用戶決定的節點，黃色是從 0 開始的分支，紅色是提前結束，綠色是正常交回。</p>
+<svg viewBox="0 0 1040 1210" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#444"/></marker>
 </defs>
 
 <!-- §1 -->
-<rect class="box" x="210" y="15" width="380" height="88" rx="6"/>
+<rect class="box" x="210" y="15" width="380" height="106" rx="6"/>
 <text x="400" y="34" class="t">§1 建立輸入</text>
 <text x="400" y="54" class="lbl">接受 spec（檔案 / 上游 handoff / 對話），一句話重述，含糊才確認</text>
 <text x="400" y="72" class="lbl">讀 CONTEXT.md 的詞彙、docs/adr/ 的既定決策</text>
-<text x="400" y="90" class="lbl">記下 spec 位置，決定 design.md 落點</text>
+<text x="400" y="90" class="lbl">讀 AGENTS.md / CLAUDE.md 規範；spec 旁有 tickets 就讀</text>
+<text x="400" y="108" class="lbl">記下 spec 位置，決定 design.md 落點</text>
 
 <!-- §2 -->
-<rect class="box" x="210" y="135" width="380" height="88" rx="6"/>
-<text x="400" y="154" class="t">§2 自己決定探索面向</text>
-<text x="400" y="174" class="lbl">不派 scout、不問用戶核准面向清單</text>
-<text x="400" y="192" class="lbl">必含 domain language；只看架構慣例，不看命名/排版</text>
-<text x="400" y="210" class="lbl">最多 5 個 sub-agent；只掃 spec 觸及區 + git log 熱點</text>
+<rect class="box" x="210" y="150" width="380" height="88" rx="6"/>
+<text x="400" y="169" class="t">§2 自己決定探索面向</text>
+<text x="400" y="189" class="lbl">不派 scout、不問用戶核准面向清單</text>
+<text x="400" y="207" class="lbl">必含 domain language；只看架構慣例，不看命名/排版</text>
+<text x="400" y="225" class="lbl">最多 5 個 sub-agent；只掃 spec 觸及區 + git log 熱點</text>
 
 <!-- §3 -->
-<rect class="box" x="210" y="255" width="380" height="70" rx="6"/>
-<text x="400" y="274" class="t">§3 平行派出 sub-agent，收回報告</text>
-<text x="400" y="294" class="lbl">工具優先序：知識圖 MCP → repo 導覽工具 → 內建搜尋</text>
-<text x="400" y="312" class="lbl">每筆 finding 三欄：現有 convention / 證據 path:line / tension</text>
+<rect class="box" x="210" y="270" width="380" height="70" rx="6"/>
+<text x="400" y="289" class="t">§3 平行派出 sub-agent，收回報告</text>
+<text x="400" y="309" class="lbl">工具優先序：知識圖 MCP → repo 導覽工具 → 內建搜尋</text>
+<text x="400" y="327" class="lbl">每筆 finding 三欄：現有 convention / 證據 path:line / tension</text>
+
+<!-- DG greenfield? -->
+<polygon class="dia" points="400,375 560,420 400,465 240,420"/>
+<text x="400" y="414">每個架構面向</text>
+<text x="400" y="431">都沒有慣例?</text>
+
+<!-- G greenfield -->
+<rect class="box yellow" x="660" y="375" width="340" height="120" rx="6"/>
+<text x="830" y="395" class="t">greenfield.md（從 0 開始）</text>
+<text x="830" y="415" class="lbl">依序查：相依套件 → 官方文件/樣板 → 社群（交叉確認）</text>
+<text x="830" y="433" class="lbl">方向 1 = 官方預設做法；每個說法附 URL</text>
+<text x="830" y="451" class="lbl">足跡寫出它訂下的慣例；repo 指示檔規則照守</text>
+<text x="830" y="469" class="lbl">至少三個方向 + 一個建議方向</text>
 
 <!-- D4 -->
-<polygon class="dia" points="400,360 560,405 400,450 240,405"/>
-<text x="400" y="399">tension 撐得起</text>
-<text x="400" y="416">三個真實方向?</text>
+<polygon class="dia" points="400,500 560,545 400,590 240,545"/>
+<text x="400" y="539">tension 撐得起</text>
+<text x="400" y="556">三個真實方向?</text>
 
 <!-- X4 -->
-<rect class="box red" x="660" y="370" width="340" height="70" rx="6"/>
-<text x="830" y="390" class="t">提前結束</text>
-<text x="830" y="410" class="lbl">說明既有 convention 已決定做法</text>
-<text x="830" y="428" class="lbl">推薦 $implement-small-change，不硬湊方向</text>
+<rect class="box red" x="660" y="510" width="340" height="70" rx="6"/>
+<text x="830" y="530" class="t">提前結束</text>
+<text x="830" y="550" class="lbl">說明既有 convention 已決定做法</text>
+<text x="830" y="568" class="lbl">不硬湊方向，直接停</text>
 
 <!-- §4 -->
-<rect class="box" x="210" y="485" width="380" height="88" rx="6"/>
-<text x="400" y="504" class="t">§4 依序呈現至少三個方向</text>
-<text x="400" y="524" class="lbl">方向 1 永遠是 baseline：全照慣例、不開新 seam</text>
-<text x="400" y="542" class="lbl">方向 2、3 從回報的 tension 長出，不套模板</text>
-<text x="400" y="560" class="lbl">每個四欄：定位 / 足跡 / 代價 / 什麼情況下選它是錯的</text>
+<rect class="box" x="210" y="625" width="380" height="106" rx="6"/>
+<text x="400" y="644" class="t">§4 依序呈現至少三個方向</text>
+<text x="400" y="664" class="lbl">方向 1 永遠是 baseline：全照慣例、不開新 seam</text>
+<text x="400" y="682" class="lbl">方向 2、3 從回報的 tension 長出，不套模板</text>
+<text x="400" y="700" class="lbl">每個四欄：定位 / 足跡 / 代價 / 什麼情況下選它是錯的</text>
+<text x="400" y="718" class="lbl">最後給一個建議方向</text>
 
-<!-- U6 user picks -->
-<rect class="box blue" x="210" y="605" width="380" height="70" rx="6"/>
-<text x="400" y="625" class="t">用戶選方向</text>
-<text x="400" y="645" class="lbl">可混合：A 的整體形狀 + B 的錯誤處理</text>
-<text x="400" y="663" class="lbl">混合時完整重述組合後的方向，確認才往下</text>
+<!-- U user picks -->
+<rect class="box blue" x="210" y="745" width="380" height="70" rx="6"/>
+<text x="400" y="765" class="t">用戶選方向</text>
+<text x="400" y="785" class="lbl">可混合：A 的整體形狀 + B 的錯誤處理</text>
+<text x="400" y="803" class="lbl">混合時完整重述組合後的方向，確認才往下</text>
 
 <!-- §5 -->
-<rect class="box" x="210" y="710" width="380" height="88" rx="6"/>
-<text x="400" y="729" class="t">§5 寫 design.md</text>
-<text x="400" y="749" class="lbl">位置：與 spec 同目錄；spec 不是檔案則 .scratch/&lt;slug&gt;/design.md</text>
-<text x="400" y="767" class="lbl">內容只有：選定方向 + 必須遵守的 convention（附證據 path）</text>
-<text x="400" y="785" class="lbl">不寫被拒方向與理由；已存在則先讀再更新</text>
+<rect class="box" x="210" y="850" width="380" height="106" rx="6"/>
+<text x="400" y="869" class="t">§5 寫 design.md</text>
+<text x="400" y="889" class="lbl">位置：與 spec 同目錄；spec 不是檔案則 .scratch/&lt;slug&gt;/design.md</text>
+<text x="400" y="907" class="lbl">內容：選定方向 + 必須遵守的 convention（附證據 path）</text>
+<text x="400" y="925" class="lbl">從 0 開始：選定方向訂下的慣例（附 URL）+ 指示檔規則</text>
+<text x="400" y="943" class="lbl">不寫被拒方向與理由；已存在則先讀再更新</text>
 
-<!-- D8 ADR -->
-<polygon class="dia" points="400,830 560,875 400,920 240,875"/>
-<text x="400" y="869">ADR 三條件全成立?</text>
-<text x="400" y="886" class="lbl">難逆轉 / 未來會問為什麼 / 真實取捨</text>
+<!-- D ADR -->
+<polygon class="dia" points="400,990 560,1035 400,1080 240,1035"/>
+<text x="400" y="1029">ADR 三條件全成立?</text>
+<text x="400" y="1046" class="lbl">難逆轉 / 未來會問為什麼 / 真實取捨</text>
 
-<!-- S8 -->
-<rect class="box gray" x="660" y="850" width="340" height="50" rx="6"/>
-<text x="830" y="868" class="t">提議寫 ADR</text>
-<text x="830" y="888" class="lbl">只提議，用戶沒說要就不建立</text>
+<!-- S ADR -->
+<rect class="box gray" x="660" y="1010" width="340" height="50" rx="6"/>
+<text x="830" y="1028" class="t">提議寫 ADR</text>
+<text x="830" y="1048" class="lbl">只提議，用戶沒說要就不建立</text>
 
-<!-- D9 tickets -->
-<polygon class="dia" points="400,960 540,1000 400,1040 260,1000"/>
-<text x="400" y="1000">spec 旁有 tickets?</text>
-
-<!-- N10 -->
-<rect class="box" x="660" y="965" width="340" height="70" rx="6"/>
-<text x="830" y="984" class="t">§6 量每張票的 footprint</text>
-<text x="830" y="1004" class="lbl">讀 csproj / package.json / go.mod 建依賴鏈</text>
-<text x="830" y="1022" class="lbl">每票列會寫到的 project，標 over / within 兩個 project 線</text>
-
-<!-- §7 -->
-<rect class="box green" x="180" y="1075" width="440" height="92" rx="6"/>
-<text x="400" y="1094" class="t">§7 交回並停，不開始實作</text>
-<text x="400" y="1114" class="lbl">報告：選定方向、design.md 路徑、各票 footprint 與 over/within</text>
-<text x="400" y="1132" class="lbl">下一步命令：任一票 over → $to-tasks；全部 within → $implement-task</text>
-<text x="400" y="1150" class="lbl">沒有 tickets → $implement-small-change 或 $implement</text>
+<!-- §6 -->
+<rect class="box green" x="180" y="1120" width="440" height="74" rx="6"/>
+<text x="400" y="1139" class="t">§6 交回並停，不開始實作</text>
+<text x="400" y="1159" class="lbl">報告：選定方向摘要、design.md 路徑</text>
+<text x="400" y="1177" class="lbl">不推薦下一步命令，實作方式由用戶決定</text>
 
 <!-- edges -->
-<path class="edge" d="M400,103 L400,135"/>
-<path class="edge" d="M400,223 L400,255"/>
-<path class="edge" d="M400,325 L400,360"/>
-<path class="edge" d="M560,405 L660,405"/><text x="610" y="392" class="lbl">否</text>
-<path class="edge" d="M400,450 L400,485"/><text x="418" y="467" class="lbl">是</text>
-<path class="edge" d="M400,573 L400,605"/>
-<path class="edge" d="M400,675 L400,710"/>
-<path class="edge" d="M400,798 L400,830"/>
-<path class="edge" d="M560,875 L660,875"/><text x="610" y="862" class="lbl">是</text>
-<path class="edge" d="M830,900 L830,935 L410,935"/>
-<path class="edge" d="M400,920 L400,960"/><text x="418" y="940" class="lbl">否</text>
-<path class="edge" d="M540,1000 L660,1000"/><text x="600" y="987" class="lbl">是</text>
-<path class="edge" d="M830,1035 L830,1120 L620,1120"/>
-<path class="edge" d="M400,1040 L400,1075"/><text x="418" y="1057" class="lbl">否，跳過 §6</text>
+<path class="edge" d="M400,121 L400,150"/>
+<path class="edge" d="M400,238 L400,270"/>
+<path class="edge" d="M400,340 L400,375"/>
+<path class="edge" d="M560,420 L660,420"/><text x="610" y="407" class="lbl">是</text>
+<path class="edge" d="M1000,435 L1025,435 L1025,780 L590,780"/>
+<path class="edge" d="M400,465 L400,500"/><text x="418" y="482" class="lbl">否</text>
+<path class="edge" d="M560,545 L660,545"/><text x="610" y="532" class="lbl">否</text>
+<path class="edge" d="M400,590 L400,625"/><text x="418" y="607" class="lbl">是</text>
+<path class="edge" d="M400,731 L400,745"/>
+<path class="edge" d="M400,815 L400,850"/>
+<path class="edge" d="M400,956 L400,990"/>
+<path class="edge" d="M560,1035 L660,1035"/><text x="610" y="1022" class="lbl">是</text>
+<path class="edge" d="M830,1060 L830,1098 L410,1098"/>
+<path class="edge" d="M400,1080 L400,1120"/><text x="418" y="1106" class="lbl">否</text>
 
 <!-- legend -->
-<rect x="20" y="1090" width="16" height="16" class="box blue"/><text x="44" y="1098" class="legend">用戶決定</text>
-<rect x="20" y="1115" width="16" height="16" class="box red"/><text x="44" y="1123" class="legend">提前結束</text>
-<rect x="20" y="1140" width="16" height="16" class="box green"/><text x="44" y="1148" class="legend">正常交回</text>
+<rect x="20" y="1110" width="16" height="16" class="box blue"/><text x="44" y="1118" class="legend">用戶決定</text>
+<rect x="20" y="1132" width="16" height="16" class="box yellow"/><text x="44" y="1140" class="legend">從 0 開始</text>
+<rect x="20" y="1154" width="16" height="16" class="box red"/><text x="44" y="1162" class="legend">提前結束</text>
+<rect x="20" y="1176" width="16" height="16" class="box green"/><text x="44" y="1184" class="legend">正常交回</text>
 </svg>
 </div></body></html>
