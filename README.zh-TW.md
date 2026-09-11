@@ -70,7 +70,7 @@ flowchart LR
     A["/dont-know-how<br/>這個任務我不知道從哪開始"] --> B["/grill-softly<br/>把決策問清楚，<br/>同步寫詞彙表與 ADR"]
     B --> C["/design-code-implement<br/>決定怎麼做"]
     D["/implement-small-change<br/>用聚焦的檢查落地"]
-    C -. design.md .-> G["/to-tasks<br/>把每張 ticket 切成<br/>兩個專案內的 task"]
+    C -.->|"design.md"| G["/to-tasks<br/>把每張 ticket 切成<br/>兩個專案內的 task"]
     G --> H["/implement-task<br/>一張 ticket 一個新 sub-agent，<br/>task 是它的 checklist"]
     B -. 訪談卡住 .-> E["/show-grill-clearly<br/>在瀏覽器作答，<br/>把回覆貼回對話"]
     E -.-> B
