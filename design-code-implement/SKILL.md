@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Design Code Implement
 
-Decide *how* to build something the spec already says *what* is. Explore the repository's real architectural conventions with parallel sub-agents, surface where the new requirement is in tension with them, and offer at least three directions the user picks from.
+Decide *how* to build something the spec already says *what* is. Explore the repository's real architectural conventions with parallel sub-agents, surface where the new requirement is in tension with them, and offer at least three directions the user picks from. When the repository has no architecture to inherit, the directions come from external sources instead ([`greenfield.md`](greenfield.md)).
 
 This skill does not write production code. It ends when a direction is chosen and recorded.
 
@@ -19,7 +19,9 @@ Then:
 1. Restate the requested outcome in one sentence and get it confirmed if it is at all ambiguous.
 2. Read `CONTEXT.md` for the project's domain vocabulary. Use those terms exactly; do not invent synonyms.
 3. Read any ADRs under `docs/adr/` that touch the affected area. Decisions recorded there are settled — do not re-litigate them, and do not offer a direction that contradicts one without naming the ADR it overturns.
-4. Record where the spec lives. Its directory determines where `design.md` lands (§5).
+4. Read the repository's instruction files (`AGENTS.md`, `CLAUDE.md`, and the coding standards they point to). Their rules bind every direction, greenfield included.
+5. When `to-tickets` tickets sit beside the spec, read them. Their acceptance criteria are what every direction must deliver.
+6. Record where the spec lives. Its directory determines where `design.md` lands (§5).
 
 Do not ask the user for facts discoverable from the repository, runtime, or tools.
 
@@ -50,6 +52,8 @@ Require every sub-agent to report exactly three things per finding:
 
 The tension field is the point of the exercise. Conventions with no tension are context; tensions are where directions come from.
 
+When every architectural aspect reports no existing convention, the requirement is **greenfield**: there is nothing to inherit and no tension to grow directions from. Build the directions by [`greenfield.md`](greenfield.md) instead of §4's baseline and tension rules; the user's choice and mixing still follow §4.
+
 ## 4. Produce the directions
 
 Present **at least three** directions in the conversation, sequentially, so each is absorbed before the comparison.
@@ -66,7 +70,9 @@ Give each direction exactly four fields:
 
 The fourth field is mandatory and forces honesty. A direction with no failure condition has not been thought through.
 
-**When the tensions cannot support three real directions**, say so plainly: report that the existing conventions already determine the approach, recommend `$implement-small-change`, and stop. Never pad the list with contrived variants — a user who cannot tell a real choice from a manufactured one stops trusting all of them.
+Close with a **recommendation**: the direction you would pick and the tension or spec requirement that decides it. The choice stays the user's.
+
+**When the tensions cannot support three real directions**, say so plainly: report that the existing conventions already determine the approach, and stop. Never pad the list with contrived variants — a user who cannot tell a real choice from a manufactured one stops trusting all of them.
 
 **Mixing is allowed.** If the user wants one direction's overall shape with another's error handling, take it — then restate the combined direction in full and get it confirmed before writing anything. A mix understood differently by each side is worse than no mix.
 
@@ -79,33 +85,18 @@ Write `design.md`.
 **Contents** — only what will be done:
 
 - The chosen direction, in enough detail to implement from.
-- The existing conventions this work must follow, each with its evidence path.
+- The existing conventions this work must follow, each with its evidence path. For greenfield work, the conventions the chosen direction establishes, each with its source URL, alongside the instruction-file rules with their paths.
 - Nothing else. **Do not write the rejected directions, and do not write their rationale.** A downstream implementing agent reads this file as instructions; describing an approach that is not being taken invites it to be taken.
 
 **If `design.md` already exists**: read it first, then update it — carry forward whatever still holds. Never overwrite it unseen.
 
 **ADR**: offer one only when all three are true — the decision is hard to reverse, a future reader will wonder why it was made, and it was a genuine trade-off between real alternatives. Offer it; do not create it unasked. Most implementation directions fail at least one of the three.
 
-## 6. Measure the footprint per ticket
-
-When the spec came with tickets (a `to-tickets` issue directory beside it), map the chosen direction's footprint onto them before handing back. This is the reading a small model needs most: a ticket that writes to many projects at once is where it drifts.
-
-1. Read the repository's project definitions once (`*.csproj` and their `ProjectReference` entries, workspace globs in `package.json`, `go.mod`) and record the dependency chain inner-most first. A **project** is a unit that declares its own dependencies; test projects count.
-2. For each ticket, list the projects the chosen direction creates in or edits to meet that ticket's acceptance criteria, including the test project that proves each change. Every project cited comes from the direction's footprint or a convention in `design.md`; a project with no such source is not listed.
-3. Mark each ticket **over** or **within** the two-project line.
-
-Without tickets, skip this section and hand back with the direction alone.
-
-## 7. Hand back and stop
+## 6. Hand back and stop
 
 Report:
 
 - The chosen direction in a short summary.
 - The path to `design.md`.
-- When §6 ran: the dependency chain in one line, then each ticket with its footprint and its over/within mark.
-- One command the user can run next:
-  - any ticket over the line → `$to-tasks` on the feature directory, which splits tickets into tasks of at most two projects;
-  - every ticket within the line → `$implement-task` on the feature directory;
-  - no tickets → `$implement-small-change` for a bounded change or `$implement` for a larger one.
 
-Then stop. Do not start implementing or splitting, even when the next step is obvious. Changing gear is the user's call.
+Then stop. How and with what to implement is the user's call; do not start implementing or name a next command.

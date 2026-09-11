@@ -69,8 +69,8 @@ Nothing updates behind your back. Pull the latest with `npx skills update`.
 flowchart LR
     A["/dont-know-how<br/>I cannot start this task"] --> B["/grill-softly<br/>settle the decisions,<br/>write the glossary and ADRs"]
     B --> C["/design-code-implement<br/>pick how to build it"]
-    C --> D["/implement-small-change<br/>land it with focused checks"]
-    C -- tickets over two projects --> G["/to-tasks<br/>split each ticket into<br/>two-project tasks"]
+    D["/implement-small-change<br/>land it with focused checks"]
+    C -. design.md .-> G["/to-tasks<br/>split each ticket into<br/>two-project tasks"]
     G --> H["/implement-task<br/>one ticket per fresh sub-agent,<br/>tasks as its checklist"]
     B -. interview stalls .-> E["/show-grill-clearly<br/>answer in the browser,<br/>paste the reply back"]
     E -.-> B
@@ -124,13 +124,11 @@ You do not have to run the whole chain. Each skill accepts its input in whatever
 
 **Use it when** a spec already says *what* to build and you need to decide *how*, before any code is written.
 
-**What it does.** Reads `CONTEXT.md` and relevant ADRs, then sends at most five parallel sub-agents to map the repo's real architectural conventions in the areas the spec touches. Each finding names the existing convention, its evidence path, and where the new requirement is in tension with it. From those tensions it presents at least three directions: a conservative baseline that follows every convention, plus alternatives grown from the actual friction. Each direction states its positioning, footprint, cost, and the condition under which it is the wrong choice. The chosen direction is written to `design.md` next to the spec, containing only what will be done.
+**What it does.** Reads `CONTEXT.md`, relevant ADRs, the repo's instruction files, and any `to-tickets` tickets beside the spec, then sends at most five parallel sub-agents to map the repo's real architectural conventions in the areas the spec touches. Each finding names the existing convention, its evidence path, and where the new requirement is in tension with it. From those tensions it presents at least three directions: a conservative baseline that follows every convention, plus alternatives grown from the actual friction. Each direction states its positioning, footprint, cost, and the condition under which it is the wrong choice, and the list closes with a recommendation. The chosen direction is written to `design.md` next to the spec, containing only what will be done.
 
-When the spec came with `to-tickets` tickets, it finishes by reading the repo's project definitions, mapping the chosen direction's footprint onto each ticket, and marking which tickets write to more than two projects.
+When the repo has no architecture to inherit (greenfield), the directions come from outside instead: project dependencies, then official docs and templates, then cross-checked community sources, each claim with its URL. The baseline is the official default for the stack. Each direction names the conventions it would establish, and the repo's instruction files still bind them. `design.md` then records the conventions the chosen direction sets.
 
-**What it does not do.** Write production code, split tickets, pad the list with contrived variants, or record rejected directions in `design.md`. If the conventions already determine the approach, it says so and points you to `/implement-small-change`.
-
-**Hands off to** `/to-tasks` when any ticket is over the two-project line, `/implement-task` when every ticket is within it, and otherwise `/implement-small-change` for a bounded change or Matt's `/implement` for a larger one.
+**What it does not do.** Write production code, pad the list with contrived variants, or record rejected directions in `design.md`. If the conventions already determine the approach, it says so and stops. It does not recommend how to implement; that choice is yours.
 
 ### `/implement-small-change`
 
@@ -142,11 +140,11 @@ When the spec came with `to-tickets` tickets, it finishes by reading the repo's 
 
 ### `/to-tasks`
 
-**Use it when** `/design-code-implement` has reported tickets whose footprint spans more than two projects, and you want each ticket cut into short, verifiable steps a small model can follow without drifting across the codebase.
+**Use it when** `design.md` is written, some tickets span more than two projects, and you want each ticket cut into short, verifiable steps a small model can follow without drifting across the codebase.
 
-**What it does.** Reads `design.md`, the tickets, and the repo's project definitions (`*.csproj` references, workspace globs, `go.mod`) to build the dependency chain. For each ticket it lists the projects the chosen direction writes to, each cited to a `design.md` convention, then cuts that footprint into tasks: at most two writable projects per task, the test project counting as one, ordered inner-most first with blocking edges among siblings, one grounded validation command each. A ticket that already fits in two projects becomes a single task. It shows you the whole tree and writes nothing until you approve it; then it publishes one file per task under the ticket (`issues/01-slug/01-task.md`), or sub-issues on a real tracker. Every task file opens with its boundary: the projects this step writes to, inside the ticket's overall footprint; a change needed in a project no task of the ticket names stops the work with a `needs-triage` note.
+**What it does.** Reads `design.md`, the tickets, and the repo's project definitions (`*.csproj` references, workspace globs, `go.mod`) to build the dependency chain, adding the projects `design.md` says to create. For each ticket it lists the projects the chosen direction writes to, each cited to a `design.md` convention, then cuts that footprint into tasks: at most two writable projects per task, the test project counting as one, ordered inner-most first with blocking edges among siblings, one grounded validation command each. A ticket that already fits in two projects becomes a single task. It shows you the whole tree and writes nothing until you approve it; then it publishes one file per task under the ticket (`issues/01-slug/01-task.md`), or sub-issues on a real tracker. Every task file opens with its boundary: the projects this step writes to, inside the ticket's overall footprint; a change needed in a project no task of the ticket names stops the work with a `needs-triage` note.
 
-**What it does not do.** Touch the ticket files, invent a validation command it cannot ground, or split a ticket when `design.md` is missing; it points you back to `/design-code-implement` instead.
+**What it does not do.** Touch the ticket files, invent a validation command it cannot ground, or split a ticket when `design.md` is missing; it says so and stops instead.
 
 **Hands off to** `/implement-task`.
 
