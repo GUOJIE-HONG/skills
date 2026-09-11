@@ -70,7 +70,7 @@ flowchart LR
     A["/dont-know-how<br/>I cannot start this task"] --> B["/grill-softly<br/>settle the decisions,<br/>write the glossary and ADRs"]
     B --> C["/design-code-implement<br/>pick how to build it"]
     D["/implement-small-change<br/>land it with focused checks"]
-    C -. design.md .-> G["/to-tasks<br/>split each ticket into<br/>two-project tasks"]
+    C -.->|"design.md"| G["/to-tasks<br/>split each ticket into<br/>two-project tasks"]
     G --> H["/implement-task<br/>one ticket per fresh sub-agent,<br/>tasks as its checklist"]
     B -. interview stalls .-> E["/show-grill-clearly<br/>answer in the browser,<br/>paste the reply back"]
     E -.-> B
