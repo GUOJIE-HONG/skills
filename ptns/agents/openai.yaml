@@ -1,0 +1,6 @@
+interface:
+  display_name: "Prompt to New Session"
+  short_description: "Hand current progress to a fresh session as one copyable prompt"
+  default_prompt: "Use $ptns to give me a short, copyable prompt that carries the current progress into a new session."
+policy:
+  allow_implicit_invocation: false
