@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1
+
+- `implement-small-change`: on hidden scope it now writes the impact brief and asks you to run `/grill-softly`, instead of invoking Matt's `grill-with-docs`, which is user-invoked and could not be reached from a skill.
+
 ## 0.6.0
 
 - New skill `impl`: Matt Pocock's `implement` that also reads `design.md`, so the work follows the implementation direction `design-code-implement` recorded.

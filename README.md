@@ -4,7 +4,7 @@
 
 Nine agent skills for the stage *before* code is written and the first steps into it: finding a direction when you cannot start, interviewing along evidenced branches, choosing an implementation direction, implementing along it, and landing each small change with proportionate validation.
 
-They are built on top of [Matt Pocock's skills](https://github.com/mattpocock/skills) and extend that set rather than replace it. Four of them call his skills directly, so install his set first (see [Prerequisite](#prerequisite-mattpocock-skills)).
+They are built on top of [Matt Pocock's skills](https://github.com/mattpocock/skills) and extend that set rather than replace it. Three of them call his skills directly, so install his set first (see [Prerequisite](#prerequisite-mattpocock-skills)).
 
 Every skill follows one rule: **evidence, never guesswork**. Claims carry a locator (`path:line`, URL, document section, or a user statement), and anything not established is reported as unknown.
 
@@ -16,7 +16,7 @@ Install [mattpocock-skills](https://github.com/mattpocock/skills) before this se
 | --- | --- | --- |
 | `grill-softly` | `domain-modeling` | glossary and ADR writing during the interview |
 | `impl`, `implement-all` | `tdd`, `code-review` | test-first work at the spec's seams, and the closing review |
-| `implement-small-change` | `grill-with-docs`, `diagnosing-bugs` | hand-off when a "small" change turns out to have hidden scope or an uncertain cause |
+| `implement-small-change` | `diagnosing-bugs` | hand-off when a "small" change turns out to have an uncertain cause |
 
 The other four (`dont-know-how`, `torture-gently`, `show-grill-clearly`, `design-code-implement`) run on their own.
 
@@ -150,7 +150,7 @@ When the repo has no architecture to inherit (greenfield), the directions come f
 
 **What it does.** Discovers the affected symbols and blast radius first, preferring a code knowledge graph or other repo-aware tool over plain search. Applies a scope gate: one clear behavior, understood callers, one module or seam, a focused check that can detect it, easy to reverse. Makes the smallest coherent change, runs the narrowest checks that could catch a mistake, and reports the observable result, the files touched, the exact validation run, and what was deliberately not run.
 
-**What it does not do.** Classify a change as small by file count, run the full suite by default, or commit unless asked. When a hard stop appears (a cross-layer decision, a public contract, security or payments, a new domain term, or ambiguous interpretations) it pauses and hands off to Matt's `grill-with-docs`. When the cause is uncertain rather than ambiguous, it hands off to `diagnosing-bugs`.
+**What it does not do.** Classify a change as small by file count, run the full suite by default, or commit unless asked. When a hard stop appears (a cross-layer decision, a public contract, security or payments, a new domain term, or ambiguous interpretations) it pauses, writes an impact brief, and asks you to run `/grill-softly` with it. When the cause is uncertain rather than ambiguous, it hands off to `diagnosing-bugs`.
 
 ## Deprecated
 
