@@ -2,9 +2,9 @@
 
 **English** | [繁體中文](./README.zh-TW.md)
 
-Seven agent skills for the stage *before* code is written and the first steps into it: finding a direction when you cannot start, interviewing along evidenced branches, choosing an implementation direction, and landing each small change with proportionate validation.
+Nine agent skills for the stage *before* code is written and the first steps into it: finding a direction when you cannot start, interviewing along evidenced branches, choosing an implementation direction, implementing along it, and landing each small change with proportionate validation.
 
-They are built on top of [Matt Pocock's skills](https://github.com/mattpocock/skills) and extend that set rather than replace it. Two of them call his skills directly, so install his set first (see [Prerequisite](#prerequisite-mattpocock-skills)).
+They are built on top of [Matt Pocock's skills](https://github.com/mattpocock/skills) and extend that set rather than replace it. Four of them call his skills directly, so install his set first (see [Prerequisite](#prerequisite-mattpocock-skills)).
 
 Every skill follows one rule: **evidence, never guesswork**. Claims carry a locator (`path:line`, URL, document section, or a user statement), and anything not established is reported as unknown.
 
@@ -15,9 +15,8 @@ Install [mattpocock-skills](https://github.com/mattpocock/skills) before this se
 | This skill | Calls | From mattpocock-skills |
 | --- | --- | --- |
 | `grill-softly` | `domain-modeling` | glossary and ADR writing during the interview |
+| `impl`, `implement-all` | `tdd`, `code-review` | test-first work at the spec's seams, and the closing review |
 | `implement-small-change` | `grill-with-docs`, `diagnosing-bugs` | hand-off when a "small" change turns out to have hidden scope or an uncertain cause |
-
-Once `design-code-implement` has recorded `design.md`, implement the tickets with his `implement`.
 
 The other four (`dont-know-how`, `torture-gently`, `show-grill-clearly`, `design-code-implement`) run on their own.
 
@@ -55,7 +54,7 @@ claude plugin update guojie-skills@guojie-hong
 npx skills@latest add GUOJIE-HONG/skills
 ```
 
-The installer lists the seven skills under the heading **Guojie Skills**. Take the ones you want, or one by name:
+The installer lists the nine skills under the heading **Guojie Skills**. Take the ones you want, or one by name:
 
 ```bash
 npx skills@latest add GUOJIE-HONG/skills --skill grill-softly
@@ -70,7 +69,7 @@ flowchart LR
     A["/dont-know-how<br/>I cannot start this task"] --> B["/grill-softly<br/>settle the decisions,<br/>write the glossary and ADRs"]
     B --> C["/design-code-implement<br/>pick how to build it"]
     D["/implement-small-change<br/>land it with focused checks"]
-    C -.->|"design.md"| G["Matt's /implement<br/>build the tickets"]
+    C -.->|"design.md"| G["/impl or /implement-all<br/>build along design.md"]
     B -. interview stalls .-> E["/show-grill-clearly<br/>answer in the browser,<br/>paste the reply back"]
     E -.-> B
     B -. uses .-> F["torture-gently<br/>the interview engine"]
@@ -129,6 +128,22 @@ When the repo has no architecture to inherit (greenfield), the directions come f
 
 **What it does not do.** Write production code, pad the list with contrived variants, or record rejected directions in `design.md`. If the conventions already determine the approach, it says so and stops. It does not recommend how to implement; that choice is yours.
 
+### `/impl`
+
+**Use it when** a spec or a few tickets are ready and you want them built in the current session along the direction in `design.md`.
+
+**What it does.** Matt's `implement`, plus one read: `design.md` beside the spec (or under `.scratch/<feature-slug>/`). It works test-first at the seams the spec agreed on, typechecks and runs single test files as it goes, runs the full suite once, runs `$code-review`, fixes what it finds, and commits to the current branch.
+
+**What it does not do.** Choose a new direction. A `design.md` decision the code contradicts is raised with you.
+
+### `/implement-all`
+
+**Use it when** a whole spec with its tickets is ready and you want it built in parallel into one merge request.
+
+**What it does.** Matt's `implement-spec`, with `design.md` among the pointers every implementer sub-agent reads. It walks the ticket frontier with implementer sub-agents in separate worktrees, merges each into one branch, fixes the `$code-review` findings in a single pass, and opens the merge request on whatever host `git remote -v` shows: a pull request on GitHub, a merge request on GitLab.
+
+**What it does not do.** Choose a new direction. A `design.md` decision an implementer finds contradicted is reported back to you.
+
 ### `/implement-small-change`
 
 **Use it when** you need a small bug fix, tweak, or feature landed with the smallest workflow that still proves the behavior.
@@ -139,7 +154,7 @@ When the repo has no architecture to inherit (greenfield), the directions come f
 
 ## Deprecated
 
-`to-tasks` and `implement-task` live in [`deprecated/`](./deprecated) for reference. Neither the plugin nor `npx skills` installs them. They split tickets into two-project tasks for small models, which did not lower the error rate on cross-project work in practice; implement tickets with Matt's `implement` instead.
+`to-tasks` and `implement-task` live in [`deprecated/`](./deprecated) for reference. Neither the plugin nor `npx skills` installs them. They split tickets into two-project tasks for small models, which did not lower the error rate on cross-project work in practice; implement tickets with `/impl` or `/implement-all` instead.
 
 ## Versioning
 

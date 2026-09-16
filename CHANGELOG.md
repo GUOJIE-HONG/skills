@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.0
+
+- New skill `impl`: Matt Pocock's `implement` that also reads `design.md`, so the work follows the implementation direction `design-code-implement` recorded.
+- New skill `implement-all`: Matt Pocock's `implement-spec` with `design.md` among the context pointers every implementer sub-agent reads, and a merge request opened on whichever host the repository uses (GitHub, GitLab, ...).
+
 ## 0.5.0
 
 - Deprecated `to-tasks` and `implement-task`: moved to `deprecated/` and no longer shipped by the Claude Code plugin or `npx skills`. Splitting tickets into two-project tasks did not lower the error rate of small models on cross-project work in practice. Implement tickets with Matt Pocock's `implement` instead.

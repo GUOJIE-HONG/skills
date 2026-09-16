@@ -2,9 +2,9 @@
 
 [English](./README.md) | **繁體中文**
 
-這裡放的是我平常在用的七個 agent skill。它們大多管同一段時間：程式碼還沒開始寫的時候。不知道從哪下手、需求還沒問清楚、做法還沒選定、或是改動很小但不想憑感覺動手，這幾個 skill 就是為這些場面寫的。
+這裡放的是我平常在用的九個 agent skill。它們大多管同一段時間：程式碼還沒開始寫的時候。不知道從哪下手、需求還沒問清楚、做法還沒選定、或是改動很小但不想憑感覺動手，這幾個 skill 就是為這些場面寫的。另外兩個往前多走一步：照 `design.md` 選定的方向把 spec 做出來。
 
-它們長在 [Matt Pocock 的 skills](https://github.com/mattpocock/skills) 上面。我沒有重做他已經做好的東西，有兩個 skill 會直接呼叫他的，所以請先裝他那套，見下方[前置需求](#前置需求mattpocock-skills)。
+它們長在 [Matt Pocock 的 skills](https://github.com/mattpocock/skills) 上面。我沒有重做他已經做好的東西，有四個 skill 會直接呼叫他的，所以請先裝他那套，見下方[前置需求](#前置需求mattpocock-skills)。
 
 共通的脾氣只有一個：每句話要有出處。`path:line`、URL、文件章節，或是你自己說過的話都算。查不到的事會直接告訴你查不到，不會編一個看起來合理的答案填上去。
 
@@ -15,9 +15,8 @@
 | 本套 skill | 呼叫 | 用在哪 |
 | --- | --- | --- |
 | `grill-softly` | `domain-modeling` | 訪談時同步寫詞彙表與 ADR |
+| `impl`、`implement-all` | `tdd`、`code-review` | 在 spec 講好的接縫先寫測試，以及收尾的 review |
 | `implement-small-change` | `grill-with-docs`、`diagnosing-bugs` | 「小改動」其實藏有範圍，或原因查不出來時的交接 |
-
-`design-code-implement` 寫好 `design.md` 之後，ticket 交給他的 `implement` 實作。
 
 另外四個（`dont-know-how`、`torture-gently`、`show-grill-clearly`、`design-code-implement`）沒裝他的也能跑。
 
@@ -55,7 +54,7 @@ claude plugin update guojie-skills@guojie-hong
 npx skills@latest add GUOJIE-HONG/skills
 ```
 
-安裝器會在 **Guojie Skills** 底下列出七個 skill，勾你要的。只要一個也行：
+安裝器會在 **Guojie Skills** 底下列出九個 skill，勾你要的。只要一個也行：
 
 ```bash
 npx skills@latest add GUOJIE-HONG/skills --skill grill-softly
@@ -70,14 +69,14 @@ flowchart LR
     A["/dont-know-how<br/>這個任務我不知道從哪開始"] --> B["/grill-softly<br/>把決策問清楚，<br/>同步寫詞彙表與 ADR"]
     B --> C["/design-code-implement<br/>決定怎麼做"]
     D["/implement-small-change<br/>用聚焦的檢查落地"]
-    C -.->|"design.md"| G["Matt 的 /implement<br/>實作 ticket"]
+    C -.->|"design.md"| G["/impl 或 /implement-all<br/>照 design.md 實作"]
     B -. 訪談卡住 .-> E["/show-grill-clearly<br/>在瀏覽器作答，<br/>把回覆貼回對話"]
     E -.-> B
     B -. 使用 .-> F["torture-gently<br/>訪談引擎"]
     D -. 藏有範圍 .-> B
 ```
 
-除了 `torture-gently`，其他七個都要你自己打指令才會動。`torture-gently` 是例外，你說「幫我壓力測試這個計畫」時 agent 可能自己拿來用，`grill-softly` 也把它當引擎在呼叫。
+除了 `torture-gently`，其他八個都要你自己打指令才會動。`torture-gently` 是例外，你說「幫我壓力測試這個計畫」時 agent 可能自己拿來用，`grill-softly` 也把它當引擎在呼叫。
 
 不用整條鏈跑完。每個 skill 都接得住上一步丟過來的東西，不管是檔案、交接內容，還是你在對話裡打的一段話。做完自己的那段它就停，下一步是你的事。
 
@@ -129,6 +128,22 @@ flowchart LR
 
 如果 repo 的慣例已經把做法定死，湊不出三個真的方向，它會直說並停下，不會硬湊。它自己不寫產品程式碼，也不推薦要用什麼方式實作，那是你的決定。
 
+### `/impl`
+
+spec 或幾張 ticket 準備好了，想在目前這個 session 照 `design.md` 的方向做出來。用這個。
+
+它就是 Matt 的 `implement`，多讀一份 `design.md`（在 spec 旁邊，或 `.scratch/<feature-slug>/` 底下）。在 spec 講好的接縫先寫測試，邊做邊跑型別檢查和單一測試檔，最後跑一次整套測試，再跑 `$code-review` 並修掉發現的問題，commit 到目前的分支。
+
+它不會自己換方向。程式碼跟 `design.md` 的決定對不上時，它會提出來問你。
+
+### `/implement-all`
+
+整份 spec 和它的 ticket 都準備好了，想並行做完、收成一個合併請求。用這個。
+
+它就是 Matt 的 `implement-spec`，但每個實作 sub-agent 拿到的指引裡多了 `design.md`。它照 ticket 的 frontier 派 sub-agent 在各自的 worktree 實作，逐一合進同一個分支，`$code-review` 的發現交給一個 sub-agent 一次修完，最後在 `git remote -v` 顯示的平台開合併請求：GitHub 開 PR，GitLab 開 MR。
+
+它不會自己換方向。實作時發現 `design.md` 的決定跟程式碼對不上，會回報給你。
+
 ### `/implement-small-change`
 
 小 bug、小調整、小功能。改動不大，但你還是想要一個能證明它真的對了的流程，而不是改完看起來沒事就算了。
@@ -141,7 +156,7 @@ flowchart LR
 
 ## 已棄用
 
-`to-tasks` 和 `implement-task` 放在 [`deprecated/`](./deprecated) 留作參考，plugin 和 `npx skills` 都不會安裝。它們把 ticket 切成兩個專案內的 task 交給小模型做，實測跨專案實作的錯誤率沒有下降；ticket 改交給 Matt 的 `implement` 實作。
+`to-tasks` 和 `implement-task` 放在 [`deprecated/`](./deprecated) 留作參考，plugin 和 `npx skills` 都不會安裝。它們把 ticket 切成兩個專案內的 task 交給小模型做，實測跨專案實作的錯誤率沒有下降；ticket 改交給 `/impl` 或 `/implement-all` 實作。
 
 ## 版本
 

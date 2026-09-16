@@ -1,0 +1,6 @@
+interface:
+  display_name: "Implement All"
+  short_description: "Implement a whole spec with parallel sub-agents, following design.md, into one merge request"
+  default_prompt: "Use $implement-all to implement this spec: run its tickets in parallel sub-agents following design.md, then open one merge request on this repository's host."
+policy:
+  allow_implicit_invocation: false
