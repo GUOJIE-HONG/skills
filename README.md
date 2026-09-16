@@ -4,7 +4,7 @@
 
 Nine agent skills for the stage *before* code is written and the first steps into it: finding a direction when you cannot start, interviewing along evidenced branches, choosing an implementation direction, implementing along it, and landing each small change with proportionate validation.
 
-They are built on top of [Matt Pocock's skills](https://github.com/mattpocock/skills) and extend that set rather than replace it. Three of them call his skills directly, so install his set first (see [Prerequisite](#prerequisite-mattpocock-skills)).
+They are built on top of [Matt Pocock's skills](https://github.com/mattpocock/skills) and extend that set rather than replace it. Six of them call his skills, directly or indirectly, so install his set first (see [Prerequisite](#prerequisite-mattpocock-skills)).
 
 Every skill follows one rule: **evidence, never guesswork**. Claims carry a locator (`path:line`, URL, document section, or a user statement), and anything not established is reported as unknown.
 
@@ -14,7 +14,7 @@ Install [mattpocock-skills](https://github.com/mattpocock/skills) before this se
 
 | This skill | Calls | From mattpocock-skills |
 | --- | --- | --- |
-| `torture-gently`, and `dont-know-how` through it | `prototype` | a clickable demo when words cannot make a flow's behaviour clear |
+| `torture-gently` (and `dont-know-how`, which calls it) | `prototype` | a clickable demo when words cannot make a flow's behaviour clear |
 | `grill-softly` | `domain-modeling` | glossary and ADR writing during the interview |
 | `impl`, `implement-all` | `tdd`, `code-review` | test-first work at the spec's seams, and the closing review |
 | `implement-small-change` | `diagnosing-bugs` | hand-off when a "small" change turns out to have an uncertain cause |
@@ -130,13 +130,13 @@ You do not have to run the whole chain. Each skill accepts its input in whatever
 
 When the repo has no architecture to inherit (greenfield), the directions come from outside instead: project dependencies, then official docs and templates, then cross-checked community sources, each claim with its URL. The baseline is the official default for the stack. Each direction names the conventions it would establish, and the repo's instruction files still bind them. `design.md` then records the conventions the chosen direction sets.
 
-**What it does not do.** Write production code, pad the list with contrived variants, or record rejected directions in `design.md`. If the conventions already determine the approach, it says so and stops. It does not recommend how to implement; that choice is yours.
+**What it does not do.** Write production code, pad the list with contrived variants, or record rejected directions in `design.md`. If the conventions already determine the approach, it says so and stops. It recommends a direction, but the choice is yours.
 
 ### `/impl`
 
 **Use it when** a spec or a few tickets are ready and you want them built in the current session along the direction in `design.md`.
 
-**What it does.** Matt's `implement`, plus one read: `design.md` beside the spec (or under `.scratch/<feature-slug>/`). It works test-first at the seams the spec agreed on, typechecks and runs single test files as it goes, runs the full suite once, runs `$code-review`, fixes what it finds, and commits to the current branch.
+**What it does.** Matt's `implement`, plus one read: `design.md` beside the spec (or under `.scratch/<feature-slug>/`). It works test-first at the seams the spec agreed on, typechecks and runs single test files as it goes, runs the full suite once, runs Matt's `code-review`, fixes what it finds, and commits to the current branch.
 
 **What it does not do.** Choose a new direction. A `design.md` decision the code contradicts is raised with you.
 
@@ -144,7 +144,7 @@ When the repo has no architecture to inherit (greenfield), the directions come f
 
 **Use it when** a whole spec with its tickets is ready and you want it built in parallel into one merge request.
 
-**What it does.** Matt's `implement-spec`, with `design.md` among the pointers every implementer sub-agent reads. It walks the ticket frontier with implementer sub-agents in separate worktrees, merges each into one branch, fixes the `$code-review` findings in a single pass, and opens the merge request on whatever host `git remote -v` shows: a pull request on GitHub, a merge request on GitLab.
+**What it does.** Matt's `implement-spec`, with `design.md` among the pointers every implementer sub-agent reads. It works through the tickets in dependency order with implementer sub-agents in separate worktrees, merges each into one branch, fixes the findings of Matt's `code-review` in a single pass, and opens the merge request on whatever host `git remote -v` shows: a pull request on GitHub, a merge request on GitLab.
 
 **What it does not do.** Choose a new direction. A `design.md` decision an implementer finds contradicted is reported back to you.
 
@@ -155,6 +155,12 @@ When the repo has no architecture to inherit (greenfield), the directions come f
 **What it does.** Discovers the affected symbols and blast radius first, preferring a code knowledge graph or other repo-aware tool over plain search. Applies a scope gate: one clear behavior, understood callers, one module or seam, a focused check that can detect it, easy to reverse. Makes the smallest coherent change, runs the narrowest checks that could catch a mistake, and reports the observable result, the files touched, the exact validation run, and what was deliberately not run.
 
 **What it does not do.** Classify a change as small by file count, run the full suite by default, or commit unless asked. When a hard stop appears (a cross-layer decision, a public contract, security or payments, a new domain term, or ambiguous interpretations) it pauses, writes an impact brief, and asks you to run `/grill-softly` with it. When the cause is uncertain rather than ambiguous, it hands off to `diagnosing-bugs`.
+
+### `/ptns`
+
+**Use it when** you want a fresh session to pick up the current progress.
+
+**What it does.** Writes the progress as one short handoff prompt that opens with the working directory the next session should be in. On Claude Code it lists the sessions it can reach, asks which one should take over, and sends the prompt only after you pick; on other agents (Codex, ...) it returns one copyable block.
 
 ## Deprecated
 
