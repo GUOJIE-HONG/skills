@@ -4,7 +4,7 @@ description: Find direction for a task you don't know how to start. Scans the re
 disable-model-invocation: true
 ---
 
-The user faces a task they cannot start: an unfamiliar system, protocol, library, or integration. Your deliverable is **direction**, given in the conversation: the real evidenced approaches the sources support, with a recommendation. Implementation is out of scope; stop once the directions are delivered.
+The user faces a task they cannot start: an unfamiliar system, protocol, library, or integration. Your deliverable is **direction**, given in the conversation: the real evidenced approaches the sources support, with a recommendation. Implementation is out of scope.
 
 One rule governs every step: **evidence, never guesswork**. Every claim carries a locator: a `path:line`, a URL, a document section, or a user statement. A fact you could not establish is reported as unknown, not filled in.
 
@@ -43,7 +43,7 @@ Done when every candidate direction rests on sources you can cite, and every ope
 
 ## 4. Return the directions
 
-Reply with every distinct direction the evidence credibly supports. Aim for at least three when three real alternatives exist. If the evidence supports only one or two, return those and explain why another direction would be manufactured rather than useful. For each:
+Reply with every distinct direction the evidence credibly supports. If the evidence supports only one or two, return those and explain why another direction would be manufactured rather than useful. For each:
 
 - what it is, in a sentence or two
 - the evidence it rests on, with locators
@@ -51,4 +51,4 @@ Reply with every distinct direction the evidence credibly supports. Aim for at l
 - when it fits
 - what remains unconfirmed, and who or what can confirm it
 
-Close with your recommendation and the reason. Then stop; choosing is the user's decision.
+Close with your recommendation and the reason. Then wait; choosing is the user's decision. Once they pick one, call the Skill tool for "torture-gently".

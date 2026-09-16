@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.2
+
+- `dont-know-how`: once you pick a direction it now continues straight into `torture-gently` instead of stopping, and it no longer aims for at least three directions; it returns what the evidence supports. The question templates no longer repeat rules already stated in the skill.
+- `torture-gently`: when how a flow should behave cannot be made clear in words, it calls Matt's `prototype` and asks against the clickable demo.
+
 ## 0.6.1
 
 - `implement-small-change`: on hidden scope it now writes the impact brief and asks you to run `/grill-softly`, instead of invoking Matt's `grill-with-docs`, which is user-invoked and could not be reached from a skill.

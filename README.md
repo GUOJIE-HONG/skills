@@ -14,11 +14,12 @@ Install [mattpocock-skills](https://github.com/mattpocock/skills) before this se
 
 | This skill | Calls | From mattpocock-skills |
 | --- | --- | --- |
+| `torture-gently`, and `dont-know-how` through it | `prototype` | a clickable demo when words cannot make a flow's behaviour clear |
 | `grill-softly` | `domain-modeling` | glossary and ADR writing during the interview |
 | `impl`, `implement-all` | `tdd`, `code-review` | test-first work at the spec's seams, and the closing review |
 | `implement-small-change` | `diagnosing-bugs` | hand-off when a "small" change turns out to have an uncertain cause |
 
-The other four (`dont-know-how`, `torture-gently`, `show-grill-clearly`, `design-code-implement`) run on their own.
+The other two (`show-grill-clearly`, `design-code-implement`) run on their own.
 
 ## Install
 
@@ -66,17 +67,20 @@ Nothing updates behind your back. Pull the latest with `npx skills update`.
 
 ```mermaid
 flowchart LR
-    A["/dont-know-how<br/>I cannot start this task"] --> B["/grill-softly<br/>settle the decisions,<br/>write the glossary and ADRs"]
+    A["/dont-know-how<br/>I cannot start this task"] -->|"chosen direction"| F["torture-gently<br/>the interview engine"]
+    F --> C
+    F -. flow hard to describe .-> P["prototype<br/>click through the flow"]
+    B["/grill-softly<br/>settle the decisions,<br/>write the glossary and ADRs"]
     B --> C["/design-code-implement<br/>pick how to build it"]
     D["/implement-small-change<br/>land it with focused checks"]
     C -.->|"design.md"| G["/impl or /implement-all<br/>build along design.md"]
     B -. interview stalls .-> E["/show-grill-clearly<br/>answer in the browser,<br/>paste the reply back"]
     E -.-> B
-    B -. uses .-> F["torture-gently<br/>the interview engine"]
+    B -. uses .-> F
     D -. hidden scope .-> B
 ```
 
-Every skill here is **user-invoked**: you type it, it orchestrates. The one exception is `torture-gently`, which is **model-invoked**: the agent may reach for it on its own when you ask to stress-test a plan, and `grill-softly` calls it as its interview engine.
+Every skill here is **user-invoked**: you type it, it orchestrates. The one exception is `torture-gently`, which is **model-invoked**: the agent may reach for it on its own when you ask to stress-test a plan, and `dont-know-how` and `grill-softly` call it as their interview engine.
 
 You do not have to run the whole chain. Each skill accepts its input in whatever form it arrives (a file, a hand-off from the previous skill, or prose in the conversation) and stops at a clear boundary so the next step is your call.
 
@@ -86,11 +90,11 @@ You do not have to run the whole chain. Each skill accepts its input in whatever
 
 **Use it when** you face a task you cannot start: an unfamiliar system, protocol, library, or integration.
 
-**What it does.** Scans the repo for what the project already owns that touches the task. Asks only for inaccessible information that could change a direction, its feasibility, or a material risk: counterpart documents, sample code, test environments, credential availability, and constraints. It asks how access is obtained, never for secret values. Then it gathers evidence itself, in order of authority (project dependencies, official sources, then community sources cross-checked against something official). It returns every real direction the evidence supports—normally at least three, but fewer when another would be manufactured—with each direction's evidence, strengths and weaknesses, fit, unknowns, and a recommendation.
+**What it does.** Scans the repo for what the project already owns that touches the task. Asks only for inaccessible information that could change a direction, its feasibility, or a material risk: counterpart documents, sample code, test environments, credential availability, and constraints. It asks how access is obtained, never for secret values. Then it gathers evidence itself, in order of authority (project dependencies, official sources, then community sources cross-checked against something official). It returns every real direction the evidence supports, without manufacturing extra ones, with each direction's evidence, strengths and weaknesses, fit, unknowns, and a recommendation.
 
 **What it does not do.** Implement anything. Choosing is your decision.
 
-**Hands off to** `/grill-softly` once you have picked a direction and need to settle the details.
+**Hands off to** `torture-gently`: once you pick a direction, it interviews you on the details right away. Run `/grill-softly` instead if you also want a glossary and ADRs written.
 
 ### `/grill-softly`
 
@@ -104,9 +108,9 @@ You do not have to run the whole chain. Each skill accepts its input in whatever
 
 ### `torture-gently`
 
-**Use it when** you want to stress-test your thinking without being dragged into hypothetical or out-of-scope questioning. This is the interview engine behind `grill-softly`, and the only model-invoked skill in the set.
+**Use it when** you want to stress-test your thinking without being dragged into hypothetical or out-of-scope questioning. This is the interview engine behind `dont-know-how` and `grill-softly`, and the only model-invoked skill in the set.
 
-**What it does.** Maps the decision as a design tree and asks in rounds: every question whose prerequisites are settled goes into the current round, numbered, with a recommended answer. Before a question is asked it must clear a four-part gate: evidence, plausibility, materiality, and responsibility. Fact-finding is the agent's job; you are asked only for private information, preferences, and decisions. After each round it checkpoints changed decisions, blockers, parked branches, and the next frontier. Changing an upstream decision reopens every dependent conclusion, and a paused session returns a checkpoint that can be resumed without re-asking decisions whose premises still hold. The session ends only when no gated branch remains unvisited and every parked branch has been resolved, removed from scope, or explicitly accepted as open.
+**What it does.** Maps the decision as a design tree and asks in rounds: every question whose prerequisites are settled goes into the current round, numbered, with a recommended answer. Before a question is asked it must clear a four-part gate: evidence, plausibility, materiality, and responsibility. Fact-finding is the agent's job; you are asked only for private information, preferences, and decisions. When a flow's behaviour is hard to put into words, it calls Matt's `prototype` for a clickable demo and asks against that. After each round it checkpoints changed decisions, blockers, parked branches, and the next frontier. Changing an upstream decision reopens every dependent conclusion, and a paused session returns a checkpoint that can be resumed without re-asking decisions whose premises still hold. The session ends only when no gated branch remains unvisited and every parked branch has been resolved, removed from scope, or explicitly accepted as open.
 
 **What it does not do.** Act on the outcome until you confirm a shared understanding has been reached.
 
