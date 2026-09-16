@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.0
+
+- Deprecated `to-tasks` and `implement-task`: moved to `deprecated/` and no longer shipped by the Claude Code plugin or `npx skills`. Splitting tickets into two-project tasks did not lower the error rate of small models on cross-project work in practice. Implement tickets with Matt Pocock's `implement` instead.
+
 ## 0.4.0
 
 - `ptns`: the handoff is now delivered, not just printed. On Claude Code the skill lists the reachable sessions, asks which one to hand the progress to, and sends the prompt straight to it with a session-to-session message; on any other agent (Codex, agy, ...) it still returns one copyable code block. The agent is detected from the tools actually available, never by asking the user, and nothing is sent before the user picks a target. The prompt also now opens with the working directory the next session should be in.

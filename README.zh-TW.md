@@ -2,7 +2,7 @@
 
 [English](./README.md) | **繁體中文**
 
-這裡放的是我平常在用的八個 agent skill。它們大多管同一段時間：程式碼還沒開始寫的時候。不知道從哪下手、需求還沒問清楚、做法還沒選定、或是改動很小但不想憑感覺動手，這幾個 skill 就是為這些場面寫的。最後兩個往前多走一步：把 ticket 切成不跨超過兩個專案的 task，然後一張 ticket 一個新 context 照順序做完。
+這裡放的是我平常在用的七個 agent skill。它們大多管同一段時間：程式碼還沒開始寫的時候。不知道從哪下手、需求還沒問清楚、做法還沒選定、或是改動很小但不想憑感覺動手，這幾個 skill 就是為這些場面寫的。
 
 它們長在 [Matt Pocock 的 skills](https://github.com/mattpocock/skills) 上面。我沒有重做他已經做好的東西，有兩個 skill 會直接呼叫他的，所以請先裝他那套，見下方[前置需求](#前置需求mattpocock-skills)。
 
@@ -17,7 +17,7 @@
 | `grill-softly` | `domain-modeling` | 訪談時同步寫詞彙表與 ADR |
 | `implement-small-change` | `grill-with-docs`、`diagnosing-bugs` | 「小改動」其實藏有範圍，或原因查不出來時的交接 |
 
-`to-tasks` 和 `implement-task` 不呼叫他的 skill，但吃的是他那套產出的東西：`to-tickets` 發布的 ticket，以及 `setup-matt-pocock-skills` 設定好的 issue tracker。
+`design-code-implement` 寫好 `design.md` 之後，ticket 交給他的 `implement` 實作。
 
 另外四個（`dont-know-how`、`torture-gently`、`show-grill-clearly`、`design-code-implement`）沒裝他的也能跑。
 
@@ -55,7 +55,7 @@ claude plugin update guojie-skills@guojie-hong
 npx skills@latest add GUOJIE-HONG/skills
 ```
 
-安裝器會在 **Guojie Skills** 底下列出八個 skill，勾你要的。只要一個也行：
+安裝器會在 **Guojie Skills** 底下列出七個 skill，勾你要的。只要一個也行：
 
 ```bash
 npx skills@latest add GUOJIE-HONG/skills --skill grill-softly
@@ -70,8 +70,7 @@ flowchart LR
     A["/dont-know-how<br/>這個任務我不知道從哪開始"] --> B["/grill-softly<br/>把決策問清楚，<br/>同步寫詞彙表與 ADR"]
     B --> C["/design-code-implement<br/>決定怎麼做"]
     D["/implement-small-change<br/>用聚焦的檢查落地"]
-    C -.->|"design.md"| G["/to-tasks<br/>把每張 ticket 切成<br/>兩個專案內的 task"]
-    G --> H["/implement-task<br/>一張 ticket 一個新 sub-agent，<br/>task 是它的 checklist"]
+    C -.->|"design.md"| G["Matt 的 /implement<br/>實作 ticket"]
     B -. 訪談卡住 .-> E["/show-grill-clearly<br/>在瀏覽器作答，<br/>把回覆貼回對話"]
     E -.-> B
     B -. 使用 .-> F["torture-gently<br/>訪談引擎"]
@@ -140,23 +139,9 @@ flowchart LR
 
 它不用檔案數判斷大小，一行改到共用契約也可能很大。碰到跨層決策、公開 API、安全或金流、新的領域名詞、或同一句話有幾種解讀，它會停下來交給 Matt 的 `grill-with-docs`。如果問題是原因查不出來而不是意思不清楚，交給 `diagnosing-bugs`。沒叫它 commit 它不會 commit。
 
-### `/to-tasks`
+## 已棄用
 
-`design.md` 已經寫好，有些 ticket 跨了三個以上專案，而你要交給小模型做，希望它有一步一步可驗證的短目標，不會跨整個 codebase 漂掉。用這個。
-
-它讀 `design.md`、所有 ticket，還有 repo 的專案定義（csproj 的 ProjectReference、workspace 設定、go.mod），建出相依鏈；`design.md` 說要新建的專案也會加進去。每張 ticket 先列出選定方向會寫到哪些專案，每個專案都要有 `design.md` 慣例的出處，沒出處的不算。然後把足跡切成 task：一個 task 最多寫兩個專案，測試專案算一個；由內往外排，同一 ticket 內的 task 標 Blocked by；每個 task 一條找得到出處的驗證指令。本來就在兩個專案內的 ticket 就只產一個 task，下游看到的形狀一致。
-
-整棵樹先列給你看，你點頭之前一個檔案都不寫。點頭後一個 task 一個檔，掛在 ticket 底下（`issues/01-slug/01-task.md`），真實 tracker 就開 sub-issue。每個 task 檔開頭就是邊界：這一步寫哪幾個專案，整張 ticket 的 task 加起來就是它的足跡；需要改到足跡外的專案就停下來留一筆 `needs-triage`。
-
-它不動 ticket 檔，不編造找不到出處的驗證指令。`design.md` 不在就不拆，直接說明並停下。
-
-### `/implement-task`
-
-`/to-tasks` 的樹發布好了，要依相依關係執行，讓已解除阻擋的獨立 ticket 各自在新的 context 並行實作，ticket 內的 task 照順序做。用這個。
-
-給它一個 task 檔，它自己照 `execute.md` 檢查 blocker、在邊界內實作、驗證並提交。給它一張 ticket 或整個功能目錄，它就改當調度：依可用名額把 ready ticket 派給不同 sub-agent，各自在獨立 worktree 工作。每個 worker 把 ticket、`design.md` 和所有 task 讀一次，然後照順序做 task，一個 task 一次驗證一個 commit；context 用完就換一個新 worker 從最後一個 commit 接著做。主代理把做完的 ticket 分支用 `git merge --no-ff` 合回原本的分支，在合併後的程式碼上跑 ticket 驗收、標成 done，然後重算 frontier，不停下來問；同樣涉及 `Tests` 專案不會因此一律串行。正常收尾時對合併結果跑一次 `/code-review`，發現交給一個修復 worker 在本輪足跡內全部修完。失敗或尚未合併的工作會保留 worktree、路徑與 commit，供後續接手。
-
-它不會寫到 ticket 足跡外面。task 做到一半發現要改一個這張 ticket 沒有任何 task 寫到的專案，就把那個改動退掉、在 Comments 記下哪個專案和為什麼、狀態改 `needs-triage`、這張 ticket 算失敗；其它進行中的 ticket 做完照常合併，只是不再派新的。要不要放寬足跡是 `design.md` 或拆法的問題，由你決定。review 發現落在本輪足跡外的它只回報不動手，每一條要變成 ticket 底下的回補 task 還是改 `design.md`，等你說。
+`to-tasks` 和 `implement-task` 放在 [`deprecated/`](./deprecated) 留作參考，plugin 和 `npx skills` 都不會安裝。它們把 ticket 切成兩個專案內的 task 交給小模型做，實測跨專案實作的錯誤率沒有下降；ticket 改交給 Matt 的 `implement` 實作。
 
 ## 版本
 
