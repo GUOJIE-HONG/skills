@@ -51,4 +51,4 @@ Reply with every distinct direction the evidence credibly supports. If the evide
 - when it fits
 - what remains unconfirmed, and who or what can confirm it
 
-Close with your recommendation and the reason. Then wait; choosing is the user's decision. Once they pick one, call the Skill tool for "torture-gently".
+Close with your recommendation and the reason. Then wait; choosing is the user's decision. Once they pick one, invoke `$torture-gently`.

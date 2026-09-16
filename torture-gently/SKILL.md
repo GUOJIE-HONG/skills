@@ -20,7 +20,7 @@ Before a question joins the frontier, it must clear the **question gate**:
 
 Human behaviour qualifies only when the evidence makes it a material responsibility of that subject. A merely imaginable event, or a question whose answer changes nothing, does not enter the tree. Within the evidence horizon, visit every branch that clears the gate.
 
-Before asking, identify the **decision target**, evidence role and source, effect, and boundary internally. Treat the user's answer as settling only that target. Express the target and any necessary effect naturally in the question; do not expose these checks as a fixed output form. Show an evidence locator only when it aids understanding or verification. When the decision is how a flow should behave and words cannot make it clear, call the Skill tool for "prototype" and ask the question against it.
+Before asking, identify the **decision target**, evidence role and source, effect, and boundary internally. Treat the user's answer as settling only that target. Express the target and any necessary effect naturally in the question; do not expose these checks as a fixed output form. Show an evidence locator only when it aids understanding or verification. When the decision is how a flow should behave and words cannot make it clear, invoke `$prototype` and ask the question against it.
 
 Format a round like so:
 
