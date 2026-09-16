@@ -14,11 +14,12 @@
 
 | 本套 skill | 呼叫 | 用在哪 |
 | --- | --- | --- |
+| `torture-gently`，以及透過它的 `dont-know-how` | `prototype` | 流程用文字講不清楚時，做一個能點的原型 |
 | `grill-softly` | `domain-modeling` | 訪談時同步寫詞彙表與 ADR |
 | `impl`、`implement-all` | `tdd`、`code-review` | 在 spec 講好的接縫先寫測試，以及收尾的 review |
 | `implement-small-change` | `diagnosing-bugs` | 「小改動」其實原因查不出來時的交接 |
 
-另外四個（`dont-know-how`、`torture-gently`、`show-grill-clearly`、`design-code-implement`）沒裝他的也能跑。
+另外兩個（`show-grill-clearly`、`design-code-implement`）沒裝他的也能跑。
 
 ## 安裝
 
@@ -66,17 +67,20 @@ npx skills@latest add GUOJIE-HONG/skills --skill grill-softly
 
 ```mermaid
 flowchart LR
-    A["/dont-know-how<br/>這個任務我不知道從哪開始"] --> B["/grill-softly<br/>把決策問清楚，<br/>同步寫詞彙表與 ADR"]
+    A["/dont-know-how<br/>這個任務我不知道從哪開始"] -->|"選定的方向"| F["torture-gently<br/>訪談引擎"]
+    F --> C
+    F -. 流程講不清楚 .-> P["prototype<br/>實際點一遍流程"]
+    B["/grill-softly<br/>把決策問清楚，<br/>同步寫詞彙表與 ADR"]
     B --> C["/design-code-implement<br/>決定怎麼做"]
     D["/implement-small-change<br/>用聚焦的檢查落地"]
     C -.->|"design.md"| G["/impl 或 /implement-all<br/>照 design.md 實作"]
     B -. 訪談卡住 .-> E["/show-grill-clearly<br/>在瀏覽器作答，<br/>把回覆貼回對話"]
     E -.-> B
-    B -. 使用 .-> F["torture-gently<br/>訪談引擎"]
+    B -. 使用 .-> F
     D -. 藏有範圍 .-> B
 ```
 
-除了 `torture-gently`，其他八個都要你自己打指令才會動。`torture-gently` 是例外，你說「幫我壓力測試這個計畫」時 agent 可能自己拿來用，`grill-softly` 也把它當引擎在呼叫。
+除了 `torture-gently`，其他八個都要你自己打指令才會動。`torture-gently` 是例外，你說「幫我壓力測試這個計畫」時 agent 可能自己拿來用，`dont-know-how` 和 `grill-softly` 也把它當引擎在呼叫。
 
 不用整條鏈跑完。每個 skill 都接得住上一步丟過來的東西，不管是檔案、交接內容，還是你在對話裡打的一段話。做完自己的那段它就停，下一步是你的事。
 
@@ -88,7 +92,7 @@ flowchart LR
 
 它會先翻 repo，看專案裡有沒有已經跟這件事沾上邊的東西。接著只問搜尋找不到、而且答案真的會改變方向、可行性或重大風險的問題，例如對方文件、範例程式、測試環境、存取資格和限制。它只問存取資格是否存在、怎麼申請、由誰管理，不會要你把密碼、API key、private key、token 或憑證秘密貼進對話。接著它自己去查，順序是專案已裝的套件、官方文件、最後才是社群來源，而且社群來源要跟官方的對過才算。
 
-最後你會拿到證據真正支持的所有方向：通常至少三個，但如果只有一到兩個可信方向，它會直接說明為什麼再加一個只是硬湊。每個方向都附證據、優缺點、適合什麼情況、還有哪些點沒確認。它會給建議，但不會替你選，也不會開始做。選定方向後，下一步通常是 `/grill-softly`。
+最後你會拿到證據真正支持的所有方向，不會為了湊數硬加；如果只有一到兩個可信方向，它會說明原因。每個方向都附證據、優缺點、適合什麼情況、還有哪些點沒確認。它會給建議，但不會替你選，也不會開始做。你選定方向後，它會直接接 `torture-gently` 把細節問清楚。如果你還想同步寫詞彙表和 ADR，改跑 `/grill-softly`。
 
 ### `/grill-softly`
 
@@ -100,11 +104,11 @@ flowchart LR
 
 ### `torture-gently`
 
-這是 `grill-softly` 背後的訪談引擎，也可以單獨用。名字的意思是：折磨你，但溫柔一點。它不會拖你去回答假設性的問題，也不會問超出討論範圍的事。
+這是 `dont-know-how` 和 `grill-softly` 背後的訪談引擎，也可以單獨用。名字的意思是：折磨你，但溫柔一點。它不會拖你去回答假設性的問題，也不會問超出討論範圍的事。
 
 做法是把決策畫成一棵樹，分回合問。前提都確定了的問題會一次全部丟出來，逐題編號，每題附建議答案。一個問題要進回合，得先過四道門：有證據、有可能發生、答案會改變某個決定、屬於這件事的責任範圍。四道門任一沒過，就不問。
 
-查事實是它的工作，不是你的。它只會問你三類東西：只有你知道的資訊、你的偏好、你的決定。每輪回答後，它只列出這輪改變的決策、阻塞事實、暫放分枝和下一輪問題；上游決策一改，依賴它的下游結論會全部重新打開。中途暫停時會留下可以接著走的 checkpoint，不會重問前提仍成立的決定。所有該問的問完，而且沒有未被接受的暫放分枝後，它才會停下來等你確認雙方理解一致，確認之前不動手。
+查事實是它的工作，不是你的。它只會問你三類東西：只有你知道的資訊、你的偏好、你的決定。流程該怎麼跑用文字講不清楚時，它會叫 Matt 的 `prototype` 做一個能點的原型，對著原型問你。每輪回答後，它只列出這輪改變的決策、阻塞事實、暫放分枝和下一輪問題；上游決策一改，依賴它的下游結論會全部重新打開。中途暫停時會留下可以接著走的 checkpoint，不會重問前提仍成立的決定。所有該問的問完，而且沒有未被接受的暫放分枝後，它才會停下來等你確認雙方理解一致，確認之前不動手。
 
 ### `/show-grill-clearly`
 
