@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0
+
+- `ptns`: the handoff is now delivered, not just printed. On Claude Code the skill lists the reachable sessions, asks which one to hand the progress to, and sends the prompt straight to it with a session-to-session message; on any other agent (Codex, agy, ...) it still returns one copyable code block. The agent is detected from the tools actually available, never by asking the user, and nothing is sent before the user picks a target. The prompt also now opens with the working directory the next session should be in.
+
 ## 0.3.0
 
 - New skill `ptns` (prompt to new session): hands the current progress to a fresh session as one short, copyable prompt covering the goal, verified progress, current state, next step, decisions and their reasons, and dead ends. User-invoked only.
