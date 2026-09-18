@@ -2,9 +2,9 @@
 
 [English](./README.md) | **繁體中文**
 
-這裡放的是我平常在用的九個 agent skill。它們大多用在還沒動手寫程式的時候：不知道從哪下手、需求還沒問清楚、做法還沒選定，或是改動很小，但不想憑感覺動手。`impl` 和 `implement-all` 再往前一步，照 `design.md` 選定的方向把 spec 做出來。
+這裡放的是我平常在用的十個 agent skill。它們大多用在還沒動手寫程式的時候：不知道從哪下手、需求還沒問清楚、做法還沒選定，或是改動很小，但不想憑感覺動手。`impl` 和 `implement-all` 再往前一步，照 `design.md` 選定的方向把 spec 做出來，`refactor` 則照 plan 重構既有程式碼。
 
-它們長在 [Matt Pocock 的 skills](https://github.com/mattpocock/skills) 上面。我沒有重做他已經做好的東西，有六個 skill 會直接或間接呼叫他的，所以請先裝他那套，見下方[前置需求](#前置需求mattpocock-skills)。
+它們長在 [Matt Pocock 的 skills](https://github.com/mattpocock/skills) 上面。我沒有重做他已經做好的東西，有七個 skill 會直接或間接呼叫他的，所以請先裝他那套，見下方[前置需求](#前置需求mattpocock-skills)。
 
 共通的脾氣只有一個：每句話要有出處。`path:line`、URL、文件章節，或是你自己說過的話都算。查不到的事會直接告訴你查不到，不會編一個看起來合理的答案填上去。
 
@@ -16,7 +16,7 @@
 | --- | --- | --- |
 | `torture-gently`（`dont-know-how` 會透過它呼叫） | `prototype` | 流程用文字講不清楚時，做一個能點的原型 |
 | `grill-softly` | `domain-modeling` | 訪談時同步寫詞彙表與 ADR |
-| `impl`、`implement-all` | `tdd`、`code-review` | 在 spec 講好的接縫先寫測試，以及收尾的 review |
+| `impl`、`implement-all`、`refactor` | `tdd`、`code-review` | 在 spec 講好的接縫先寫測試，以及收尾的 review |
 | `implement-small-change` | `diagnosing-bugs` | 「小改動」查不出原因時，交給它處理 |
 
 另外兩個（`show-grill-clearly`、`design-code-implement`）沒裝他的也能跑。
@@ -55,7 +55,7 @@ claude plugin update guojie-skills@guojie-hong
 npx skills@latest add GUOJIE-HONG/skills
 ```
 
-安裝器會在 **Guojie Skills** 底下列出九個 skill，勾你要的。只要一個也行：
+安裝器會在 **Guojie Skills** 底下列出十個 skill，勾你要的。只要一個也行：
 
 ```bash
 npx skills@latest add GUOJIE-HONG/skills --skill grill-softly
@@ -73,6 +73,7 @@ flowchart LR
     B["/grill-softly<br/>把決策問清楚，<br/>同步寫詞彙表與 ADR"]
     B --> C["/design-code-implement<br/>決定怎麼做"]
     D["/implement-small-change<br/>做小改動，<br/>用聚焦的檢查驗證"]
+    R["/refactor<br/>照 plan 重構"]
     C -.->|"design.md"| G["/impl 或 /implement-all<br/>照 design.md 實作"]
     B -. 訪談卡住 .-> E["/show-grill-clearly<br/>在瀏覽器作答，<br/>把回覆貼回對話"]
     E -.-> B
@@ -80,7 +81,7 @@ flowchart LR
     D -. 發現隱藏範圍 .-> B
 ```
 
-九個裡只有 `torture-gently` 不一定要你打指令：你說「幫我壓力測試這個計畫」時，agent 可能自己拿來用，`dont-know-how` 和 `grill-softly` 也把它當引擎呼叫。其他八個都要你自己打指令才會動。
+十個裡只有 `torture-gently` 不一定要你打指令：你說「幫我壓力測試這個計畫」時，agent 可能自己拿來用，`dont-know-how` 和 `grill-softly` 也把它當引擎呼叫。其他九個都要你自己打指令才會動。
 
 不用整條鏈跑完。每個 skill 都接得住上一步丟過來的東西，不管是檔案、交接內容，還是你在對話裡打的一段話。做完自己的那段它就停，下一步是你的事。唯一的例外是 `dont-know-how`：你選定方向後，它會直接接 `torture-gently` 往下問。
 
@@ -159,6 +160,16 @@ spec 或幾張 ticket 準備好了，想在目前這個 session 照 `design.md` 
 改動本身盡量小。修 bug 的話先重現症狀再改。跑的檢查也挑最窄但抓得到錯的那個，預設不跑整套測試。最後回報你看得到的結果、改了哪些檔案、跑了什麼驗證，以及刻意沒跑什麼和為什麼。
 
 它不用檔案數判斷大小，一行改到共用契約也可能很大。碰到跨層決策、公開 API、安全或金流、新的領域名詞、或同一句話有幾種解讀，它會停下來寫好影響摘要，請你帶著它跑 `/grill-softly`。如果問題是原因查不出來而不是意思不清楚，交給 `diagnosing-bugs`。沒叫它 commit 它不會 commit。
+
+### `/refactor`
+
+想重構既有程式碼時用這個。不管是行為要完全不變、只換寫法，還是順便要改行為，都可以交給它。
+
+它先讀程式碼和呼叫端，判斷這次是「保留行為」（所有看得到的結果都不變）還是「變更行為」，變更的話再看是不是破壞性的。兩種混在一起就拆成兩輪，先做保留行為的那輪。接著把 plan 寫到 `.refactor/<refactor-slug>/plan.md`，內容有目標、範圍、目前的測試覆蓋和缺口，以及每步做完程式都還能跑的小步驟。
+
+保留行為的話，動手前先在原本的程式上跑既有測試，全綠當基準；沒覆蓋到的地方先補 characterization test，把現在的行為記下來，之後每一步都重跑同一批測試。變更行為的話，用 Matt 的 `tdd` 先寫測試再改。兩條路最後都拿 plan 當 spec 跑 Matt 的 `code-review`，再回報跑了哪些測試、審查發現什麼、哪裡偏離了 plan。
+
+破壞性變更的 plan 你沒核准前，它不會動手。保留行為時不會改基準測試的斷言。程式碼跟 plan 對不上時，它會先停下來跟你一起改 plan，不會自己硬做下去。
 
 ### `/ptns`
 

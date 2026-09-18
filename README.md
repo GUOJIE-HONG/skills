@@ -2,9 +2,9 @@
 
 **English** | [繁體中文](./README.zh-TW.md)
 
-Nine agent skills for the stage *before* code is written and the first steps into it: finding a direction when you cannot start, interviewing along evidenced branches, choosing an implementation direction, implementing along it, and landing each small change with proportionate validation.
+Ten agent skills for the stage *before* code is written and the first steps into it: finding a direction when you cannot start, interviewing along evidenced branches, choosing an implementation direction, implementing along it, landing each small change with proportionate validation, and refactoring under a plan.
 
-They are built on top of [Matt Pocock's skills](https://github.com/mattpocock/skills) and extend that set rather than replace it. Six of them call his skills, directly or indirectly, so install his set first (see [Prerequisite](#prerequisite-mattpocock-skills)).
+They are built on top of [Matt Pocock's skills](https://github.com/mattpocock/skills) and extend that set rather than replace it. Seven of them call his skills, directly or indirectly, so install his set first (see [Prerequisite](#prerequisite-mattpocock-skills)).
 
 Every skill follows one rule: **evidence, never guesswork**. Claims carry a locator (`path:line`, URL, document section, or a user statement), and anything not established is reported as unknown.
 
@@ -16,7 +16,7 @@ Install [mattpocock-skills](https://github.com/mattpocock/skills) before this se
 | --- | --- | --- |
 | `torture-gently` (and `dont-know-how`, which calls it) | `prototype` | a clickable demo when words cannot make a flow's behaviour clear |
 | `grill-softly` | `domain-modeling` | glossary and ADR writing during the interview |
-| `impl`, `implement-all` | `tdd`, `code-review` | test-first work at the spec's seams, and the closing review |
+| `impl`, `implement-all`, `refactor` | `tdd`, `code-review` | test-first work at the spec's seams, and the closing review |
 | `implement-small-change` | `diagnosing-bugs` | hand-off when a "small" change turns out to have an uncertain cause |
 
 The other two (`show-grill-clearly`, `design-code-implement`) run on their own.
@@ -55,7 +55,7 @@ claude plugin update guojie-skills@guojie-hong
 npx skills@latest add GUOJIE-HONG/skills
 ```
 
-The installer lists the nine skills under the heading **Guojie Skills**. Take the ones you want, or one by name:
+The installer lists the ten skills under the heading **Guojie Skills**. Take the ones you want, or one by name:
 
 ```bash
 npx skills@latest add GUOJIE-HONG/skills --skill grill-softly
@@ -73,6 +73,7 @@ flowchart LR
     B["/grill-softly<br/>settle the decisions,<br/>write the glossary and ADRs"]
     B --> C["/design-code-implement<br/>pick how to build it"]
     D["/implement-small-change<br/>land it with focused checks"]
+    R["/refactor<br/>restructure under a plan"]
     C -.->|"design.md"| G["/impl or /implement-all<br/>build along design.md"]
     B -. interview stalls .-> E["/show-grill-clearly<br/>answer in the browser,<br/>paste the reply back"]
     E -.-> B
@@ -155,6 +156,14 @@ When the repo has no architecture to inherit (greenfield), the directions come f
 **What it does.** Discovers the affected symbols and blast radius first, preferring a code knowledge graph or other repo-aware tool over plain search. Applies a scope gate: one clear behavior, understood callers, one module or seam, a focused check that can detect it, easy to reverse. Makes the smallest coherent change, runs the narrowest checks that could catch a mistake, and reports the observable result, the files touched, the exact validation run, and what was deliberately not run.
 
 **What it does not do.** Classify a change as small by file count, run the full suite by default, or commit unless asked. When a hard stop appears (a cross-layer decision, a public contract, security or payments, a new domain term, or ambiguous interpretations) it pauses, writes an impact brief, and asks you to run `/grill-softly` with it. When the cause is uncertain rather than ambiguous, it hands off to `diagnosing-bugs`.
+
+### `/refactor`
+
+**Use it when** you want existing code restructured, whether the behavior must stay exactly the same or is meant to change along the way.
+
+**What it does.** Reads the code and its callers, then classifies the request: behavior-preserving (every observable result stays the same) or behavior-changing, and whether a change is breaking. A request that mixes both is split into two passes, the behavior-preserving one first. It writes a plan to `.refactor/<refactor-slug>/plan.md` with the goal, scope, current test coverage and its gaps, and small steps that each leave the code working. A behavior-preserving pass runs the existing tests on the untouched code as a green baseline, adds characterization tests for the gaps, and reruns the same tests after every step. A behavior-changing pass goes test-first with Matt's `tdd`. Both close with Matt's `code-review` against the plan, then report the tests run, the review findings, and every deviation from the plan.
+
+**What it does not do.** Edit before you approve the plan of a breaking change. Change the assertions of the baseline tests on a behavior-preserving pass. Carry on when the code contradicts the plan: it stops and updates the plan with you first.
 
 ### `/ptns`
 

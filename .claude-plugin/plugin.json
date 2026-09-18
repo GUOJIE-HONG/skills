@@ -26,6 +26,7 @@
     "./impl",
     "./implement-all",
     "./implement-small-change",
+    "./refactor",
     "./ptns"
   ]
 }
