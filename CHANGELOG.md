@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0
+
+- New skill `refactor`: classifies a refactor as behavior-preserving or behavior-changing, writes a plan to `.refactor/<refactor-slug>/plan.md`, then either refactors against a green test baseline or goes test-first with Matt's `tdd`, and closes with Matt's `code-review` against the plan. A breaking change waits for your approval of the plan.
+
 ## 0.6.2
 
 - `dont-know-how`: once you pick a direction it now continues straight into `torture-gently` instead of stopping, and it no longer aims for at least three directions; it returns what the evidence supports. The question templates no longer repeat rules already stated in the skill.
