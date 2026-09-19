@@ -1,18 +1,18 @@
 ---
 name: design-code-implement
-description: Turn a settled requirement spec into at least three grounded implementation directions, then record the chosen one. Use after a spec exists and before any code is written.
+description: Turn a settled requirement into at least three grounded implementation directions, then record the chosen one. Use after the requirement is settled and before any code is written.
 disable-model-invocation: true
 ---
 
 # Design Code Implement
 
-Decide *how* to build something the spec already says *what* is. Explore the repository's real architectural conventions with parallel sub-agents, surface where the new requirement is in tension with them, and offer at least three directions the user picks from.
+Decide *how* to build something whose *what* is already settled. Explore the repository's real architectural conventions with parallel sub-agents, surface where the new requirement is in tension with them, and offer at least three directions the user picks from.
 
 This skill does not write production code. It ends when a direction is chosen and recorded.
 
 ## 1. Establish the input
 
-Accept the spec in whatever form it arrives: a file path, an upstream skill's handoff, or prose in the conversation. Never demand a file. Read what the user points to, and restate the requested outcome in one sentence; get it confirmed if it is at all ambiguous.
+Accept the requirement in whatever form it arrives: a file path, an upstream skill's handoff, or prose in the conversation. Never demand a file. Read what the user points to, and restate the requested outcome in one sentence; get it confirmed if it is at all ambiguous.
 
 Do not ask the user for facts discoverable from the repository, runtime, or tools.
 
@@ -59,9 +59,11 @@ Give each direction exactly four fields:
 
 The fourth field is mandatory and forces honesty. A direction with no failure condition has not been thought through.
 
-Close with a **recommendation**: the direction you would pick and the tension or spec requirement that decides it. The choice stays the user's.
+Close with a **recommendation**: the direction you would pick and the tension or requirement that decides it. The choice stays the user's.
 
 **When the tensions cannot support three real directions**, say so plainly: report that the existing conventions already determine the approach, and stop. Never pad the list with contrived variants — a user who cannot tell a real choice from a manufactured one stops trusting all of them.
+
+**When exploration finds no existing convention for the requirement to inherit**, say so and stop; this skill has nothing to ground directions in.
 
 **Mixing is allowed.** If the user wants one direction's overall shape with another's error handling, take it — then restate the combined direction in full and get it confirmed before writing anything. A mix understood differently by each side is worse than no mix.
 
@@ -74,9 +76,9 @@ Write `design.md`.
 **Contents** — only what will be done:
 
 - The chosen direction as Mermaid, not prose. Name participants after the real modules or files it touches.
-  - Each flow that crosses components: a `sequenceDiagram` with an `alt` branch for every failure the spec or tickets imply.
+  - Each flow that crosses components: a `sequenceDiagram` with an `alt` branch for every failure the requirement implies.
   - Each entity that changes state: a `stateDiagram-v2`.
-  - When the direction has neither, a short list of the changes instead.
+  - Changes no diagram shows (migrations, configuration, interface shapes): a short list.
 - The conventions this work must follow, one line each with its evidence path.
 - Nothing else. **Do not write the rejected directions, and do not write their rationale.** A downstream implementing agent reads this file as instructions; describing an approach that is not being taken invites it to be taken.
 
