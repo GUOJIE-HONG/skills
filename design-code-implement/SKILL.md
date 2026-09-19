@@ -6,34 +6,26 @@ disable-model-invocation: true
 
 # Design Code Implement
 
-Decide *how* to build something the spec already says *what* is. Explore the repository's real architectural conventions with parallel sub-agents, surface where the new requirement is in tension with them, and offer at least three directions the user picks from. When the repository has no architecture to inherit, the directions come from external sources instead ([`greenfield.md`](greenfield.md)).
+Decide *how* to build something the spec already says *what* is. Explore the repository's real architectural conventions with parallel sub-agents, surface where the new requirement is in tension with them, and offer at least three directions the user picks from.
 
 This skill does not write production code. It ends when a direction is chosen and recorded.
 
 ## 1. Establish the input
 
-Accept the spec in whatever form it arrives: a file path, an upstream skill's handoff, or prose in the conversation. Never demand a file.
-
-Then:
-
-1. Restate the requested outcome in one sentence and get it confirmed if it is at all ambiguous.
-2. Read `CONTEXT.md` for the project's domain vocabulary. Use those terms exactly; do not invent synonyms.
-3. Read any ADRs under `docs/adr/` that touch the affected area. Decisions recorded there are settled — do not re-litigate them, and do not offer a direction that contradicts one without naming the ADR it overturns.
-4. When `to-tickets` tickets sit beside the spec, read them. Their acceptance criteria are what every direction must deliver.
-5. Record where the spec lives. Its directory determines where `design.md` lands (§5).
+Accept the spec in whatever form it arrives: a file path, an upstream skill's handoff, or prose in the conversation. Never demand a file. Read what the user points to, and restate the requested outcome in one sentence; get it confirmed if it is at all ambiguous.
 
 Do not ask the user for facts discoverable from the repository, runtime, or tools.
 
 ## 2. Scope the exploration
 
-Decide the aspects yourself, from the spec. Do not send a scout sub-agent first, and do not ask the user to approve the aspect list — they cannot judge it before seeing the repository's reality, and a wrong aspect exposes itself in the reports.
+Decide the aspects yourself, from the requirement confirmed in §1. Do not send a scout sub-agent first, and do not ask the user to approve the aspect list — they cannot judge it before seeing the repository's reality, and a wrong aspect exposes itself in the reports.
 
 Constraints on the aspect list:
 
-- **Always include domain language**: what the existing concepts are called, and whether the spec introduces a term the codebase does not have.
+- **Always include domain language**: what the existing concepts are called, and whether the requirement introduces a term the codebase does not have.
 - **Architectural convention only**: how layers are cut, how errors travel upward, how data enters and leaves, where tests live, where the existing seams are. Exclude surface style — naming case, file placement, formatting. Linters and neighbouring code already teach those, and nobody picks a different implementation direction because of camelCase.
-- **At most five sub-agents.** If the spec seems to need more, merge aspects. A requirement genuinely spanning eight architectural aspects should be split before it is designed.
-- **Bounded blast radius.** Explore only the areas the spec touches, plus recent hotspots from `git log --oneline`. Do not sweep the whole repository; irrelevant conventions dilute the real tensions.
+- **At most five sub-agents.** If the requirement seems to need more, merge aspects. A requirement genuinely spanning eight architectural aspects should be split before it is designed.
+- **Bounded blast radius.** Explore only the areas the requirement touches, plus recent hotspots from `git log --oneline`. Do not sweep the whole repository; irrelevant conventions dilute the real tensions.
 
 ## 3. Dispatch and collect
 
@@ -50,8 +42,6 @@ Require every sub-agent to report exactly three things per finding:
 3. **The tension** — where the new requirement collides with that convention. If there is none, say so explicitly.
 
 The tension field is the point of the exercise. Conventions with no tension are context; tensions are where directions come from.
-
-When every architectural aspect reports no existing convention, the requirement is **greenfield**: there is nothing to inherit and no tension to grow directions from. Build the directions by [`greenfield.md`](greenfield.md) instead of §4's baseline and tension rules; the user's choice and mixing still follow §4.
 
 ## 4. Produce the directions
 
@@ -79,7 +69,7 @@ Close with a **recommendation**: the direction you would pick and the tension or
 
 Write `design.md`.
 
-**Placement**: the same directory as the spec file. If the spec was not a file, use `.scratch/<slug>/design.md`.
+**Placement**: ask the user where it goes before writing it.
 
 **Contents** — only what will be done:
 
@@ -87,12 +77,10 @@ Write `design.md`.
   - Each flow that crosses components: a `sequenceDiagram` with an `alt` branch for every failure the spec or tickets imply.
   - Each entity that changes state: a `stateDiagram-v2`.
   - When the direction has neither, a short list of the changes instead.
-- The conventions this work must follow, one line each with its evidence path. For greenfield work, the conventions the chosen direction establishes, each with its source URL, alongside the instruction-file rules with their paths.
+- The conventions this work must follow, one line each with its evidence path.
 - Nothing else. **Do not write the rejected directions, and do not write their rationale.** A downstream implementing agent reads this file as instructions; describing an approach that is not being taken invites it to be taken.
 
 **If `design.md` already exists**: read it first, then update it — carry forward whatever still holds. Never overwrite it unseen.
-
-**ADR**: offer one only when all three are true — the decision is hard to reverse, a future reader will wonder why it was made, and it was a genuine trade-off between real alternatives. Offer it; do not create it unasked. Most implementation directions fail at least one of the three.
 
 ## 6. Hand back and stop
 
