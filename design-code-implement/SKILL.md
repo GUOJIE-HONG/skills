@@ -19,9 +19,8 @@ Then:
 1. Restate the requested outcome in one sentence and get it confirmed if it is at all ambiguous.
 2. Read `CONTEXT.md` for the project's domain vocabulary. Use those terms exactly; do not invent synonyms.
 3. Read any ADRs under `docs/adr/` that touch the affected area. Decisions recorded there are settled — do not re-litigate them, and do not offer a direction that contradicts one without naming the ADR it overturns.
-4. Read the repository's instruction files (`AGENTS.md`, `CLAUDE.md`, and the coding standards they point to). Their rules bind every direction, greenfield included.
-5. When `to-tickets` tickets sit beside the spec, read them. Their acceptance criteria are what every direction must deliver.
-6. Record where the spec lives. Its directory determines where `design.md` lands (§5).
+4. When `to-tickets` tickets sit beside the spec, read them. Their acceptance criteria are what every direction must deliver.
+5. Record where the spec lives. Its directory determines where `design.md` lands (§5).
 
 Do not ask the user for facts discoverable from the repository, runtime, or tools.
 
@@ -84,8 +83,11 @@ Write `design.md`.
 
 **Contents** — only what will be done:
 
-- The chosen direction, in enough detail to implement from.
-- The existing conventions this work must follow, each with its evidence path. For greenfield work, the conventions the chosen direction establishes, each with its source URL, alongside the instruction-file rules with their paths.
+- The chosen direction as Mermaid, not prose. Name participants after the real modules or files it touches.
+  - Each flow that crosses components: a `sequenceDiagram` with an `alt` branch for every failure the spec or tickets imply.
+  - Each entity that changes state: a `stateDiagram-v2`.
+  - When the direction has neither, a short list of the changes instead.
+- The conventions this work must follow, one line each with its evidence path. For greenfield work, the conventions the chosen direction establishes, each with its source URL, alongside the instruction-file rules with their paths.
 - Nothing else. **Do not write the rejected directions, and do not write their rationale.** A downstream implementing agent reads this file as instructions; describing an approach that is not being taken invites it to be taken.
 
 **If `design.md` already exists**: read it first, then update it — carry forward whatever still holds. Never overwrite it unseen.

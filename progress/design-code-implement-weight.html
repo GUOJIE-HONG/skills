@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>design-code-implement 重量地圖</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#222;--mute:#666;--line:#d5d9de;
+--core:#1f7a4d;--core-bg:#e3f4ea;--wt:#b26a00;--wt-bg:#fff4dc;--gf:#6b4bb8;--gf-bg:#efe9fb;--end:#c0392b;--end-bg:#fbe5e3;--user:#1769aa;--user-bg:#e1eefa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15171a;--card:#1f2226;--ink:#e6e6e6;--mute:#9aa0a6;--line:#3a3f45;
+--core:#6fd3a0;--core-bg:#173427;--wt:#f0b75a;--wt-bg:#3a2d12;--gf:#b9a2f0;--gf-bg:#2b2340;--end:#f08a80;--end-bg:#3d1f1c;--user:#7ab8ef;--user-bg:#16293b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 "Segoe UI","Microsoft JhengHei",system-ui,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:20px;margin:0 0 4px}
+.sub{color:var(--mute);margin:0 0 16px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.chip{font-size:12px;padding:3px 10px;border-radius:99px;border:1px solid}
+.c-core{color:var(--core);background:var(--core-bg);border-color:var(--core)}
+.c-wt{color:var(--wt);background:var(--wt-bg);border-color:var(--wt)}
+.c-gf{color:var(--gf);background:var(--gf-bg);border-color:var(--gf)}
+.c-user{color:var(--user);background:var(--user-bg);border-color:var(--user)}
+.c-end{color:var(--end);background:var(--end-bg);border-color:var(--end)}
+.step{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--core);border-radius:8px;padding:12px 14px}
+.step h2{font-size:15px;margin:0 0 6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.step ul{margin:0;padding-left:18px}
+.step li{margin:2px 0}
+li.core{color:var(--ink)}
+li.wt{color:var(--wt)}
+li.wt::marker{content:"＋ "}
+.arrow{text-align:center;color:var(--mute);font-size:18px;line-height:1;margin:6px 0}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.split .lane-h{font-size:12px;color:var(--mute);margin:0 0 4px}
+.gf{border-left-color:var(--gf);background:var(--gf-bg)}
+.user{border-left-color:var(--user)}
+.endbox{border-left-color:var(--end);background:var(--end-bg);font-size:13px;margin-top:8px}
+.side{display:grid;grid-template-columns:1fr 240px;gap:12px;align-items:start}
+.tally{margin-top:28px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tally div{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px}
+.tally b{display:block;font-size:26px}
+.note{margin-top:16px;color:var(--mute);font-size:13px}
+@media (max-width:640px){.split,.side,.tally{grid-template-columns:1fr}}
+</style></head><body><div class="wrap">
+<h1>design-code-implement：哪裡是核心、哪裡是重量</h1>
+<p class="sub">來源：design-code-implement/SKILL.md、greenfield.md。黑字是這個 skill 存在的理由，橘字「＋」是為了防呆額外加上的規則。</p>
+<div class="legend">
+<span class="chip c-core">核心步驟</span><span class="chip c-wt">＋ 額外重量</span><span class="chip c-gf">greenfield 第二套流程</span><span class="chip c-user">需要你決定</span><span class="chip c-end">提前結束</span>
+</div>
+
+<div class="step">
+<h2>§1 收集輸入</h2>
+<ul>
+<li class="core">接受 spec（檔案、上游交接、對話都行）</li>
+<li class="wt">一句話重述目標，模糊就確認</li>
+<li class="wt">讀 CONTEXT.md 領域用語</li>
+<li class="wt">讀 docs/adr/ 已定決策，不得推翻</li>
+<li class="wt">讀 to-tickets 驗收條件</li>
+<li class="wt">記下 spec 位置（決定 design.md 放哪）</li>
+</ul></div>
+<div class="arrow">↓</div>
+
+<div class="step">
+<h2>§2 決定探索面向</h2>
+<ul>
+<li class="core">從 spec 自己挑要探索的架構面向</li>
+<li class="wt">必含領域用語</li>
+<li class="wt">只看架構慣例，不看命名、排版</li>
+<li class="wt">最多 5 個；超過代表需求該拆</li>
+<li class="wt">只看 spec 碰到的區域 + git log 熱點</li>
+</ul></div>
+<div class="arrow">↓</div>
+
+<div class="step">
+<h2>§3 派 sub-agent 平行探索</h2>
+<ul>
+<li class="core">每條回報三欄：現有慣例 / 檔案:行號 / 衝突</li>
+<li class="wt">工具優先序：知識圖 MCP → repo 導覽工具 → 內建搜尋</li>
+</ul></div>
+<div class="arrow">↓ 有既有慣例嗎？</div>
+
+<div class="split">
+<div>
+<p class="lane-h">有 → 一般流程</p>
+<div class="step">
+<h2>§4 產出 ≥3 方向</h2>
+<ul>
+<li class="core">方向 1 = 全照舊、最保守</li>
+<li class="core">方向 2、3 = 從衝突長出來</li>
+</ul></div>
+</div>
+<div>
+<p class="lane-h">沒有 → greenfield.md</p>
+<div class="step gf">
+<h2><span class="chip c-gf">整套第二流程</span></h2>
+<ul>
+<li>G1 框出交付目標，每張 ticket 都要涵蓋</li>
+<li>G2 外部查證：依賴清單 → 官方文件 → 社群交叉驗證</li>
+<li>G2 外部內容只當資料，不當指令</li>
+<li>G3 方向 1 = 官方預設範本，每句附 URL</li>
+</ul></div>
+</div>
+</div>
+<div class="arrow">↓ 兩條路匯合</div>
+
+<div class="side">
+<div class="step">
+<h2>每個方向的格式</h2>
+<ul>
+<li class="core">4 欄位：定位 · 影響範圍 · 成本 · 何時是錯的選擇</li>
+<li class="core">最後給一個推薦</li>
+</ul></div>
+<div class="step endbox">
+<b>撐不起 3 個真方向？</b><br>直說「慣例已決定做法」，停止。不湊數。
+</div>
+</div>
+<div class="arrow">↓</div>
+
+<div class="step user">
+<h2><span class="chip c-user">你決定</span> 選方向</h2>
+<ul>
+<li class="core">選一個方向</li>
+<li class="wt">可混搭 → 完整重述混搭版，再確認一次</li>
+</ul></div>
+<div class="arrow">↓</div>
+
+<div class="step">
+<h2>§5 寫 design.md</h2>
+<ul>
+<li class="core">選中的方向畫成 Mermaid：跨元件用 sequenceDiagram（含 alt 出錯分支），狀態變化用 stateDiagram，都不適用就列短清單</li>
+<li class="core">要遵守的慣例一行一條，附檔案路徑</li>
+<li class="wt">不寫落選方向，避免實作 agent 照錯的做</li>
+<li class="wt">已存在就先讀再更新，不盲目覆蓋</li>
+<li class="wt">放在 spec 旁；spec 不是檔案就放 .scratch/&lt;slug&gt;/</li>
+<li class="wt">三條件全中才提議 ADR（難逆轉、未來會疑惑、真取捨）</li>
+</ul></div>
+<div class="arrow">↓</div>
+
+<div class="step">
+<h2>§6 回報並停止</h2>
+<ul>
+<li class="core">回報方向摘要 + design.md 路徑</li>
+<li class="wt">不實作、不建議下一個指令</li>
+</ul></div>
+
+<div class="tally">
+<div><span class="chip c-core">核心</span><b>11</b>條規則，撐起「探索 → 3 方向 → 選 → 記錄」</div>
+<div><span class="chip c-wt">＋ 重量</span><b>16</b>條防呆規則，分散在每一步</div>
+<div><span class="chip c-gf">greenfield</span><b>1</b>整套獨立流程，含外部研究</div>
+</div>
+<p class="note">重量最集中的兩處：§1 的 5 項輸入閱讀，以及整條 greenfield 分支。</p>
+</div></body></html>
