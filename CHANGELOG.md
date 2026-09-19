@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.6
+
+- `design-code-implement`: when exploration finds no existing convention to inherit, it now says so and stops instead of reporting that the existing conventions already determine the approach.
+- `design-code-implement`: `design.md` now lists changes no diagram shows (migrations, configuration, interface shapes) alongside the Mermaid diagrams, instead of only when neither diagram applies.
+
 ## 0.7.5
 
 - `design-code-implement`: `design.md` now records the chosen direction as Mermaid instead of prose: a `sequenceDiagram` with an `alt` branch for every failure path for flows that cross components, a `stateDiagram-v2` for state changes, and a short list only when neither applies. Participants are named after the real modules or files, and the conventions to follow are one line each with their evidence path.
