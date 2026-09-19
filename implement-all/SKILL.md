@@ -10,7 +10,7 @@ You have been provided a spec with tickets describing how to implement it. The g
 
 The tickets are a **task graph** with blocking relationships, so there is always a **frontier** of tickets ready to be grabbed.
 
-Communicate with subagents through **context pointers**: the spec, the tickets, `design.md`, research notes, and previous commits. `design.md` sits beside the spec file, or at `.scratch/<feature-slug>/design.md` when the spec lives on an issue tracker; it records the chosen implementation direction and the conventions every implementer follows. Keep messages sparse and let the pointers carry the content.
+Communicate with subagents through **context pointers**: the spec, the tickets, `design.md`, research notes, and previous commits. Ask the user for the path of `design.md` if they have not given it; it records the chosen implementation direction and the conventions every implementer follows. Keep messages sparse and let the pointers carry the content.
 
 Run **implementer subagents** in the background for maximum concurrency.
 

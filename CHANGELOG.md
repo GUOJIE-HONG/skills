@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.5
+
+- `design-code-implement`: `design.md` now records the chosen direction as Mermaid instead of prose: a `sequenceDiagram` with an `alt` branch for every failure path for flows that cross components, a `stateDiagram-v2` for state changes, and a short list only when neither applies. Participants are named after the real modules or files, and the conventions to follow are one line each with their evidence path.
+- `design-code-implement` (breaking): the greenfield path is gone. When the repository has no architecture to inherit, the skill no longer researches external sources to build directions; that is what `dont-know-how` is for.
+- `design-code-implement`: it now reads only what you point it to, instead of always reading `CONTEXT.md`, ADRs, tickets and the instruction files, and it no longer offers to write an ADR.
+- `design-code-implement`, `impl`, `implement-all` (breaking): `design.md` no longer lands beside the spec or under `.scratch/` by default. `design-code-implement` asks where to write it, and `impl` and `implement-all` ask for its path when you have not given it.
+
 ## 0.7.0
 
 - New skill `refactor`: classifies a refactor as behavior-preserving or behavior-changing, writes a plan to `.refactor/<refactor-slug>/plan.md`, then either refactors against a green test baseline or goes test-first with Matt's `tdd`, and closes with Matt's `code-review` against the plan. A breaking change waits for your approval of the plan.
