@@ -45,6 +45,8 @@ The tension field is the point of the exercise. Conventions with no tension are 
 
 ## 4. Produce the directions
 
+**If exploration found no existing convention for the requirement to inherit**, say so and stop; this skill has nothing to ground directions in. Do not produce directions.
+
 Present **at least three** directions in the conversation, sequentially, so each is absorbed before the comparison.
 
 - **Direction 1 is always the baseline**: follow every existing convention, open no new seam, take the most conservative path. It costs almost nothing to produce and it is what the other directions are measured against — without it the user cannot judge whether the extra cost is worth paying.
@@ -62,8 +64,6 @@ The fourth field is mandatory and forces honesty. A direction with no failure co
 Close with a **recommendation**: the direction you would pick and the tension or requirement that decides it. The choice stays the user's.
 
 **When the tensions cannot support three real directions**, say so plainly: report that the existing conventions already determine the approach, and stop. Never pad the list with contrived variants — a user who cannot tell a real choice from a manufactured one stops trusting all of them.
-
-**When exploration finds no existing convention for the requirement to inherit**, say so and stop; this skill has nothing to ground directions in.
 
 **Mixing is allowed.** If the user wants one direction's overall shape with another's error handling, take it — then restate the combined direction in full and get it confirmed before writing anything. A mix understood differently by each side is worse than no mix.
 
