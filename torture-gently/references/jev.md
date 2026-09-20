@@ -45,7 +45,7 @@ Keep `evidence` to what the round actually rests on. Leave `settled` empty on th
 
 ## 2. Ask six judgments per candidate
 
-Question ids never reach the model, so every instruction names its candidate by a backticked path into `state`. Emit this block once per candidate, replacing every `0` in the ids and paths with that candidate's index. This is the exact wire format; send it verbatim apart from the index.
+Question ids never reach the model, so every instruction names its candidate by a backticked path into `state`. One request carries the whole round: `state.candidates` lists every candidate on the frontier in order, and `questions` holds six entries for each of them. The block below is that request for a frontier of one. This is the exact wire format; send it verbatim apart from the indices.
 
 ```json
 {
@@ -109,7 +109,29 @@ Question ids never reach the model, so every instruction names its candidate by 
 
 A `noul` takes `criteria.true` and `criteria.false`, a `choice` takes a map of option to description, and a `score` takes an ordered array of at least two levels. A wrong shape returns `422`.
 
-Ship every candidate in one request. The questions are independent and evaluate in parallel; a second request is warranted only when an answer is needed to fetch evidence or construct new state.
+For a longer frontier, extend `state.candidates` and repeat those six entries once per candidate — replacing every `0` in the ids and paths with that candidate's index — inside the same `questions` object. Never emit a second top-level block: `candidates[1]` resolves only against the array you actually send, so a split request drops candidates or returns `422`. Two candidates give a twelve-entry `questions`:
+
+```json
+{
+  "model": "jev-latest",
+  "state": {
+    "subject": "...",
+    "settled": [],
+    "evidence": ["..."],
+    "candidates": [{ "branch": "First candidate" }, { "branch": "Second candidate" }]
+  },
+  "questions": {
+    "c0_evidence": {}, "c0_plausibility": {}, "c0_materiality": {},
+    "c0_responsibility": {}, "c0_class": {}, "c0_owner": {},
+    "c1_evidence": {}, "c1_plausibility": {}, "c1_materiality": {},
+    "c1_responsibility": {}, "c1_class": {}, "c1_owner": {}
+  }
+}
+```
+
+That skeleton shows ids and placement only. Each `{}` stands for the full entry of the same name above, with its `0` replaced by the candidate's index; an empty object on the wire returns `422`.
+
+The questions are independent and evaluate in parallel; a second request is warranted only when an answer is needed to fetch evidence or construct new state.
 
 ## 3. Send it
 

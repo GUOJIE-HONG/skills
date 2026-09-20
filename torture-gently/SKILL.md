@@ -5,13 +5,14 @@ description: Grill the user about a plan, decision, or idea along grounded, deci
 
 Interview the user until you reach a shared understanding. Map this as a **design tree**: every decision branches into the decisions that hang off it.
 
-Before the first round, probe for a key with exactly this command, which reports only whether one is set and whether the file is readable by anyone else:
+Before the first round, probe for a key with exactly this command, which reports only whether one is set and whether any account other than the owner can reach it:
 
 ```sh
 f="$HOME/.typesafe/api_key.env"; d="$HOME/.typesafe"
-m() { stat -c '%a' "$1" 2>/dev/null || stat -f '%Lp' "$1" 2>/dev/null; }
+private() { p=$(stat -c '%a' "$1" 2>/dev/null || stat -f '%Lp' "$1" 2>/dev/null)
+  case $p in ''|*[!0-7]*) return 1;; esac; [ $(( 0$p & 077 )) -eq 0 ]; }
 if ! grep -qsE '^[[:space:]]*TYPESAFE_API_KEY[[:space:]]*=[[:space:]]*[^[:space:]]' "$f"; then echo absent
-elif [ "$(m "$d")" = 700 ] && [ "$(m "$f")" = 600 ]; then echo present
+elif private "$d" && private "$f"; then echo present
 else echo wide; fi
 ```
 
