@@ -1,6 +1,6 @@
 # Jev-assisted question gate
 
-Applies only when a `TYPESAFE_API_KEY` was found. Jev rules the gate; you still write every question, recommendation, and checkpoint. Jev returns typed judgments and probabilities, never prose.
+§ 0 covers the key file itself, whether or not one exists yet. Everything from § 1 applies only when a `TYPESAFE_API_KEY` was found. Jev rules the gate; you still write every question, recommendation, and checkpoint. Jev returns typed judgments and probabilities, never prose.
 
 ## 0. The key file
 
