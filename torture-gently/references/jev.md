@@ -21,31 +21,75 @@ Keep `evidence` to what the round actually rests on. Leave `settled` empty on th
 
 ## 2. Ask six judgments per candidate
 
-For candidate index `i`, emit six questions keyed `c<i>_evidence`, `c<i>_plausibility`, `c<i>_materiality`, `c<i>_responsibility`, `c<i>_class`, and `c<i>_owner`. Question ids never reach the model, so every instruction must name its candidate by backticked path — `` `candidates[0].branch` `` — and repeat nothing the state already carries.
-
-| Key | Type | Instruction | Criteria |
-| --- | --- | --- | --- |
-| `_evidence` | `noul` | Is `candidates[i].branch` supported by a traceable source in `evidence`, `settled`, or `subject`? | `true`: a named source establishes it. `false`: it rests only on what is imaginable. |
-| `_plausibility` | `noul` | Is there a credible path for `candidates[i].branch` to occur or be adopted, given `subject`? | `true`: a realistic route exists. `false`: it would take an implausible chain of events. |
-| `_materiality` | `score` | How much would knowing the answer to `candidates[i].branch` change what gets built, accepted, or treated as a risk? | See levels below. |
-| `_responsibility` | `noul` | Does `candidates[i].branch` fall within the responsibility of `subject`, rather than someone else's system, team, or decision? | `true`: `subject` owns the outcome. `false`: it belongs to a party outside `subject`. |
-| `_class` | `choice` | Classify `candidates[i].branch` against `subject` and `evidence`. | `current`: an existing requirement, behaviour, or constraint. `option`: credibly supported but not adopted. `risk`: a credible path that may need treatment. |
-| `_owner` | `choice` | Who must supply the answer to `candidates[i].branch`? | `interviewer`: a fact discoverable from sources, artefacts, or runtime. `user`: private information, a preference, or a decision only the user can make. |
-
-`_materiality` levels, in order:
+Question ids never reach the model, so every instruction names its candidate by a backticked path into `state`. Emit this block once per candidate, replacing every `0` in the ids and paths with that candidate's index. This is the exact wire format; send it verbatim apart from the index.
 
 ```json
-["Knowing the answer changes nothing that is built, tested, or accepted",
- "The answer changes wording or presentation only",
- "The answer changes one acceptance condition or risk treatment",
- "The answer changes a deliverable, a contract, or the shape of the solution"]
+{
+  "model": "jev-latest",
+  "state": { "subject": "...", "settled": [], "evidence": ["..."], "candidates": [{ "branch": "..." }] },
+  "questions": {
+    "c0_evidence": {
+      "type": "noul",
+      "instructions": "Is the branch in `candidates[0].branch` supported by a traceable source in `evidence`, `settled`, or `subject`?",
+      "criteria": {
+        "true": "A named source establishes it.",
+        "false": "It rests only on what is imaginable."
+      }
+    },
+    "c0_plausibility": {
+      "type": "noul",
+      "instructions": "Given `subject`, is there a credible path for the branch in `candidates[0].branch` to occur or be adopted?",
+      "criteria": {
+        "true": "A realistic route exists.",
+        "false": "It would take an implausible chain of events."
+      }
+    },
+    "c0_materiality": {
+      "type": "score",
+      "instructions": "How much would knowing the answer to the branch in `candidates[0].branch` change what gets built, accepted, or treated as a risk?",
+      "criteria": [
+        "Knowing the answer changes nothing that is built, tested, or accepted",
+        "The answer changes wording or presentation only",
+        "The answer changes one acceptance condition or risk treatment",
+        "The answer changes a deliverable, a contract, or the shape of the solution"
+      ]
+    },
+    "c0_responsibility": {
+      "type": "noul",
+      "instructions": "Does the branch in `candidates[0].branch` fall within the responsibility of `subject`, rather than someone else's system, team, or decision?",
+      "criteria": {
+        "true": "`subject` owns the outcome.",
+        "false": "It belongs to a party outside `subject`."
+      }
+    },
+    "c0_class": {
+      "type": "choice",
+      "instructions": "Classify the branch in `candidates[0].branch` against `subject` and `evidence`.",
+      "criteria": {
+        "current": "An existing requirement, behaviour, or constraint.",
+        "option": "Credibly supported but not adopted.",
+        "risk": "A credible path that may need treatment."
+      }
+    },
+    "c0_owner": {
+      "type": "choice",
+      "instructions": "Who must supply the answer to the branch in `candidates[0].branch`?",
+      "criteria": {
+        "interviewer": "A fact discoverable from sources, artefacts, or runtime.",
+        "user": "Private information, a preference, or a decision only the user can make."
+      }
+    }
+  }
+}
 ```
+
+A `noul` takes `criteria.true` and `criteria.false`, a `choice` takes a map of option to description, and a `score` takes an ordered array of at least two levels. A wrong shape returns `422`.
 
 Ship every candidate in one request. The questions are independent and evaluate in parallel; a second request is warranted only when an answer is needed to fetch evidence or construct new state.
 
 ## 3. Send it
 
-Write the full request body to the scratchpad as `request.json` — the `state` object from step 1, the `questions` map from step 2, and `"model": "jev-latest"` — then send it from the skill root using only the non-empty key in `api_key.env`. Put `response.json` beside the request and read it only after a successful HTTP response:
+Write the full request body to the scratchpad as `request.json`, then send it from the skill root, the directory holding `api_key.env`. The key reaches `curl` through stdin, so it never appears in the process argument list, and it is never exported. Put `response.json` beside the request and read it only after a successful HTTP response:
 
 macOS and Linux:
 
@@ -58,20 +102,21 @@ unset TYPESAFE_API_KEY
 set -a
 . ./api_key.env
 set +a
-TYPESAFE_API_KEY=$(printf '%s' "${TYPESAFE_API_KEY-}" | tr -d '\r')
-if [ -z "$(printf '%s' "${TYPESAFE_API_KEY-}" | tr -d '[:space:]')" ]; then
+key=$(printf '%s' "${TYPESAFE_API_KEY-}" | tr -d '\r')
+unset TYPESAFE_API_KEY
+if [ -z "$(printf '%s' "$key" | tr -d '[:space:]')" ]; then
   printf 'TYPESAFE_API_KEY is missing\n' >&2
   exit 1
 fi
-export TYPESAFE_API_KEY
 request_json="/absolute/path/to/request.json"
 response_json="$(dirname "$request_json")/response.json"
-http_status=$(curl -sS -o "$response_json" -w '%{http_code}' \
+http_status=$(printf 'header = "Authorization: Bearer %s"\n' "$key" | curl -K - -sS \
+  -o "$response_json" -w '%{http_code}' \
   -X POST https://api.typesafe.ai/v1/systemone \
-  -H "Authorization: Bearer $TYPESAFE_API_KEY" \
   -H "Content-Type: application/json" \
   --data-binary "@$request_json")
 curl_exit=$?
+unset key
 printf 'HTTP %s (curl exit %s)\n' "$http_status" "$curl_exit"
 ```
 
@@ -85,16 +130,20 @@ $key = $entry.Matches[0].Groups[1].Value.Trim().Trim('"')
 if ([string]::IsNullOrWhiteSpace($key)) { throw 'TYPESAFE_API_KEY is missing' }
 $requestJson = '<absolute path to request.json>'
 $responseJson = Join-Path (Split-Path -Parent $requestJson) 'response.json'
-$httpStatus = curl.exe -sS -o $responseJson -w '%{http_code}' -X POST https://api.typesafe.ai/v1/systemone `
-  -H "Authorization: Bearer $key" `
+$httpStatus = "header = `"Authorization: Bearer $key`"" | curl.exe -K - -sS `
+  -o $responseJson -w '%{http_code}' `
+  -X POST https://api.typesafe.ai/v1/systemone `
   -H "Content-Type: application/json" `
   --data-binary "@$requestJson"
-"HTTP $httpStatus (curl exit $LASTEXITCODE)"
+$curlExit = $LASTEXITCODE
+Remove-Variable key
+"HTTP $httpStatus (curl exit $curlExit)"
 ```
 
 Call `curl.exe` by name: bare `curl` is an alias for `Invoke-WebRequest` in Windows PowerShell 5.1, which does not accept these flags.
 
-Never echo the key or put its value directly in a command. A nonzero curl exit means the request failed before a usable response; use the unassisted gate. Treat `response.json` as Jev answers only on `2xx`. On `401`, check the key and use the unassisted gate. On `429` or `529`, wait briefly and retry once, then use the unassisted gate if it still fails. On `422`, inspect the error in `response.json` and correct the request; use the unassisted gate if it cannot be corrected.
+Never echo the key, never pass it as a command argument, and never write it to a file. A nonzero curl exit means the request failed before a usable response; use the unassisted gate. Treat `response.json` as Jev answers only on `2xx`. On `401` either the key is wrong or `api_key.env` was saved with CRLF line endings; say which you suspect and use the unassisted gate. On `429` or `529`, wait briefly and retry once, then use the unassisted gate if it still fails. On `422`, inspect the error in `response.json` and correct the request against the shape in step 2; use the unassisted gate if it cannot be corrected.
+
 
 ## 4. Read the result
 
