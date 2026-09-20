@@ -89,11 +89,12 @@ Ship every candidate in one request. The questions are independent and evaluate 
 
 ## 3. Send it
 
-Write the full request body to the scratchpad as `request.json`. The key lives in `$HOME/.typesafe/api_key.env`, outside the skill, and is read without sourcing the file, so it never gains the export attribute and no child process inherits it. It reaches `curl` through stdin, so it never appears in the process argument list either. `-q` comes first on both commands: without it curl reads the user's `~/.curlrc`, and a `verbose` or `trace` setting there prints the whole `Authorization` header to stderr. `-q` has this effect only as the first argument. Put `response.json` beside the request and read it only after a successful HTTP response:
+Write the full request body to the scratchpad as `request.json`. The key lives in `$HOME/.typesafe/api_key.env`, outside the skill, and is read without sourcing the file, so it never gains the export attribute and no child process inherits it. It reaches `curl` through stdin, so it never appears in the process argument list either. `-q` comes first on both commands: without it curl reads the user's `~/.curlrc`, and a `verbose` or `trace` setting there prints the whole `Authorization` header to stderr. `-q` has this effect only as the first argument. `set +x` and `Set-PSDebug -Off` come before the key is read, because shell tracing would echo it and `-q` does not reach the shell. The timeouts bound a server that accepts the connection and then stops responding, so the fallback below still runs instead of the interview hanging. Put `response.json` beside the request and read it only after a successful HTTP response:
 
 macOS and Linux:
 
 ```sh
+set +x
 key_file="$HOME/.typesafe/api_key.env"
 if [ ! -f "$key_file" ]; then
   printf '%s is missing\n' "$key_file" >&2
@@ -106,7 +107,7 @@ if [ -z "$(printf '%s' "$key" | tr -d '[:space:]')" ]; then
 fi
 request_json="/absolute/path/to/request.json"
 response_json="$(dirname "$request_json")/response.json"
-http_status=$(printf 'header = "Authorization: Bearer %s"\n' "$key" | curl -q -K - -sS \
+http_status=$(printf 'header = "Authorization: Bearer %s"\n' "$key" | curl -q -K - -sS --connect-timeout 10 --max-time 120 \
   -o "$response_json" -w '%{http_code}' \
   -X POST https://api.typesafe.ai/v1/systemone \
   -H "Content-Type: application/json" \
@@ -119,6 +120,7 @@ printf 'HTTP %s (curl exit %s)\n' "$http_status" "$curl_exit"
 Windows:
 
 ```powershell
+Set-PSDebug -Off
 $keyFile = Join-Path $HOME '.typesafe\api_key.env'
 if (-not (Test-Path -LiteralPath $keyFile)) { throw "$keyFile is missing" }
 $entry = Select-String -LiteralPath $keyFile -Pattern '^\s*TYPESAFE_API_KEY\s*=\s*(.*)$' | Select-Object -First 1
@@ -127,7 +129,7 @@ $key = $entry.Matches[0].Groups[1].Value.Trim().Trim('"')
 if ([string]::IsNullOrWhiteSpace($key)) { throw "TYPESAFE_API_KEY is missing from $keyFile" }
 $requestJson = '<absolute path to request.json>'
 $responseJson = Join-Path (Split-Path -Parent $requestJson) 'response.json'
-$httpStatus = "header = `"Authorization: Bearer $key`"" | curl.exe -q -K - -sS `
+$httpStatus = "header = `"Authorization: Bearer $key`"" | curl.exe -q -K - -sS --connect-timeout 10 --max-time 120 `
   -o $responseJson -w '%{http_code}' `
   -X POST https://api.typesafe.ai/v1/systemone `
   -H "Content-Type: application/json" `
@@ -139,7 +141,7 @@ Remove-Variable key
 
 Call `curl.exe` by name: bare `curl` is an alias for `Invoke-WebRequest` in Windows PowerShell 5.1, which does not accept these flags.
 
-Never echo the key, never pass it as a command argument, never export it, and never copy it into the skill directory or a repository. A nonzero curl exit means the request failed before a usable response; use the unassisted gate. Treat `response.json` as Jev answers only on `2xx`. On `401` either the key is wrong or `api_key.env` was saved with CRLF line endings; say which you suspect and use the unassisted gate. On `429` or `529`, wait briefly and retry once, then use the unassisted gate if it still fails. On `422`, inspect the error in `response.json` and correct the request against the shape in step 2; use the unassisted gate if it cannot be corrected.
+Never echo the key, never pass it as a command argument, never export it, and never copy it into the skill directory or a repository. A nonzero curl exit means the request failed before a usable response, including exit `28` when a timeout fires; use the unassisted gate. Treat `response.json` as Jev answers only on `2xx`. On `401` either the key is wrong or `api_key.env` was saved with CRLF line endings; say which you suspect and use the unassisted gate. On `429` or `529`, wait briefly and retry once, then use the unassisted gate if it still fails. On `422`, inspect the error in `response.json` and correct the request against the shape in step 2; use the unassisted gate if it cannot be corrected.
 
 
 ## 4. Read the result
