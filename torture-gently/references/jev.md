@@ -89,23 +89,19 @@ Ship every candidate in one request. The questions are independent and evaluate 
 
 ## 3. Send it
 
-Write the full request body to the scratchpad as `request.json`, then send it from the skill root, the directory holding `api_key.env`. The key reaches `curl` through stdin, so it never appears in the process argument list, and it is never exported. Put `response.json` beside the request and read it only after a successful HTTP response:
+Write the full request body to the scratchpad as `request.json`. The key lives in `$HOME/.typesafe/api_key.env`, outside the skill, and is read without sourcing the file, so it never gains the export attribute and no child process inherits it. It reaches `curl` through stdin, so it never appears in the process argument list either. Put `response.json` beside the request and read it only after a successful HTTP response:
 
 macOS and Linux:
 
 ```sh
-if [ ! -f ./api_key.env ]; then
-  printf 'api_key.env is missing\n' >&2
+key_file="$HOME/.typesafe/api_key.env"
+if [ ! -f "$key_file" ]; then
+  printf '%s is missing\n' "$key_file" >&2
   exit 1
 fi
-unset TYPESAFE_API_KEY
-set -a
-. ./api_key.env
-set +a
-key=$(printf '%s' "${TYPESAFE_API_KEY-}" | tr -d '\r')
-unset TYPESAFE_API_KEY
+key=$(sed -n 's/^[[:space:]]*TYPESAFE_API_KEY[[:space:]]*=[[:space:]]*//p' "$key_file" | head -n 1 | tr -d '\r"')
 if [ -z "$(printf '%s' "$key" | tr -d '[:space:]')" ]; then
-  printf 'TYPESAFE_API_KEY is missing\n' >&2
+  printf 'TYPESAFE_API_KEY is missing from %s\n' "$key_file" >&2
   exit 1
 fi
 request_json="/absolute/path/to/request.json"
@@ -123,11 +119,12 @@ printf 'HTTP %s (curl exit %s)\n' "$http_status" "$curl_exit"
 Windows:
 
 ```powershell
-if (-not (Test-Path -LiteralPath './api_key.env')) { throw 'api_key.env is missing' }
-$entry = Select-String -LiteralPath './api_key.env' -Pattern '^\s*TYPESAFE_API_KEY\s*=\s*(.*)$' | Select-Object -First 1
-if (-not $entry) { throw 'TYPESAFE_API_KEY is missing from api_key.env' }
+$keyFile = Join-Path $HOME '.typesafe\api_key.env'
+if (-not (Test-Path -LiteralPath $keyFile)) { throw "$keyFile is missing" }
+$entry = Select-String -LiteralPath $keyFile -Pattern '^\s*TYPESAFE_API_KEY\s*=\s*(.*)$' | Select-Object -First 1
+if (-not $entry) { throw "TYPESAFE_API_KEY is missing from $keyFile" }
 $key = $entry.Matches[0].Groups[1].Value.Trim().Trim('"')
-if ([string]::IsNullOrWhiteSpace($key)) { throw 'TYPESAFE_API_KEY is missing' }
+if ([string]::IsNullOrWhiteSpace($key)) { throw "TYPESAFE_API_KEY is missing from $keyFile" }
 $requestJson = '<absolute path to request.json>'
 $responseJson = Join-Path (Split-Path -Parent $requestJson) 'response.json'
 $httpStatus = "header = `"Authorization: Bearer $key`"" | curl.exe -K - -sS `
@@ -142,7 +139,7 @@ Remove-Variable key
 
 Call `curl.exe` by name: bare `curl` is an alias for `Invoke-WebRequest` in Windows PowerShell 5.1, which does not accept these flags.
 
-Never echo the key, never pass it as a command argument, and never write it to a file. A nonzero curl exit means the request failed before a usable response; use the unassisted gate. Treat `response.json` as Jev answers only on `2xx`. On `401` either the key is wrong or `api_key.env` was saved with CRLF line endings; say which you suspect and use the unassisted gate. On `429` or `529`, wait briefly and retry once, then use the unassisted gate if it still fails. On `422`, inspect the error in `response.json` and correct the request against the shape in step 2; use the unassisted gate if it cannot be corrected.
+Never echo the key, never pass it as a command argument, never export it, and never copy it into the skill directory or a repository. A nonzero curl exit means the request failed before a usable response; use the unassisted gate. Treat `response.json` as Jev answers only on `2xx`. On `401` either the key is wrong or `api_key.env` was saved with CRLF line endings; say which you suspect and use the unassisted gate. On `429` or `529`, wait briefly and retry once, then use the unassisted gate if it still fails. On `422`, inspect the error in `response.json` and correct the request against the shape in step 2; use the unassisted gate if it cannot be corrected.
 
 
 ## 4. Read the result
