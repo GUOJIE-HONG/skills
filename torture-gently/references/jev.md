@@ -46,12 +46,12 @@ Question ids never reach the model, so every instruction names its candidate by 
     },
     "c0_materiality": {
       "type": "score",
-      "instructions": "How much would knowing the answer to the branch in `candidates[0].branch` change what gets built, accepted, or treated as a risk?",
+      "instructions": "How much would answering the branch in `candidates[0].branch` change a decision, risk treatment, acceptance condition, or deliverable for `subject`? Count changes to wording or presentation as deliverable changes when those are the subject's deliverable.",
       "criteria": [
-        "Knowing the answer changes nothing that is built, tested, or accepted",
-        "The answer changes wording or presentation only",
-        "The answer changes one acceptance condition or risk treatment",
-        "The answer changes a deliverable, a contract, or the shape of the solution"
+        "The answer changes no decision, risk treatment, acceptance condition, deliverable, or explanation",
+        "Only optional explanatory wording or cosmetic display changes; the decision, risk treatment, acceptance condition, and deliverable stay the same",
+        "The answer changes one decision, acceptance condition, or risk treatment",
+        "The answer changes a deliverable, a contract, or the overall shape of the solution"
       ]
     },
     "c0_responsibility": {
@@ -144,7 +144,7 @@ Remove-Variable key
 
 Run the Windows command in `pwsh` and call `curl.exe` by name.
 
-Never echo the key, never pass it as a command argument, never export it, and never copy it into the skill directory or a repository. A nonzero curl exit means the request failed before a usable response, including exit `28` when a timeout fires; use the unassisted gate. Treat `response.json` as Jev answers only on `2xx`. On `401` either the key is wrong or `api_key.env` was saved with CRLF line endings; say which you suspect and use the unassisted gate. On `429` or `529`, wait briefly and retry once, then use the unassisted gate if it still fails. On `422`, inspect the error in `response.json` and correct the request against the shape in step 2; use the unassisted gate if it cannot be corrected.
+Never echo the key, never pass it as a command argument, never export it, and never copy it into the skill directory or a repository. A nonzero curl exit means the request failed before a usable response, including exit `28` when a timeout fires; use the unassisted gate. Treat `response.json` as Jev answers only on `2xx`. On `401`, check the key and use the unassisted gate. On `429` or `529`, wait briefly and retry once, then use the unassisted gate if it still fails. On `422`, inspect the error in `response.json` and correct the request against the shape in step 2; use the unassisted gate if it cannot be corrected.
 
 
 ## 4. Read the result
@@ -160,7 +160,7 @@ Answers come back under the ids you sent, in an `answers` map. A `noul` carries 
     "c0_materiality": {
       "type": "score",
       "score": 2.15,
-      "legend": { "0": "Knowing the answer changes nothing that is built, tested, or accepted", "1": "The answer changes wording or presentation only", "2": "The answer changes one acceptance condition or risk treatment", "3": "The answer changes a deliverable, a contract, or the shape of the solution" },
+      "legend": { "0": "The answer changes no decision, risk treatment, acceptance condition, deliverable, or explanation", "1": "Only optional explanatory wording or cosmetic display changes; the decision, risk treatment, acceptance condition, and deliverable stay the same", "2": "The answer changes one decision, acceptance condition, or risk treatment", "3": "The answer changes a deliverable, a contract, or the overall shape of the solution" },
       "probabilities": { "0": 0.0, "1": 0.05, "2": 0.75, "3": 0.2 },
       "confidence": 0.71
     },
