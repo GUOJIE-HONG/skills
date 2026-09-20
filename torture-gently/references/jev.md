@@ -89,7 +89,7 @@ Ship every candidate in one request. The questions are independent and evaluate 
 
 ## 3. Send it
 
-Write the full request body to the scratchpad as `request.json`. The key lives in `$HOME/.typesafe/api_key.env`, outside the skill, and is read without sourcing the file, so it never gains the export attribute and no child process inherits it. It reaches `curl` through stdin, so it never appears in the process argument list either. Put `response.json` beside the request and read it only after a successful HTTP response:
+Write the full request body to the scratchpad as `request.json`. The key lives in `$HOME/.typesafe/api_key.env`, outside the skill, and is read without sourcing the file, so it never gains the export attribute and no child process inherits it. It reaches `curl` through stdin, so it never appears in the process argument list either. `-q` comes first on both commands: without it curl reads the user's `~/.curlrc`, and a `verbose` or `trace` setting there prints the whole `Authorization` header to stderr. `-q` has this effect only as the first argument. Put `response.json` beside the request and read it only after a successful HTTP response:
 
 macOS and Linux:
 
@@ -106,7 +106,7 @@ if [ -z "$(printf '%s' "$key" | tr -d '[:space:]')" ]; then
 fi
 request_json="/absolute/path/to/request.json"
 response_json="$(dirname "$request_json")/response.json"
-http_status=$(printf 'header = "Authorization: Bearer %s"\n' "$key" | curl -K - -sS \
+http_status=$(printf 'header = "Authorization: Bearer %s"\n' "$key" | curl -q -K - -sS \
   -o "$response_json" -w '%{http_code}' \
   -X POST https://api.typesafe.ai/v1/systemone \
   -H "Content-Type: application/json" \
@@ -127,7 +127,7 @@ $key = $entry.Matches[0].Groups[1].Value.Trim().Trim('"')
 if ([string]::IsNullOrWhiteSpace($key)) { throw "TYPESAFE_API_KEY is missing from $keyFile" }
 $requestJson = '<absolute path to request.json>'
 $responseJson = Join-Path (Split-Path -Parent $requestJson) 'response.json'
-$httpStatus = "header = `"Authorization: Bearer $key`"" | curl.exe -K - -sS `
+$httpStatus = "header = `"Authorization: Bearer $key`"" | curl.exe -q -K - -sS `
   -o $responseJson -w '%{http_code}' `
   -X POST https://api.typesafe.ai/v1/systemone `
   -H "Content-Type: application/json" `
