@@ -95,32 +95,35 @@ macOS and Linux:
 
 ```sh
 set +x
+set +a
+unset typesafe_api_key
 key_file="$HOME/.typesafe/api_key.env"
 if [ ! -f "$key_file" ]; then
   printf '%s is missing\n' "$key_file" >&2
   exit 1
 fi
-key=$(sed -n 's/^[[:space:]]*TYPESAFE_API_KEY[[:space:]]*=[[:space:]]*//p' "$key_file" | head -n 1 | tr -d '\r"')
-if [ -z "$(printf '%s' "$key" | tr -d '[:space:]')" ]; then
+typesafe_api_key=$(sed -n 's/^[[:space:]]*TYPESAFE_API_KEY[[:space:]]*=[[:space:]]*//p' "$key_file" | head -n 1 | tr -d '\r"')
+if [ -z "$(printf '%s' "$typesafe_api_key" | tr -d '[:space:]')" ]; then
   printf 'TYPESAFE_API_KEY is missing from %s\n' "$key_file" >&2
   exit 1
 fi
 request_json="/absolute/path/to/request.json"
 response_json="$(dirname "$request_json")/response.json"
-http_status=$(printf 'header = "Authorization: Bearer %s"\n' "$key" | curl -q -K - -sS --connect-timeout 10 --max-time 120 \
+http_status=$(printf 'header = "Authorization: Bearer %s"\n' "$typesafe_api_key" | curl -q -K - -sS --connect-timeout 10 --max-time 120 \
   -o "$response_json" -w '%{http_code}' \
   -X POST https://api.typesafe.ai/v1/systemone \
   -H "Content-Type: application/json" \
   --data-binary "@$request_json")
 curl_exit=$?
-unset key
+unset typesafe_api_key
 printf 'HTTP %s (curl exit %s)\n' "$http_status" "$curl_exit"
 ```
 
-Windows:
+Windows (PowerShell 7 or newer, run with `pwsh`):
 
 ```powershell
 Set-PSDebug -Off
+if ($PSVersionTable.PSVersion.Major -lt 7) { throw 'PowerShell 7 or newer is required' }
 $keyFile = Join-Path $HOME '.typesafe\api_key.env'
 if (-not (Test-Path -LiteralPath $keyFile)) { throw "$keyFile is missing" }
 $entry = Select-String -LiteralPath $keyFile -Pattern '^\s*TYPESAFE_API_KEY\s*=\s*(.*)$' | Select-Object -First 1
@@ -139,7 +142,7 @@ Remove-Variable key
 "HTTP $httpStatus (curl exit $curlExit)"
 ```
 
-Call `curl.exe` by name: bare `curl` is an alias for `Invoke-WebRequest` in Windows PowerShell 5.1, which does not accept these flags.
+Run the Windows command in `pwsh` and call `curl.exe` by name.
 
 Never echo the key, never pass it as a command argument, never export it, and never copy it into the skill directory or a repository. A nonzero curl exit means the request failed before a usable response, including exit `28` when a timeout fires; use the unassisted gate. Treat `response.json` as Jev answers only on `2xx`. On `401` either the key is wrong or `api_key.env` was saved with CRLF line endings; say which you suspect and use the unassisted gate. On `429` or `529`, wait briefly and retry once, then use the unassisted gate if it still fails. On `422`, inspect the error in `response.json` and correct the request against the shape in step 2; use the unassisted gate if it cannot be corrected.
 
