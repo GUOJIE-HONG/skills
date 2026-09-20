@@ -2,6 +2,30 @@
 
 Applies only when a `TYPESAFE_API_KEY` was found. Jev rules the gate; you still write every question, recommendation, and checkpoint. Jev returns typed judgments and probabilities, never prose.
 
+## 0. The key file
+
+`$HOME/.typesafe/api_key.env` holds one line, `TYPESAFE_API_KEY=<key>`. It must be readable only by its owner: on a shared POSIX host a file created under the usual `022` umask is world-readable, and any local account can then authenticate as the user.
+
+Create it empty and private first, then have the user paste the key in with their editor — that keeps the value out of argv and shell history. The same command repairs an existing file without changing its contents, so run it whenever the probe reports `wide`.
+
+```sh
+umask 077
+mkdir -p "$HOME/.typesafe" && chmod 700 "$HOME/.typesafe" &&
+  : >>"$HOME/.typesafe/api_key.env" && chmod 600 "$HOME/.typesafe/api_key.env"
+```
+
+In `pwsh`:
+
+```powershell
+$d = Join-Path $HOME '.typesafe'; $f = Join-Path $d 'api_key.env'
+New-Item -ItemType Directory -Force -Path $d | Out-Null
+if (-not (Test-Path -LiteralPath $f)) { New-Item -ItemType File -Path $f | Out-Null }
+icacls $d /inheritance:r /grant:r "$($env:USERNAME):(OI)(CI)(F)" | Out-Null
+icacls $f /inheritance:r /grant:r "$($env:USERNAME):(F)" | Out-Null
+```
+
+A file that was ever `wide` must be treated as disclosed: tell the user to replace the key at https://console.typesafe.ai/keys after repairing it.
+
 ## 1. Build the state
 
 One request per round, covering every candidate branch on the current frontier. This object is the request's `state` value:
@@ -182,9 +206,9 @@ Answers come back under the ids you sent, in an `answers` map. A `noul` carries 
 }
 ```
 
-A branch joins the frontier when all four gates pass: `_evidence` and `_plausibility` and `_responsibility` above `0.5`, and `_materiality` at or above `1.5`.
+A branch joins the frontier unless a gate clearly fails; an undecided gate never fails. Asking one unnecessary question costs a round, silently dropping a real one costs the session.
 
-A Noul's distance from `0.5` is its only certainty signal. Treat `0.35`–`0.65` as undecided, and `_materiality` as undecided when its `confidence` is below `0.5`. An undecided gate never drops a branch — asking one unnecessary question costs a round, silently dropping a real one costs the session.
+A Noul's distance from `0.5` is its only certainty signal, so treat `0.35`–`0.65` as undecided. `_evidence`, `_plausibility` and `_responsibility` therefore fail only below `0.35`; at `0.35` or above, the undecided band included, they pass. `_materiality` fails only when its `score` is below `1.5` **and** its `confidence` is at least `0.5`; a `confidence` under `0.5` is undecided and passes whatever its score.
 
 Use `_owner` to check who should answer, not to bypass the fact-finding rule in `SKILL.md`. The Noul undecided band does not apply to a Choice, which carries its own `confidence`. If `_owner` favors `interviewer`, find the fact. If it favors `user`, first check whether the answer really requires private information, a preference, or a decision; find accessible facts yourself. When its `confidence` is low, check available sources before routing. If a factual prerequisite remains unresolved, hold only its dependent branches; ask the rest of the frontier. Carry `_class` through as the branch's Current, Option, or Risk classification.
 
