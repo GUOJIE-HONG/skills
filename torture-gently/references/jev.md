@@ -144,12 +144,45 @@ Never echo the key, never pass it as a command argument, never export it, and ne
 
 ## 4. Read the result
 
+Answers come back under the ids you sent, in an `answers` map. A `noul` carries its probability in `noul` and has no confidence field; a `score` carries a probability-weighted number in `score`, which can land between levels, with `legend` mapping level indices back to their descriptions; a `choice` carries the winning option in `choice`. This is the shape to parse:
+
+```json
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "c0_evidence": { "type": "noul", "noul": 0.94 },
+    "c0_plausibility": { "type": "noul", "noul": 0.58 },
+    "c0_materiality": {
+      "type": "score",
+      "score": 2.15,
+      "legend": { "0": "Knowing the answer changes nothing that is built, tested, or accepted", "1": "The answer changes wording or presentation only", "2": "The answer changes one acceptance condition or risk treatment", "3": "The answer changes a deliverable, a contract, or the shape of the solution" },
+      "probabilities": { "0": 0.0, "1": 0.05, "2": 0.75, "3": 0.2 },
+      "confidence": 0.71
+    },
+    "c0_responsibility": { "type": "noul", "noul": 0.88 },
+    "c0_class": {
+      "type": "choice",
+      "choice": "risk",
+      "probabilities": { "current": 0.06, "option": 0.22, "risk": 0.72 },
+      "confidence": 0.64
+    },
+    "c0_owner": {
+      "type": "choice",
+      "choice": "user",
+      "probabilities": { "interviewer": 0.19, "user": 0.81 },
+      "confidence": 0.77
+    }
+  },
+  "usage": { "input_tokens": 1120, "output_tokens": 0 }
+}
+```
+
 A branch joins the frontier when all four gates pass: `_evidence` and `_plausibility` and `_responsibility` above `0.5`, and `_materiality` at or above `1.5`.
 
-A `noul` carries no confidence field; its distance from `0.5` is the signal. Treat `0.35`–`0.65` as undecided, and `_materiality` as undecided when its `confidence` is below `0.5`. An undecided gate never drops a branch — asking one unnecessary question costs a round, silently dropping a real one costs the session.
+A Noul's distance from `0.5` is its only certainty signal. Treat `0.35`–`0.65` as undecided, and `_materiality` as undecided when its `confidence` is below `0.5`. An undecided gate never drops a branch — asking one unnecessary question costs a round, silently dropping a real one costs the session.
 
-Use `_owner` to check who should answer, not to bypass the fact-finding rule in `SKILL.md`. A Choice has `choice`, `probabilities`, and `confidence`; the Noul undecided band does not apply to it. If `_owner` favors `interviewer`, find the fact. If it favors `user`, first check whether the answer really requires private information, a preference, or a decision; find accessible facts yourself. When its `confidence` is low, check available sources before routing. If a factual prerequisite remains unresolved, hold only its dependent branches; ask the rest of the frontier. Carry `_class` through as the branch's Current, Option, or Risk classification.
+Use `_owner` to check who should answer, not to bypass the fact-finding rule in `SKILL.md`. The Noul undecided band does not apply to a Choice, which carries its own `confidence`. If `_owner` favors `interviewer`, find the fact. If it favors `user`, first check whether the answer really requires private information, a preference, or a decision; find accessible facts yourself. When its `confidence` is low, check available sources before routing. If a factual prerequisite remains unresolved, hold only its dependent branches; ask the rest of the frontier. Carry `_class` through as the branch's Current, Option, or Risk classification.
 
 These thresholds are starting points. Watch the first few rounds against your own reading and move them before trusting them.
 
-Report nothing of this to the user. The round they see is the format `SKILL.md` defines, unchanged.
+Report none of these judgments to the user. Apart from the one line of consent `SKILL.md` requires, the round they see is the format `SKILL.md` defines, unchanged.
