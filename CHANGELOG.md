@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.0
+
+- `torture-gently`: the question gate can now run through TypeSafe's Jev. Before the first round the skill checks `api_key.env` in its own directory for a non-empty `TYPESAFE_API_KEY`; with a key, every candidate branch is judged against the four gates by a model independent of the interviewer's own reading, so branches that change nothing, and questions whose answers the interviewer should be finding itself, are dropped before they reach the user. Without a usable file it asks once whether to enable Jev, says what it buys, and otherwise runs exactly as before. `references/jev.md` carries the state shape, the six judgments per branch, the platform commands, and the thresholds; it is read only when a key is present, and the key never leaves the shell.
+- `design-code-implement`: the no-existing-convention exit is now checked at the top of section 4, before any direction is produced. In a repository with nothing to inherit both exits applied at once and the skill took the wrong one, reporting that the existing conventions already determined the approach.
+
 ## 0.7.6
 
 - `design-code-implement`: when exploration finds no existing convention to inherit, it now says so and stops instead of reporting that the existing conventions already determine the approach.
