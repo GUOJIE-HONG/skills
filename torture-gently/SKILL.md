@@ -9,26 +9,28 @@ Before the first round, probe for a key with exactly this command, which reports
 
 ```sh
 f="$HOME/.typesafe/api_key.env"; d="$HOME/.typesafe"
-private() { p=$(stat -c '%a' "$1" 2>/dev/null || stat -f '%Lp' "$1" 2>/dev/null)
-  case $p in ''|*[!0-7]*) return 1;; esac; [ $(( 0$p & 077 )) -eq 0 ]; }
+mode() { p=$(stat -c '%a' "$1" 2>/dev/null || stat -f '%Lp' "$1" 2>/dev/null)
+  case $p in ''|*[!0-7]*) return 1;; esac; echo $(( 0$p )); }
 if ! grep -qsE '^[[:space:]]*TYPESAFE_API_KEY[[:space:]]*=[[:space:]]*[^[:space:]]' "$f"; then echo absent
-elif private "$d" && private "$f"; then echo present
+elif dm=$(mode "$d") && fm=$(mode "$f") &&
+  [ $(( ($dm & 010 && $fm & 040) || ($dm & 001 && $fm & 004) )) -eq 0 ]; then echo present
 else echo wide; fi
 ```
 
 In `pwsh`:
 
 ```powershell
-$d = Join-Path $HOME '.typesafe'; $f = Join-Path $d 'api_key.env'
-function Test-Private { param($p)
-  $me = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-  -not ((Get-Acl -LiteralPath $p).Access | Where-Object {
+$f = Join-Path $HOME '.typesafe/api_key.env'
+$me = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+if (-not (Select-String -LiteralPath $f -Pattern '^\s*TYPESAFE_API_KEY\s*=\s*\S' -Quiet -ErrorAction SilentlyContinue)) { 'absent' }
+elseif ((Get-Acl -LiteralPath $f).Access | Where-Object {
     $_.AccessControlType -eq 'Allow' -and
     ($_.FileSystemRights -band [System.Security.AccessControl.FileSystemRights]::ReadData) -and
-    $_.IdentityReference.Value -notin @($me, 'NT AUTHORITY\SYSTEM', 'BUILTIN\Administrators') }) }
-if (-not (Select-String -LiteralPath $f -Pattern '^\s*TYPESAFE_API_KEY\s*=\s*\S' -Quiet -ErrorAction SilentlyContinue)) { 'absent' }
-elseif ((Test-Private $d) -and (Test-Private $f)) { 'present' } else { 'wide' }
+    $_.IdentityReference.Value -notin @($me, 'NT AUTHORITY\SYSTEM', 'BUILTIN\Administrators') }) { 'wide' }
+else { 'present' }
 ```
+
+On POSIX the key is `wide` only when the directory lets a group or other account traverse it and the file lets that same class read it; either one alone does not expose the key. Windows grants traverse bypass to every account by default, so only the file's own ACL decides.
 
 Never open that file with a file-reading tool, `cat`, or anything else that prints its contents. The probe is the only read you make of it, here and again after the user creates it; every other safeguard in `references/jev.md` is defeated if the value reaches this transcript. On `present`, say in one line what leaves the machine before the first request — the subject, the settled decisions, the evidence claims and their locators, and the candidate branches go to TypeSafe's API — and let the user decline. A key created earlier, for other work, is not consent to disclose this session's material. With consent, run the question gate through Jev as `references/jev.md` describes; on a decline, run everything below unchanged and do not raise it again this session. On `wide`, other accounts on this machine can read the key, so send nothing until it is private again: tell the user, run the command in `references/jev.md` § 0, which repairs the file without altering its contents, and have them replace the key at https://console.typesafe.ai/keys, since one that was ever readable must be treated as disclosed. Then run the probe again and continue from its result. On `absent`, ask the user once whether to enable Jev, and say what it buys: Jev judges every candidate branch against the four gates independently of your own reading, so branches that change nothing, and questions whose answers you should be finding yourself, are dropped before they reach the user. If the user accepts, tell them to get a key from https://console.typesafe.ai/keys and create that file with the command in `references/jev.md` § 0, which creates it empty and private, and paste the key into it as `TYPESAFE_API_KEY=<key>` with their editor. It sits outside the skill on purpose: the skill may be installed as a read-only plugin bundle, or copied into a project whose repository would track a key stored beside it. After they create it, run the probe again and continue from its result. If they decline, or the probe still reports `absent`, run everything below unchanged and do not raise it again this session.
 

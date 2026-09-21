@@ -20,9 +20,11 @@ In `pwsh`:
 $d = Join-Path $HOME '.typesafe'; $f = Join-Path $d 'api_key.env'
 New-Item -ItemType Directory -Force -Path $d | Out-Null
 if (-not (Test-Path -LiteralPath $f)) { New-Item -ItemType File -Path $f | Out-Null }
-icacls $d /inheritance:r /grant:r "$($env:USERNAME):(OI)(CI)(F)" | Out-Null
-icacls $f /inheritance:r /grant:r "$($env:USERNAME):(F)" | Out-Null
+icacls $d /reset | Out-Null; icacls $d /inheritance:r /grant:r "$($env:USERNAME):(OI)(CI)(F)" | Out-Null
+icacls $f /reset | Out-Null; icacls $f /inheritance:r /grant:r "$($env:USERNAME):(F)" | Out-Null
 ```
+
+`/reset` comes first because `/inheritance:r` drops only inherited entries and `/grant:r` replaces only the named user's, so an explicit grant such as `Everyone:(R)` would otherwise survive the repair.
 
 A file that was ever `wide` must be treated as disclosed: tell the user to replace the key at https://console.typesafe.ai/keys after repairing it.
 
