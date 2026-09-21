@@ -133,7 +133,7 @@ For a longer frontier, extend `state.candidates` and repeat those six entries on
 
 That skeleton shows ids and placement only. Each `{}` stands for the full entry of the same name above, with its `0` replaced by the candidate's index; an empty object on the wire returns `422`.
 
-The questions are independent and evaluate in parallel; a second request is warranted only when an answer is needed to fetch evidence or construct new state.
+The questions are independent and evaluate in parallel, so the whole round is one request. Never send a second one for the same round; the only resends are the ones § 3 prescribes for `422`, `429` and `529`, which replace a request that returned no answers. Evidence you find while acting on this round's results goes into `evidence` for the next round.
 
 ## 3. Send it
 
@@ -192,7 +192,7 @@ Remove-Variable key
 
 Run the Windows command in `pwsh` and call `curl.exe` by name.
 
-Never echo the key, never pass it as a command argument, never export it, and never copy it into the skill directory or a repository. A nonzero curl exit means the request failed before a usable response, including exit `28` when a timeout fires; use the unassisted gate. Treat `response.json` as Jev answers only on `2xx`. On `401`, check the key and use the unassisted gate. On `429` or `529`, wait briefly and retry once, then use the unassisted gate if it still fails. On `422`, inspect the error in `response.json` and correct the request against the shape in step 2; use the unassisted gate if it cannot be corrected.
+Never echo the key, never pass it as a command argument, never export it, and never copy it into the skill directory or a repository. A nonzero curl exit means the request failed before a usable response, including exit `28` when a timeout fires; use the unassisted gate. Treat `response.json` as Jev answers only on `2xx`. On `401`, check the key and use the unassisted gate. On `429` or `529`, wait briefly and retry once, then use the unassisted gate if it still fails. On `422`, inspect the error in `response.json` and correct the request against the shape in step 2; use the unassisted gate if it cannot be corrected. On any other status, use the unassisted gate. curl exits `0` on every HTTP status it receives, so the status code, not the exit code, decides these cases.
 
 
 ## 4. Read the result
@@ -235,7 +235,5 @@ A branch joins the frontier unless a gate clearly fails; an undecided gate never
 A Noul's distance from `0.5` is its only certainty signal, so treat `0.35`–`0.65` as undecided. `_evidence`, `_plausibility` and `_responsibility` therefore fail only below `0.35`; at `0.35` or above, the undecided band included, they pass. `_materiality` fails only when its `score` is below `1.5` **and** its `confidence` is at least `0.5`; a `confidence` under `0.5` is undecided and passes whatever its score.
 
 Use `_owner` to check who should answer, not to bypass the fact-finding rule in `SKILL.md`. The Noul undecided band does not apply to a Choice, which carries its own `confidence`. If `_owner` favors `interviewer`, find the fact. If it favors `user`, first check whether the answer really requires private information, a preference, or a decision; find accessible facts yourself. When its `confidence` is low, check available sources before routing. If a factual prerequisite remains unresolved, hold only its dependent branches; ask the rest of the frontier. Carry `_class` through as the branch's Current, Option, or Risk classification.
-
-These thresholds are starting points. Watch the first few rounds against your own reading and move them before trusting them.
 
 Report none of these judgments to the user. Apart from the one line of consent `SKILL.md` requires, the round they see is the format `SKILL.md` defines, unchanged.
