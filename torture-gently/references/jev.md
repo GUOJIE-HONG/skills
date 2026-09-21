@@ -137,14 +137,14 @@ The questions are independent and evaluate in parallel, so the whole round is on
 
 ## 3. Send it
 
-Write the full request body to the scratchpad as `request.json`. The key lives in `$HOME/.typesafe/api_key.env`, outside the skill, and is read without sourcing the file, so it never gains the export attribute and no child process inherits it. It reaches `curl` through stdin, so it never appears in the process argument list either. `-q` comes first on both commands: without it curl reads the user's `~/.curlrc`, and a `verbose` or `trace` setting there prints the whole `Authorization` header to stderr. `-q` has this effect only as the first argument. `set +x` and `Set-PSDebug -Off` come before the key is read, because shell tracing would echo it and `-q` does not reach the shell. The timeouts bound a server that accepts the connection and then stops responding, so the fallback below still runs instead of the interview hanging. Put `response.json` beside the request and read it only after a successful HTTP response:
+Write the full request body to the scratchpad as `request.json`. The key lives in `$HOME/.typesafe/api_key.env`, outside the skill, and is read without sourcing the file, so it never gains the export attribute. A `TYPESAFE_API_KEY` the calling shell already exports is removed first, so no child process inherits the key from either place. It reaches `curl` through stdin, so it never appears in the process argument list either. `-q` comes first on both commands: without it curl reads the user's `~/.curlrc`, and a `verbose` or `trace` setting there prints the whole `Authorization` header to stderr. `-q` has this effect only as the first argument. `set +x` and `Set-PSDebug -Off` come before the key is read, because shell tracing would echo it and `-q` does not reach the shell. The timeouts bound a server that accepts the connection and then stops responding, so the fallback below still runs instead of the interview hanging. Put `response.json` beside the request and read it only after a successful HTTP response:
 
 macOS and Linux:
 
 ```sh
 set +x
 set +a
-unset typesafe_api_key
+unset typesafe_api_key TYPESAFE_API_KEY
 key_file="$HOME/.typesafe/api_key.env"
 if [ ! -f "$key_file" ]; then
   printf '%s is missing\n' "$key_file" >&2
@@ -163,7 +163,7 @@ http_status=$(printf 'header = "Authorization: Bearer %s"\n' "$typesafe_api_key"
   -H "Content-Type: application/json" \
   --data-binary "@$request_json")
 curl_exit=$?
-unset typesafe_api_key
+unset typesafe_api_key TYPESAFE_API_KEY
 printf 'HTTP %s (curl exit %s)\n' "$http_status" "$curl_exit"
 ```
 
@@ -171,6 +171,7 @@ Windows (PowerShell 7 or newer, run with `pwsh`):
 
 ```powershell
 Set-PSDebug -Off
+Remove-Item Env:TYPESAFE_API_KEY -ErrorAction Ignore
 if ($PSVersionTable.PSVersion.Major -lt 7) { throw 'PowerShell 7 or newer is required' }
 $keyFile = Join-Path $HOME '.typesafe\api_key.env'
 if (-not (Test-Path -LiteralPath $keyFile)) { throw "$keyFile is missing" }
