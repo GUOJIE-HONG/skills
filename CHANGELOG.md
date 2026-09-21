@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.1
+
+- `torture-gently`: the Jev question gate from 0.8.0 is removed. In practice it did not noticeably change which questions reached the user, so the skill is back to judging every branch against the four gates itself. It no longer checks for `$HOME/.typesafe/api_key.env`, asks to enable Jev, or sends anything off the machine; `references/jev.md` is gone. A key file you created for it is no longer read and can be deleted.
+
 ## 0.8.0
 
 - `torture-gently`: the question gate can now run through TypeSafe's Jev. Before the first round the skill checks `$HOME/.typesafe/api_key.env` for a non-empty `TYPESAFE_API_KEY`; with a key, it first says in one line what leaves the machine and lets you decline — a key created for earlier work is not consent to disclose this session's material — and on consent every candidate branch is judged against the four gates by a model independent of the interviewer's own reading, so branches that change nothing, and questions whose answers the interviewer should be finding itself, are dropped before they reach the user. Without a usable file it asks once whether to enable Jev, says what it buys, and otherwise runs exactly as before. `references/jev.md` carries the state shape, the literal request and response formats, the six judgments per branch, the platform commands, and the thresholds; it is read only when a key is present. The key file sits outside the skill so it works whether the skill was installed as a read-only plugin bundle or copied into a project, and it is never inside a repository; the file's presence is probed with a status-only command that never prints its contents, and the key itself is parsed without sourcing, never exported, and passed to curl through stdin, so no child process inherits it and it never reaches a process argument list.
