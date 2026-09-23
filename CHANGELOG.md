@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.5
+
+- `implement-all`: implementers no longer each read the whole spec. While building the task graph, the orchestrator notes by heading the spec sections each ticket depends on, and points each implementer at its ticket, `design.md`, and only those sections. Pointers are paths and headings, never the orchestrator's own summary, so nothing is lost in retelling; an implementer that needs a section it was not pointed at reads it.
+
 ## 0.8.1
 
 - `torture-gently`: the Jev question gate from 0.8.0 is removed. In practice it did not noticeably change which questions reached the user, so the skill is back to judging every branch against the four gates itself. It no longer checks for `$HOME/.typesafe/api_key.env`, asks to enable Jev, or sends anything off the machine; `references/jev.md` is gone. A key file you created for it is no longer read and can be deleted.
