@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.6
+
+- `implement-all`: each implementer now confirms its worktree is based on the merge request's branch before starting, resetting onto it if not, and merges that branch's tip into its own before reporting done. Conflicts are resolved by the implementer that knows the ticket, so the merger's merge is usually a fast-forward. This matches the implementer rules in upstream `implement-spec`.
+
 ## 0.8.5
 
 - `implement-all`: implementers no longer each read the whole spec. While building the task graph, the orchestrator notes by heading the spec sections each ticket depends on, and points each implementer at its ticket, `design.md`, and only those sections. Pointers are paths and headings, never the orchestrator's own summary, so nothing is lost in retelling; an implementer that needs a section it was not pointed at reads it.
