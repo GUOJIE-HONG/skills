@@ -66,6 +66,7 @@ flowchart LR
     D["/implement-small-change<br/>land it with focused checks"]
     R["/refactor<br/>restructure under a plan"]
     H["/ptns<br/>hand progress to a new session"]
+    S["/sib<br/>say back your goal and problem"]
     C -.->|"design.md"| G["/impl or /implement-all<br/>build along design.md"]
     B -. interview stalls .-> E["/show-grill-clearly<br/>answer in the browser,<br/>paste the reply back"]
     E -.-> B
