@@ -1,0 +1,6 @@
+interface:
+  display_name: "Say It Back"
+  short_description: "Restate the user's goal and problem, then wait to be confirmed"
+  default_prompt: "Use $sib to restate my goal and the problem I'm trying to solve."
+policy:
+  allow_implicit_invocation: false
