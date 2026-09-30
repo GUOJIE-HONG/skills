@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.0
+
+- New skill `sib` (say it back): before any work starts, restates in its own words what you want and why: the goal as distinct from the literal ask (naming both when the ask is only a means to it), the problem behind it, and what it could not tell. Each sentence carries its basis (your words, a `path:line`, or `(inferred)`), and it then waits for you to confirm or correct. User-invoked only.
+
 ## 0.8.6
 
 - `implement-all`: each implementer now confirms its worktree is based on the merge request's branch before starting, resetting onto it if not, and merges that branch's tip into its own before reporting done. Conflicts are resolved by the implementer that knows the ticket, so the merger's merge is usually a fast-forward. This matches the implementer rules in upstream `implement-spec`.
