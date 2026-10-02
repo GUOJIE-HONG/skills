@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.10.0
+## 1.0.0
 
 - New skill `scrum`: starts a human team on Scrum from a spec or incomplete material. Acting as the Product Owner, it writes three files into the repository's `scrum/` folder, creating it when missing: `product-backlog.md` (the Product Goal, then ordered items, each with a User Story, acceptance criteria, an ordering reason, its source, and Open questions tagged PM or Engineer), `sprint-01.md` (a proposed Sprint Goal and suggested items), and `definition-of-done.md` (a draft for the team to adopt). Gaps in the material become Open questions instead of stopping the run. Sizing, the Sprint Goal, and Sprint selection stay with the team, per the Scrum Guide 2020. It reads documents only, never source code. It checks each of the three files on its own, writing a missing one and keeping an existing one. An existing Product Backlog only gains the items new material introduces, keeping existing items and their ids. A new id is always above every PBI id the `scrum/` files mention, so a gap left by a removed item stays empty. The run reports where the new material contradicts an existing item, and flags a kept Sprint 1 draft that cites an earlier backlog. User-invoked only.
 - New `GLOSSARY.md`, separating a Product Backlog item from a Task.
