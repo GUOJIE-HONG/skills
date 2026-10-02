@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scrum"
+  short_description: "Start a team on Scrum: Product Goal, backlog, Sprint 1, DoD"
+  default_prompt: "Use $scrum to start my team on Scrum from this spec."
+policy:
+  allow_implicit_invocation: false
