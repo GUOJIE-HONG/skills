@@ -28,6 +28,7 @@
     "./implement-small-change",
     "./refactor",
     "./ptns",
-    "./sib"
+    "./sib",
+    "./scrum"
   ]
 }

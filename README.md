@@ -67,6 +67,7 @@ flowchart LR
     R["/refactor<br/>restructure under a plan"]
     H["/ptns<br/>hand progress to a new session"]
     S["/sib<br/>say back your goal and problem"]
+    K["/scrum<br/>start a team on Scrum:<br/>Product Backlog and Sprint 1"]
     C -.->|"design.md"| G["/impl or /implement-all<br/>build along design.md"]
     B -. interview stalls .-> E["/show-grill-clearly<br/>answer in the browser,<br/>paste the reply back"]
     E -.-> B

@@ -67,6 +67,7 @@ flowchart LR
     R["/refactor<br/>照 plan 重構"]
     H["/ptns<br/>把進度交給新的 session"]
     S["/sib<br/>用自己的話講回你的目標與問題"]
+    K["/scrum<br/>幫團隊開始跑 Scrum：<br/>Product Backlog 與 Sprint 1"]
     C -.->|"design.md"| G["/impl 或 /implement-all<br/>照 design.md 實作"]
     B -. 訪談卡住 .-> E["/show-grill-clearly<br/>在瀏覽器作答，<br/>把回覆貼回對話"]
     E -.-> B
