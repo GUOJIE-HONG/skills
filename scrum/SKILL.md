@@ -22,16 +22,13 @@ The material is often incomplete. Split it into items anyway and keep going: eve
 
 Write the files in the language of the material. Translate the labels in the templates below; keep the Scrum terms (Product Goal, Product Backlog, User Story, Sprint, Sprint Goal, Sprint Planning, Definition of Done) in English.
 
-## 1. Read and check for a previous run
+## 1. Read and check which files exist
 
-Read the material in full. Then look in `scrum/`:
-
-- `product-backlog.md` is missing: this is a **first run**.
-- `product-backlog.md` exists: this is an **update run**. Read it; its items may already carry answers your colleagues wrote. Leave `sprint-01.md` and `definition-of-done.md` as they are.
+Read the material in full. Then check each of the three files in `scrum/` on its own: write a missing file in full, and keep an existing one, since it holds your colleagues' work. Read an existing `product-backlog.md`; its items may already carry answers your colleagues wrote, and step 2 **updates** it.
 
 ## 2. Write the Product Backlog
 
-**Product Goal**: one or two sentences describing the future state of the product the team plans against. When the material does not support one, write your best reading and add a PM Open question under it. In an update run, keep the existing Product Goal.
+**Product Goal**: one or two sentences describing the future state of the product the team plans against. When the material does not support one, write your best reading and add a PM Open question under it. When updating, keep the existing Product Goal.
 
 **Items**: each item delivers one outcome a user can observe, small enough that the team could plausibly finish it in one Sprint. Split an item that bundles several outcomes. When you cannot judge whether an item fits one Sprint, add an Engineer Open question.
 
@@ -66,13 +63,13 @@ Read the material in full. Then look in `scrum/`:
 
 Write "none" under Open questions when the item has none. When the material leaves an acceptance criterion unclear, write the criterion it supports and add the gap as an Open question.
 
-In an update run, existing items keep their text, their order, and their id. Add only what the new material introduces that no existing item covers: new items get the next free ids and go where their value places them. Where the new material contradicts an existing item, leave the item unchanged and record the **conflict** for the report.
+When updating, existing items keep their text, their order, and their id. Add only what the new material introduces that no existing item covers: new items get the next free ids and go where their value places them. Where the new material contradicts an existing item, leave the item unchanged and record the **conflict** for the report.
 
 Done when every capability the material describes is covered by an item, and every item carries a User Story, acceptance criteria, an ordering reason, its Open questions, and its source.
 
 ## 3. Write the Sprint 1 draft
 
-First run only.
+Skip this step when `sprint-01.md` exists.
 
 ```markdown
 # Sprint 1 draft
@@ -97,7 +94,7 @@ Suggest items from the top of the Product Backlog that serve one coherent Sprint
 
 ## 4. Write the Definition of Done draft
 
-First run only.
+Skip this step when `definition-of-done.md` exists.
 
 ```markdown
 # Definition of Done (draft)
@@ -113,6 +110,6 @@ List the general quality measures an Increment needs (acceptance criteria met, r
 
 In the conversation, report:
 
-- the files written, and for an update run, the ids of the new items
+- the files written and the files kept; when updating the Product Backlog, the ids of the new items
 - the number of items, and the number of Open questions tagged PM and tagged Engineer
-- for an update run, each conflict: the item id, what it says, and what the new material says, with the source
+- when updating, each conflict: the item id, what it says, and what the new material says, with the source
