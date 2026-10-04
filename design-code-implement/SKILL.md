@@ -73,11 +73,11 @@ Write `design.md`.
 
 **Placement**: ask the user where it goes before writing it.
 
-**Contents** — only what will be done:
+**Contents** — only what will be done, laid out as in [`references/template.md`](references/template.md):
 
-- The chosen direction as Mermaid, not prose. Name participants after the real modules or files it touches.
-  - Each flow that crosses components: a `sequenceDiagram` with an `alt` branch for every failure the requirement implies.
-  - Each entity that changes state: a `stateDiagram-v2`.
+- The chosen direction as diagrams, not prose.
+  - Each flow that crosses components: an ASCII flowchart, one per trigger. Steps run top to bottom, numbered, each followed by an indented `↳` line naming the real function and file that does it. Leave the right side open, with only left-edge arrows and indentation, so wide characters never break alignment. Draw the success path only; under the diagram, list every failure the requirement implies as "step N fails → what happens". A step that is a flow of its own gets its own diagram, referenced as "→ Flow N".
+  - Each entity that changes state: a Mermaid `stateDiagram-v2`.
   - Changes no diagram shows (migrations, configuration, interface shapes): a short list.
 - The conventions this work must follow, one line each with its evidence path.
 - Nothing else. **Do not write the rejected directions, and do not write their rationale.** A downstream implementing agent reads this file as instructions; describing an approach that is not being taken invites it to be taken.
