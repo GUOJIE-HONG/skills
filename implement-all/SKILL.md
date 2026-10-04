@@ -20,7 +20,7 @@ Run **implementer subagents** in the background for maximum concurrency.
 2. (optional) Use an **exploration subagent** for the exploration the tickets require: relevant code or external documentation. It saves markdown notes in a directory outside the repo that every later subagent can read, so implementers focus on implementing.
 3. Create a branch and a draft merge request on the repository's host, found from `git remote -v`: a pull request on GitHub, a merge request on GitLab, through that host's CLI (`gh`, `glab`). When the spec and tickets live on the same host, link them so merging closes them.
 4. Use **implementer subagents** to implement each frontier ticket, each in its own worktree on its own branch, with `$tdd` at the seams the spec agreed on. Each implementer confirms its worktree is based on the merge request's branch before starting, resetting onto it if not, and merges that branch's tip into its own before reporting done. Point each implementer at its ticket, `design.md`, and the spec sections noted for that ticket. Treat `design.md` decisions as settled; an implementer that finds one contradicted by the code reports it rather than choosing a new direction.
-5. When an implementer completes, merge its work into the merge request's branch with a **merger subagent**.
+5. When an implementer completes, merge its branch into the merge request's branch yourself. If the merge conflicts, abort it and send that implementer back to merge the branch's new tip into its own.
 6. When a merge changes the frontier, start implementers on the newly ready tickets.
 7. Once every ticket is complete, run `$code-review` on the branch. Fix everything it raises in a single implementer subagent.
 8. Mark the merge request ready for review.
