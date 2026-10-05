@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+- New skill `cloud-architect`: plans how a repo should be deployed, to the cloud or on-premises, securely and with good performance, and writes the result to `deploy-plan.md` where the user chooses. It reads every deployable unit and dependency from the repo, asks in one round for the constraints the repo cannot show, chooses the target and platform, and covers security and performance for each unit. Every recommendation cites evidence: a `path:line` in the repo, a source actually read in the session, or the user's own statement; what it only remembers does not count. A point it cannot back becomes an Evidence gap, put to the user as a question. A constraint that could flip the choice between cloud and on-premises or between platforms is blocking: it follows up until it is answered or the user names an assumption, which the plan records as one. It names cost drivers instead of estimating prices, linking the platform's official pricing calculator when one exists. An existing deployment setup is the starting point. User-invoked only.
+- `GLOSSARY.md`: adds Deployment plan and Evidence gap, kept apart from the Scrum Open question.
+- `design-code-implement`, `implement-all`: the `short_description` in `agents/openai.yaml` is shortened to Codex's 25–64 character limit.
+
 ## 1.0.1
 
 - `design-code-implement`: in `design.md`, each flow that crosses components is now an ASCII flowchart, one per trigger, instead of a Mermaid `sequenceDiagram`, whose participants and stacked `alt` branches grew too wide to read once a feature got complex. Steps run top to bottom, numbered, each followed by a `↳` line naming the real function and file. Only the success path is drawn; every failure the requirement implies is listed under the diagram as "step N fails → what happens", and a step that is a flow of its own gets its own diagram, referenced as "→ Flow N". State changes stay a Mermaid `stateDiagram-v2`. The layout now lives in `references/template.md`. `impl` and `implement-all` read `design.md` as text, so designs already written in Mermaid still work.
