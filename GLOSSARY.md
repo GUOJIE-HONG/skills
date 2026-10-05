@@ -21,3 +21,13 @@ _Avoid_: TBD, assumption, 待確認
 **Sprint 1 draft**:
 The Product Owner's proposal for the first Sprint, a proposed Sprint Goal and the suggested Product Backlog items, which the Scrum Team settles at Sprint Planning.
 _Avoid_: Sprint plan, Sprint Backlog
+
+### Deployment planning
+
+**Deployment plan**:
+How one repo should be deployed, to the cloud or on-premises, where every recommendation rests on evidence: a fact in the repo or a source actually read while planning.
+_Avoid_: deploy guide, 部署建議
+
+**Evidence gap**:
+A point the Deployment plan cannot back with evidence, put to the user as a question instead of stated as a recommendation.
+_Avoid_: Open question, assumption, 待確認
