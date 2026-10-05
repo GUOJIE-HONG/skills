@@ -2,7 +2,7 @@
 
 [English](./README.md) | **繁體中文**
 
-這裡放的是我平常在用的 agent skill。它們大多用在還沒動手寫程式的時候：不知道從哪下手、需求還沒問清楚、做法還沒選定，或是改動很小，但不想憑感覺動手。也有幾個會直接動手：照 `design.md` 把 spec 做出來、照 plan 重構既有程式碼。
+這裡放的是我平常在用的 agent skill。它們大多用在還沒動手寫程式的時候：不知道從哪下手、需求還沒問清楚、做法還沒選定、不知道該怎麼部署，或是改動很小，但不想憑感覺動手。也有幾個會直接動手：照 `design.md` 把 spec 做出來、照 plan 重構既有程式碼。
 
 它們長在 [Matt Pocock 的 skills](https://github.com/mattpocock/skills) 上面。我沒有重做他已經做好的東西，很多 skill 會直接呼叫他的。
 
@@ -68,6 +68,7 @@ flowchart LR
     H["/ptns<br/>把進度交給新的 session"]
     S["/sib<br/>用自己的話講回你的目標與問題"]
     K["/scrum<br/>幫團隊開始跑 Scrum：<br/>Product Backlog 與 Sprint 1"]
+    CA["/cloud-architect<br/>規劃雲端或地端部署，<br/>每條建議都有出處"]
     C -.->|"design.md"| G["/impl 或 /implement-all<br/>照 design.md 實作"]
     B -. 訪談卡住 .-> E["/show-grill-clearly<br/>在瀏覽器作答，<br/>把回覆貼回對話"]
     E -.-> B

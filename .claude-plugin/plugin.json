@@ -29,6 +29,7 @@
     "./refactor",
     "./ptns",
     "./sib",
-    "./scrum"
+    "./scrum",
+    "./cloud-architect"
   ]
 }

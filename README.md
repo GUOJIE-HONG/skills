@@ -2,7 +2,7 @@
 
 **English** | [繁體中文](./README.zh-TW.md)
 
-Agent skills for the stage *before* code is written and the first steps into it: finding a direction when you cannot start, interviewing along evidenced branches, choosing an implementation direction, implementing along it, landing small changes and refactors with proportionate validation, and handing progress to a new session.
+Agent skills for the stage *before* code is written and the first steps into it: finding a direction when you cannot start, interviewing along evidenced branches, choosing an implementation direction, implementing along it, landing small changes and refactors with proportionate validation, planning an evidenced deployment, and handing progress to a new session.
 
 They are built on top of [Matt Pocock's skills](https://github.com/mattpocock/skills) and extend that set rather than replace it; many of them call his skills directly.
 
@@ -68,6 +68,7 @@ flowchart LR
     H["/ptns<br/>hand progress to a new session"]
     S["/sib<br/>say back your goal and problem"]
     K["/scrum<br/>start a team on Scrum:<br/>Product Backlog and Sprint 1"]
+    CA["/cloud-architect<br/>plan a cloud or on-prem deployment,<br/>every recommendation evidenced"]
     C -.->|"design.md"| G["/impl or /implement-all<br/>build along design.md"]
     B -. interview stalls .-> E["/show-grill-clearly<br/>answer in the browser,<br/>paste the reply back"]
     E -.-> B

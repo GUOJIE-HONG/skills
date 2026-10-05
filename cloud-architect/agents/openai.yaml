@@ -1,0 +1,6 @@
+interface:
+  display_name: "Cloud Architect"
+  short_description: "Plan a secure, performant deployment, every point evidenced"
+  default_prompt: "Use $cloud-architect to plan how this repo should be deployed, to the cloud or on-premises, backing every recommendation with evidence."
+policy:
+  allow_implicit_invocation: false
