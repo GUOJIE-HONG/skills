@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+- `torture-gently`: existing artefacts now only describe how things are now, and the user's goal sets which directions the questions explore. Before, when a repo's code or docs were poor, they steered the questions and the session followed the bad code instead of the goal. The evidence horizon is unchanged, so it still does not reach out to industry or community sources.
+
 ## 1.1.0
 
 - New skill `cloud-architect`: plans how a repo should be deployed, to the cloud or on-premises, securely and with good performance, and writes the result to `deploy-plan.md` where the user chooses. It reads every deployable unit and dependency from the repo, asks in one round for the constraints the repo cannot show, chooses the target and platform, and covers security and performance for each unit. Every recommendation cites evidence: a `path:line` in the repo, a source actually read in the session, or the user's own statement; what it only remembers does not count. A point it cannot back becomes an Evidence gap, put to the user as a question. A constraint that could flip the choice between cloud and on-premises or between platforms is blocking: it follows up until it is answered or the user names an assumption, which the plan records as one. It names cost drivers instead of estimating prices, linking the platform's official pricing calculator when one exists. An existing deployment setup is the starting point. User-invoked only.
