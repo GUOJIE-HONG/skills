@@ -30,6 +30,7 @@
     "./skills/engineering/cloud-architect",
     "./skills/pm/scrum",
     "./skills/daily/sib",
-    "./skills/daily/ptns"
+    "./skills/daily/ptns",
+    "./skills/daily/winget-upgrade"
   ]
 }

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Winget Upgrade"
+  short_description: "Pick which winget upgrades to install by number"
+  default_prompt: "Use $winget-upgrade to list my winget upgrades and install the ones I pick."
+policy:
+  allow_implicit_invocation: false
