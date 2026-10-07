@@ -2,7 +2,7 @@
 
 ## 1.2.0
 
-- New skill `winget-upgrade` under `daily/`: lists the programs winget can upgrade as a numbered list of name, ID, and current → available version, then upgrades only the numbers the user picks. Each pick is upgraded on its own by exact ID, accepting the source and package agreements, since picking a number is the user's consent. A failed upgrade does not stop the rest, and the run ends with a table of what succeeded and the reason for each failure. User-invoked only.
+- New skill `winget-upgrade` under `daily/`: lists the programs winget can upgrade as a numbered list of name, ID, and current → available version, then upgrades only the numbers the user picks. Each pick is upgraded on its own by exact ID from the source it was listed under, accepting the package's agreements, since picking a number is the user's consent. Source agreements are never accepted silently: when winget reports one not yet accepted, the skill shows the terms and asks first. A failed upgrade does not stop the rest, and the run ends with a table of what succeeded and the reason for each failure. User-invoked only.
 - Skills now live under `skills/<category>/`: `engineering/`, `pm/` (`scrum`), and `daily/` (`sib`, `ptns`). Skill names are unchanged, so `--skill <name>` and plugin invocations keep working, and `npx skills update` follows the move. The deprecated `to-tasks` and `implement-task` are marked `metadata.internal`, so `npx skills` no longer installs them, even by direct path or with `--full-depth`.
 - `README.md` and `README.zh-TW.md` now cover installation only.
 

@@ -11,8 +11,10 @@ Upgrade only the programs the user picks. Run every command in PowerShell.
 ## 1. List the upgrades
 
 ```powershell
-winget upgrade --accept-source-agreements --disable-interactivity
+winget upgrade --disable-interactivity
 ```
+
+If winget says a source's agreements are not accepted, show the user those terms and ask before rerunning with `--accept-source-agreements`. Keep each package's source from the table; step 2 needs it.
 
 Show each package as one numbered line: name, ID, current version → available version.
 
@@ -27,7 +29,7 @@ If nothing can be upgraded, say so and stop. Otherwise ask which numbers to upgr
 Tell the user that some installers raise a Windows admin (UAC) prompt they need to approve. Then upgrade the picked packages one at a time:
 
 ```powershell
-winget upgrade --id "<ID>" --exact --accept-source-agreements --accept-package-agreements --disable-interactivity
+winget upgrade --id "<ID>" --exact --source "<source>" --accept-package-agreements --disable-interactivity
 ```
 
 Picking a number is the user's consent to that package's agreements. An upgrade can run for many minutes, so give each command enough time to finish instead of the shell's default timeout. A failed upgrade does not stop the rest.
