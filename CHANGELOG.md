@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0
+
+- Skills now live under `skills/<category>/`: `engineering/`, `pm/` (`scrum`), and `daily/` (`sib`, `ptns`). Skill names are unchanged, so `--skill <name>` and plugin invocations keep working, and `npx skills update` follows the move. The deprecated `to-tasks` and `implement-task` are marked `metadata.internal`, so `npx skills` no longer installs them, even by direct path or with `--full-depth`.
+- `README.md` and `README.zh-TW.md` now cover installation only.
+
 ## 1.1.1
 
 - `torture-gently`: existing artefacts now only describe how things are now, and the user's goal sets which directions the questions explore. Before, when a repo's code or docs were poor, they steered the questions and the session followed the bad code instead of the goal. The evidence horizon is unchanged, so it still does not reach out to industry or community sources.
