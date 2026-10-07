@@ -2,19 +2,11 @@
 
 [English](./README.md) | **繁體中文**
 
-這裡放的是我平常在用的 agent skill。它們大多用在還沒動手寫程式的時候：不知道從哪下手、需求還沒問清楚、做法還沒選定、不知道該怎麼部署，或是改動很小，但不想憑感覺動手。也有幾個會直接動手：照 `design.md` 把 spec 做出來、照 plan 重構既有程式碼。
-
-它們長在 [Matt Pocock 的 skills](https://github.com/mattpocock/skills) 上面。我沒有重做他已經做好的東西，很多 skill 會直接呼叫他的。
-
-共通的脾氣只有一個：每句話要有出處。`path:line`、URL、文件章節，或是你自己說過的話都算。查不到的事會直接告訴你查不到，不會編一個看起來合理的答案填上去。
-
-## 前置需求
+## 安裝
 
 先裝 [mattpocock-skills](https://github.com/mattpocock/skills)，再裝這套。沒裝的話，會呼叫他 skill 的那幾個跑不起來。
 
-## 安裝
-
-兩條路線挑一條就好。兩條都裝，每個 skill 會出現兩份。
+接著兩條路線挑一條就好。兩條都裝，每個 skill 會出現兩份。
 
 ### Claude Code plugin
 
@@ -54,40 +46,19 @@ npx skills@latest add GUOJIE-HONG/skills --skill grill-softly
 
 檔案不會自己更新。想拉新版就跑 `npx skills update`。
 
-## 這些 skill 怎麼接在一起
+## 動手之前
 
-```mermaid
-flowchart LR
-    A["/dont-know-how<br/>這個任務我不知道從哪開始"] -->|"選定的方向"| F["torture-gently<br/>訪談引擎"]
-    F --> C
-    F -. 流程講不清楚 .-> P["prototype<br/>實際點一遍流程"]
-    B["/grill-softly<br/>把決策問清楚，<br/>同步寫詞彙表與 ADR"]
-    B --> C["/design-code-implement<br/>決定怎麼做"]
-    D["/implement-small-change<br/>做小改動，<br/>用聚焦的檢查驗證"]
-    R["/refactor<br/>照 plan 重構"]
-    H["/ptns<br/>把進度交給新的 session"]
-    S["/sib<br/>用自己的話講回你的目標與問題"]
-    K["/scrum<br/>幫團隊開始跑 Scrum：<br/>Product Backlog 與 Sprint 1"]
-    CA["/cloud-architect<br/>規劃雲端或地端部署，<br/>每條建議都有出處"]
-    C -.->|"design.md"| G["/impl 或 /implement-all<br/>照 design.md 實作"]
-    B -. 訪談卡住 .-> E["/show-grill-clearly<br/>在瀏覽器作答，<br/>把回覆貼回對話"]
-    E -.-> B
-    B -. 使用 .-> F
-    D -. 發現隱藏範圍 .-> B
-```
+第一行程式還沒落下，\
+第一個大膽的猜測還沒出口，\
+每句話都要先交代它從哪來：\
+哪個檔案、第幾行，或是你說過的話。
 
-只有 `torture-gently` 不一定要你打指令：你說「幫我壓力測試這個計畫」時，agent 可能自己拿來用，`dont-know-how` 和 `grill-softly` 也把它當引擎呼叫。其他都要你自己打指令才會動。
+輕輕地追問，溫柔地拷問，\
+畫出三條路，而不是一條；\
+路由你挑，每一步\
+做完自己的份就停下。
 
-不用整條鏈跑完。每個 skill 都接得住上一步丟過來的東西，不管是檔案、交接內容，還是你在對話裡打的一段話。做完自己的那段它就停，下一步是你的事。唯一的例外是 `dont-know-how`：你選定方向後，它會直接接 `torture-gently` 往下問。
-
-## 已棄用
-
-`to-tasks` 和 `implement-task` 放在 [`deprecated/`](./deprecated) 留作參考，plugin 和 `npx skills` 都不會安裝。它們把 ticket 切成兩個專案內的 task 交給小模型做，實測跨專案實作的錯誤率沒有下降；ticket 改交給 `/impl` 或 `/implement-all` 實作。
-
-## 版本
-
-[.claude-plugin/plugin.json](./.claude-plugin/plugin.json) 裡的 `version` 是 Claude Code 判斷有沒有新版的依據。發版時手動改，並在 [CHANGELOG.md](./CHANGELOG.md) 加一行。
-
-## 授權
-
-[MIT](./LICENSE)
+起步也許慢了一點，\
+但這裡沒有東西蓋在沙上：\
+每句話都指得出它從哪來，\
+「我不知道」也可以大方說出口。
