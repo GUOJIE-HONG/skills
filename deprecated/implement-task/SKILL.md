@@ -2,6 +2,8 @@
 name: implement-task
 description: Execute to-tasks tickets by dependency order, one fresh sub-agent per ticket in its own worktree, independent tickets in parallel, each ticket merged back and accepted before its dependents start.
 disable-model-invocation: true
+metadata:
+  internal: true
 ---
 
 # Implement Task

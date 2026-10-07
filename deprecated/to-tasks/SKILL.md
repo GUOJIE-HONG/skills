@@ -2,6 +2,8 @@
 name: to-tasks
 description: Split each ticket into implementation tasks that write to at most two projects, nested under the ticket. Use after to-tickets once design.md records the chosen direction, before any code is written.
 disable-model-invocation: true
+metadata:
+  internal: true
 ---
 
 # To Tasks

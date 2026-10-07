@@ -18,18 +18,18 @@
     "zh-tw"
   ],
   "skills": [
-    "./dont-know-how",
-    "./grill-softly",
-    "./torture-gently",
-    "./show-grill-clearly",
-    "./design-code-implement",
-    "./impl",
-    "./implement-all",
-    "./implement-small-change",
-    "./refactor",
-    "./ptns",
-    "./sib",
-    "./scrum",
-    "./cloud-architect"
+    "./skills/engineering/dont-know-how",
+    "./skills/engineering/grill-softly",
+    "./skills/engineering/torture-gently",
+    "./skills/engineering/show-grill-clearly",
+    "./skills/engineering/design-code-implement",
+    "./skills/engineering/impl",
+    "./skills/engineering/implement-all",
+    "./skills/engineering/implement-small-change",
+    "./skills/engineering/refactor",
+    "./skills/engineering/cloud-architect",
+    "./skills/pm/scrum",
+    "./skills/daily/sib",
+    "./skills/daily/ptns"
   ]
 }
