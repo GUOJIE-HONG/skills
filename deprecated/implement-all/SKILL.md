@@ -2,6 +2,8 @@
 name: implement-all
 description: Implement a whole spec on one branch, its tickets in parallel sub-agents following design.md, ending in a merge request on the repository's own host.
 disable-model-invocation: true
+metadata:
+  internal: true
 ---
 
 # Implement All
