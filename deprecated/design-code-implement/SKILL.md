@@ -2,6 +2,8 @@
 name: design-code-implement
 description: Turn a settled requirement into at least three grounded implementation directions, then record the chosen one. Use after the requirement is settled and before any code is written.
 disable-model-invocation: true
+metadata:
+  internal: true
 ---
 
 # Design Code Implement

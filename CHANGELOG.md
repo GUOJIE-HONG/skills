@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1
+
+- Deprecated `design-code-implement`, `impl`, and `implement-all`: moved to `deprecated/`, marked `metadata.internal`, and no longer shipped by the Claude Code plugin or `npx skills`. Every implementer had to load the whole `design.md`, which inflated its context, and the conventions it recorded came from sub-agent exploration and were not reliably accurate, yet implementers treated them as settled, so code reviews kept turning up edits to `design.md`. Run Matt Pocock's `to-spec` → `to-tickets` → `implement` or `implement-spec` instead: the spec's Implementation Decisions carry the architectural choices, and `implement-spec` covers GitLab through the issue tracker that `setup-matt-pocock-skills` configures. The plugin description no longer mentions choosing an implementation direction.
+- `torture-gently`: when a frontier question needs a fact from the environment, tools, or authoritative sources, it now dispatches a sub-agent to find it within the evidence horizon, instead of looking it up itself and delegating only when the work was independently bounded. The sub-agent reports each fact with its locator, so the branch can clear the question gate's Evidence check. Only the questions downstream of a running sub-agent wait; the rest of the frontier is asked now, as in Matt's `grilling`.
+
 ## 1.2.0
 
 - New skill `winget-upgrade` under `daily/`: lists the programs winget can upgrade as a numbered list of name, ID, and current → available version, then upgrades only the numbers the user picks. Each pick is upgraded on its own by exact ID from the source it was listed under, accepting the package's agreements, since picking a number is the user's consent. Source agreements are never accepted silently: when winget reports one not yet accepted, the skill shows the terms and asks first. A failed upgrade does not stop the rest, and the run ends with a table of what succeeded and the reason for each failure. User-invoked only.

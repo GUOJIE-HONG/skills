@@ -2,6 +2,8 @@
 name: impl
 description: Implement a piece of work from a spec or tickets in the current session, following the direction recorded in design.md.
 disable-model-invocation: true
+metadata:
+  internal: true
 ---
 
 # Impl
