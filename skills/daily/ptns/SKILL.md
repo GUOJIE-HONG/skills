@@ -30,6 +30,7 @@ Write it in the language the user is using.
 
 - Address the next session directly, in the imperative ("Continue…", "Next, …").
 - Keep paths, symbols, and commands exact.
+- Redact secrets: replace every API key, password, token, and piece of personal data with a placeholder such as `<API_KEY>`.
 - Keep it short: every line is something the next session would otherwise have to rediscover or ask.
 - Start with the working directory the next session should be in.
 - End with the next step and how to tell it is done.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.2
+
+- `ptns`: the handoff prompt now replaces every API key, password, token, and piece of personal data with a placeholder such as `<API_KEY>`, as Matt's `handoff` does. The prompt goes straight to another session or gets copied out, and the exact commands it keeps could otherwise carry a secret along.
+
 ## 1.2.1
 
 - Deprecated `design-code-implement`, `impl`, and `implement-all`: moved to `deprecated/`, marked `metadata.internal`, and no longer shipped by the Claude Code plugin or `npx skills`. Every implementer had to load the whole `design.md`, which inflated its context, and the conventions it recorded came from sub-agent exploration and were not reliably accurate, yet implementers treated them as settled, so code reviews kept turning up edits to `design.md`. Run Matt Pocock's `to-spec` → `to-tickets` → `implement` or `implement-spec` instead: the spec's Implementation Decisions carry the architectural choices, and `implement-spec` covers GitLab through the issue tracker that `setup-matt-pocock-skills` configures. The plugin description no longer mentions choosing an implementation direction.
