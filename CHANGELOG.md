@@ -2,7 +2,7 @@
 
 ## 1.5.1
 
-- `ask-jev`: an answer with confidence 0.7 or above is now adopted without asking the PM; before, it took 0.9. Only 0.5 to 0.7 is still adopted and put to the PM to confirm. In the first real run, nothing at 0.7 or above was overturned when checked against the meeting notes, and the one ruling the meeting overturned had 0.62, so it still reaches the PM.
+- `ask-jev`: an answer with confidence 0.7 or above is now adopted without asking the PM; before, it took 0.9. Only 0.5 up to, but not including, 0.7 is still adopted and put to the PM to confirm. In the first real run, nothing at 0.7 or above was overturned when checked against the meeting notes, and the one ruling the meeting overturned had 0.62, so it still reaches the PM.
 
 ## 1.5.0
 

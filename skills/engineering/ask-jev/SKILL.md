@@ -80,7 +80,7 @@ Each answer gets one outcome:
 | Jev's answer | Outcome |
 | --- | --- |
 | `confidence` ≥ 0.7, choice is not `ask_pm` | **Adopted** |
-| `confidence` 0.5–0.7, choice is not `ask_pm` | **Adopted, PM to confirm** |
+| 0.5 ≤ `confidence` < 0.7, choice is not `ask_pm` | **Adopted, PM to confirm** |
 | `confidence` < 0.5, or choice is `ask_pm` | **PM question** |
 
 Then carry the outcomes into the code you are writing: build each adopted behaviour. Where a PM question blocks a piece, leave that piece out and mark the spot with `TODO(ask-jev <topic> Qn): <the question in a few words>`, and keep building the rest.
