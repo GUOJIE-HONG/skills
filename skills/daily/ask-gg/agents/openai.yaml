@@ -1,0 +1,5 @@
+interface:
+  display_name: "Ask GG"
+  short_description: "Answer how to use the GUOJIE-HONG skills"
+policy:
+  allow_implicit_invocation: false
