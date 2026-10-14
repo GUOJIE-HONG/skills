@@ -1,0 +1,5 @@
+interface:
+  display_name: "Seen It Before"
+  short_description: "Find the classic problem yours is a variant of"
+policy:
+  allow_implicit_invocation: false

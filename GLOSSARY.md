@@ -31,3 +31,13 @@ _Avoid_: deploy guide, 部署建議
 **Evidence gap**:
 A point the Deployment plan cannot back with evidence, put to the user as a question instead of stated as a recommendation.
 _Avoid_: Open question, assumption, 待確認
+
+### Classic problem mapping
+
+**Classic problem**:
+A named, well-studied problem from any field whose known solutions a reliable source documents.
+_Avoid_: pattern, prior art, 經典題
+
+**Variant**:
+The user's problem when it shares a Classic problem's structure but departs from it in specific, named ways.
+_Avoid_: analogy, instance, 變形
