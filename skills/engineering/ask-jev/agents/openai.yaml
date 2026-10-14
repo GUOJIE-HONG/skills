@@ -1,0 +1,5 @@
+interface:
+  display_name: "Ask Jev"
+  short_description: "Let Jev settle open Figma spec questions"
+policy:
+  allow_implicit_invocation: false
