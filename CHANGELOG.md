@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.1
+
+- `ask-jev`: an answer with confidence 0.7 or above is now adopted without asking the PM; before, it took 0.9. Only 0.5 up to, but not including, 0.7 is still adopted and put to the PM to confirm. In the first real run, nothing at 0.7 or above was overturned when checked against the meeting notes, and the one ruling the meeting overturned had 0.62, so it still reaches the PM.
+
 ## 1.5.0
 
 - New skill `ask-gg` under `daily/`: answers how to use this repo's skills: which one fits your situation, how to run it and what its argument means, what it needs first (files, keys, tools, or other skills), and what it leaves behind. It reads the latest `master` from GitHub every time, `plugin.json` for the skill list and version and each listed `SKILL.md`, plus `README.zh-TW.md` for installation questions, so it covers every skill, including ones you have not installed, and no skill list is kept by hand to go stale. It reads each `SKILL.md` as documentation and runs none of them. A `$name` outside the repo is pointed to mattpocock-skills. When two skills could serve, it says how they differ; when none fits, it says so and names the closest. The answer ends with the version it read, so an older install knows to update. User-invoked only.
