@@ -29,7 +29,7 @@ function readJson(path) {
 }
 
 function questionSet(questions, extra = {}) {
-  return { topic: 'site-log', date: '2026-10-15', model: 'jev-latest', state: { product: 'Site log app.' }, questions, ...extra };
+  return { model: 'jev-latest', state: { product: 'Site log app.' }, questions, ...extra };
 }
 
 function question(id, images = [], extra = {}) {
@@ -139,7 +139,8 @@ test('a run without images writes one request with no assets and ask_pm appended
     assert.match(q.instructions.design_facts, /「搜尋案件」/);
   }
   assert.equal(existsSync(join(r.out, 'request-2.json')), false);
-  assert.match(r.stdout, /request-1\.json: q1, q2; 0 images; ~\d+ tokens/);
+  assert.match(r.stdout, /^request-1\.json: q1, q2; 0 images; ~\d+ tokens; text only$/m);
+  assert.equal(r.stdout.includes('TypeSafe-Danger-Zone-Images'), false);
 });
 
 function assertCropMatches(channels) {
@@ -275,6 +276,7 @@ test('questions are packed in order into as few requests as stay under the per-r
   assert.equal(lines.length, 3);
   assert.match(lines[0], /^request-1\.json: q1, q2, q3, q4; 2 images; ~(2[89]|30),?\d{3} tokens/);
   assert.match(lines[2], /^request-3\.json: q9; 1 images; ~[67],?\d{3} tokens/);
+  for (const line of lines) assert.ok(line.trimEnd().endsWith('; add -H "TypeSafe-Danger-Zone-Images: true"'), line);
 });
 
 test('a question over the per-question budget fails the build with its estimated size', () => {
@@ -341,6 +343,51 @@ test('a question set that repeats a question id fails the build', () => {
   const r = run(dir, questionSet([question('q1'), question('q2'), question('q1')]));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /q1/);
+});
+
+test('a question whose options include ask_pm fails the build, since the script adds that option itself', () => {
+  const dir = workdir();
+  const r = run(dir, questionSet([question('q1'), question('q2', [], { options: { follow_notes: 'Search case.', ask_pm: 'Ask the PM.' } })]));
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /q2/);
+  assert.match(r.stderr, /ask_pm/);
+  assert.equal(existsSync(r.out) && readdirSync(r.out).length > 0, false);
+});
+
+test('a question set without state fails the build with a message naming state', () => {
+  const dir = workdir();
+  const { state, ...set } = questionSet([question('q1')]);
+  const r = run(dir, set);
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /^pack-requests: .*\bstate\b/);
+  assert.equal(existsSync(r.out) && readdirSync(r.out).length > 0, false);
+});
+
+// A 1568x1568 image is ~6,914 tokens and 75,000 characters of text ~25,000, so the two questions need two requests.
+test('the summary names the image header only for requests that carry images', () => {
+  const dir = workdir();
+  const big = writePng(join(dir, 'big.png'), 1568, 1568, { pattern: false });
+  const r = run(dir, questionSet([question('q1', [{ path: big, node: '1:1' }]), question('q2', [], { design_facts: 'x'.repeat(75_000) })]));
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal('assets' in readJson(join(r.out, 'request-2.json')), false);
+  const lines = r.stdout.split('\n').map((l) => l.trimEnd()).filter((l) => l.startsWith('request-'));
+  assert.match(lines[0], /^request-1\.json: q1; 1 images; .*; add -H "TypeSafe-Danger-Zone-Images: true"$/);
+  assert.match(lines[1], /^request-2\.json: q2; 0 images; .*; text only$/);
+});
+
+// CJK text costs about a token per character, other text about a token per three characters, so 31,500 characters
+// are over the 30,000 per-question budget when they are CJK and well under it when they are not.
+test('the token estimate counts CJK characters, and only CJK characters, at one token each', () => {
+  const dir = workdir();
+  const cjk = '中㐀。あア한！'.repeat(4_500);
+  const over = run(dir, questionSet([question('q1', [], { design_facts: cjk })]), 'cjk');
+  assert.notEqual(over.status, 0);
+  assert.match(over.stderr, /q1.*3[12],?\d{3}/);
+
+  const emoji = '\u{1F4CC}'.repeat(31_500);
+  const ok = run(dir, questionSet([question('q1', [], { design_facts: emoji })]), 'emoji');
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.match(ok.stdout, /~1[01],?\d{3} tokens/);
 });
 
 test('a crop is checked against the limits, not the image it is cut from', () => {

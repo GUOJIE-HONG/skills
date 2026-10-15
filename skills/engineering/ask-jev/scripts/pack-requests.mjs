@@ -7,13 +7,15 @@ import { createHash } from 'node:crypto';
 import { inflateSync, deflateSync, crc32 } from 'node:zlib';
 
 // Token budgets for the estimates below; when TypeSafe changes its limits, change them here.
-// perQuestion (state plus one question): TypeSafe documents 32k for jev-1.13.0; 30k leaves room for estimate error.
+// stateAndOneQuestion: TypeSafe documents 32k for jev-1.13.0; 30k leaves room for estimate error.
 // perRequest: TypeSafe documents 64k, but a request estimated at ~42k was refused with max_tokens_exceeded
 // while 30k batches passed, so this is the measured figure, not the documented one.
-const BUDGET = { perQuestion: 30_000, perRequest: 30_000 };
+const BUDGET = { stateAndOneQuestion: 30_000, perRequest: 30_000 };
 
 // Jev's image limits (https://docs.typesafe.ai/api.md, jev-1.13.0): PNG or JPEG, each side and the total pixel count in range.
 const IMAGE = { minSide: 256, maxSide: 1568, minPixels: 78_400, maxPixels: 2_458_624 };
+// Jev accepts assets only on a request sent with this header; a text-only request is sent without it.
+const IMAGE_HEADER = 'TypeSafe-Danger-Zone-Images: true';
 
 // The fixed last option of every question, which lets Jev route a question it cannot settle to the PM.
 const ASK_PM = 'Only the PM can settle this: it depends on a business rule, a product decision, or information the design and common UX practice do not determine.';
@@ -132,24 +134,17 @@ function loadImage(image, baseDir, where, cache) {
 }
 
 // Jev replaces every occurrence of a reference string in the request with its image, so a reference that
-// also occurs inside other text would multiply that image; and an asset without a reference is a 400.
+// also occurs inside the caller's text would multiply that image.
 function checkReferences(request, name) {
-  const refs = Object.keys(request.assets ?? {});
   const strings = [];
   const walk = (v) => {
     if (typeof v === 'string') strings.push(v);
     else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) { strings.push(k); walk(x); }
   };
   walk({ ...request, assets: undefined });
-  for (const ref of refs) {
+  for (const ref of Object.keys(request.assets ?? {})) {
     const clash = strings.find((s) => s !== ref && s.includes(ref));
     if (clash !== undefined) throw new BuildError(`${name}: reference ${ref} also occurs inside "${clash.slice(0, 80)}"; reword that text`);
-    if (!strings.includes(ref)) throw new BuildError(`${name}: asset ${ref} is attached but never referenced`);
-  }
-  for (const q of Object.values(request.questions)) {
-    for (const [k, v] of Object.entries(q.instructions)) {
-      if (k.startsWith('screenshot_') && !refs.includes(v)) throw new BuildError(`${name}: ${k} refers to ${v}, which is not attached`);
-    }
   }
 }
 
@@ -162,13 +157,14 @@ function main([setPath, outDir]) {
   } catch (e) {
     throw new BuildError(`cannot read the question set ${setPath}: ${e.message}`);
   }
-  if (!set.model || !Array.isArray(set.questions) || set.questions.length === 0) throw new BuildError('the question set needs model, state, and a non-empty questions list');
+  if (!set.model || set.state == null || !Array.isArray(set.questions) || set.questions.length === 0) throw new BuildError('the question set needs model, state, and a non-empty questions list');
   const baseDir = dirname(resolve(setPath));
   const seen = new Set();
   for (const q of set.questions) {
     if (!q.id || !q.question || !q.design_facts || !q.options || Object.keys(q.options).length === 0) {
       throw new BuildError(`question ${q.id ?? '(no id)'} needs id, question, design_facts, and options`);
     }
+    if ('ask_pm' in q.options) throw new BuildError(`${q.id}: remove the ask_pm option; the script adds it with the fixed wording`);
     if (seen.has(q.id)) throw new BuildError(`question id ${q.id} appears more than once`);
     seen.add(q.id);
   }
@@ -177,18 +173,17 @@ function main([setPath, outDir]) {
   const cache = new Map();
   const stateTokens = textTokens(set.state);
   const packed = set.questions.map((q) => {
-    const { ask_pm, ...options } = q.options;
     const images = (q.images ?? []).map((image, i) => loadImage(image, baseDir, `${q.id} image ${i + 1} (${image.path})`, cache));
     const instructions = {
       question: `${q.question} Base the answer on \`design_facts\`, ${images.length ? 'the screenshots, ' : ''}and the shared spec in \`state\`.`,
       design_facts: q.design_facts,
     };
     images.forEach((img, i) => { instructions[`screenshot_${i + 1}`] = img.ref; });
-    const body = { type: 'choice', instructions, criteria: { ...options, ask_pm: ASK_PM } };
+    const body = { type: 'choice', instructions, criteria: { ...q.options, ask_pm: ASK_PM } };
     // Jev expands each reference where it occurs, so an image costs once per question that uses it.
     const tokens = textTokens({ [q.id]: body }) + images.reduce((sum, img) => sum + img.tokens, 0);
-    if (stateTokens + tokens > BUDGET.perQuestion) {
-      throw new BuildError(`${q.id}: state plus this question is ~${fmt(stateTokens + tokens)} tokens, over the ${fmt(BUDGET.perQuestion)} per-question budget; drop or shrink its screenshots`);
+    if (stateTokens + tokens > BUDGET.stateAndOneQuestion) {
+      throw new BuildError(`${q.id}: state plus this question is ~${fmt(stateTokens + tokens)} tokens, over the ${fmt(BUDGET.stateAndOneQuestion)} budget for state plus one question; drop or shrink its screenshots`);
     }
     return { id: q.id, body, images, tokens };
   });
@@ -222,17 +217,22 @@ function main([setPath, outDir]) {
   for (const { name, request, readable, images, batch } of files) {
     writeFileSync(join(outDir, name), JSON.stringify(request));
     writeFileSync(join(outDir, name.replace(/\.json$/, '.readable.json')), JSON.stringify(readable, null, 2));
-    console.log(`${name}: ${batch.questions.map((q) => q.id).join(', ')}; ${images.length} images; ~${fmt(batch.tokens)} tokens`);
+    const send = images.length > 0 ? `add -H "${IMAGE_HEADER}"` : 'text only';
+    console.log(`${name}: ${batch.questions.map((q) => q.id).join(', ')}; ${images.length} images; ~${fmt(batch.tokens)} tokens; ${send}`);
   }
   console.log(`state: ~${fmt(stateTokens)} tokens, counted in every request`);
 }
 
 const fmt = (n) => n.toLocaleString('en-US');
 
+// Hangul Jamo; CJK symbols and punctuation, Hiragana, Katakana; Hangul compatibility Jamo; CJK Unified Ideographs
+// and Extension A; Hangul syllables; halfwidth and fullwidth forms.
+const CJK = /[\u1100-\u11ff\u3000-\u30ff\u3130-\u318f\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\uff00-\uffef]/;
+
 // Text costs about one token per three non-CJK characters and one per CJK character.
 function textTokens(value) {
   let cjk = 0, other = 0;
-  for (const ch of JSON.stringify(value)) ch.codePointAt(0) >= 0x2e80 ? cjk++ : other++;
+  for (const ch of JSON.stringify(value)) CJK.test(ch) ? cjk++ : other++;
   return Math.floor(other / 3) + cjk;
 }
 
