@@ -12,7 +12,7 @@ Your deliverables are a **Jev ruling** for every Open question, recorded in the 
 
 If the user passed an argument, it names the screen or feature in question. Otherwise take the design being implemented in the conversation.
 
-Keep this run's working files in one **run folder** in the system temp directory, outside the repo: `ask-jev-<topic>-<date>/`, with the topic and date from step 2.
+Keep this run's working files in one **run folder**: a new folder in the system temp directory, outside the repo, named `ask-jev-<topic>-<date>-<suffix>/`, with the topic and date from step 2 and a short random suffix. Every run creates its own, so an earlier run of the same topic, or a run in another repo, never leaves files in it.
 
 ## 1. Check the key
 
