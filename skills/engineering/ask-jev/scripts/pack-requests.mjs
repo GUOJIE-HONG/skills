@@ -12,17 +12,18 @@ import { inflateSync, deflateSync, crc32 } from 'node:zlib';
 // while 30k batches passed, so this is the measured figure, not the documented one.
 const BUDGET = { stateAndOneQuestion: 30_000, perRequest: 30_000 };
 
-// Jev's image limits (https://docs.typesafe.ai/api.md, jev-1.13.0): PNG or JPEG, each side and the total pixel count in range.
-const IMAGE = { minSide: 256, maxSide: 1568, minPixels: 78_400, maxPixels: 2_458_624 };
+// Jev's image limits (https://docs.typesafe.ai/images): PNG or JPEG, each side and the total pixel count in range, inclusive.
+const IMAGE = { minSide: 280, maxSide: 1568, minPixels: 78_400, maxPixels: 2_458_624 };
 // Jev accepts assets only on a request sent with this header; a text-only request is sent without it.
 const IMAGE_HEADER = 'TypeSafe-Danger-Zone-Images: true';
 
-// The fixed last option of every question, which lets Jev route a question it cannot settle to the PM.
-const ASK_PM = 'Only the PM can settle this: it depends on a business rule, a product decision, or information the design and common UX practice do not determine.';
+// The fixed last option of every question, which lets Jev route a question it cannot settle to the run's decider.
+const DEFAULT_DECIDER = 'the PM';
+const askDecider = (decider) => `Only ${decider} can settle this: it depends on a rule, a decision, or information that the facts, the shared context, and common practice do not determine.`;
 
 class BuildError extends Error {}
 
-// ---- PNG: 8-bit RGB/RGBA, non-interlaced, which is what Figma exports ----
+// ---- PNG: 8-bit RGB/RGBA, non-interlaced, which is what design and screenshot tools export ----
 
 const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 
@@ -50,7 +51,7 @@ function paeth(a, b, c) {
 function cropPng(buf, [x0, y0, w, h], where) {
   const { width, height, bitDepth, colorType, interlace } = pngHeader(buf);
   if (bitDepth !== 8 || (colorType !== 2 && colorType !== 6) || interlace !== 0) {
-    throw new BuildError(`${where}: can only crop 8-bit RGB or RGBA non-interlaced PNGs (this one has bit depth ${bitDepth}, colour type ${colorType}, interlace ${interlace}); export it again from Figma as PNG`);
+    throw new BuildError(`${where}: can only crop 8-bit RGB or RGBA non-interlaced PNGs (this one has bit depth ${bitDepth}, colour type ${colorType}, interlace ${interlace}); save it again as an 8-bit PNG`);
   }
   const bpp = colorType === 6 ? 4 : 3;
   const stride = width * bpp;
@@ -98,7 +99,7 @@ function jpegSize(buf, where) {
 
 // ---- images ----
 
-// One crop of one exported image; questions that list the same path and crop share it.
+// One crop of one image file; questions that list the same path and crop share it.
 function loadImage(image, baseDir, where, cache) {
   const path = resolve(baseDir, image.path);
   const key = JSON.stringify([path, image.crop ?? null]);
@@ -128,7 +129,7 @@ function loadImage(image, baseDir, where, cache) {
   const name = taken ? `${stem}-${ref.slice('asset-'.length)}.${format}` : `${stem}.${format}`;
   // Measured on jev-1.13.0: 1024x1412 cost ~4,000 input tokens, 1024x550 cost 1,762.
   const tokens = Math.floor(pixels / 360) + 85;
-  const loaded = { ref, bytes, format, width, height, name, node: image.node, tokens };
+  const loaded = { ref, bytes, format, width, height, name, source: image.source, tokens };
   cache.set(key, loaded);
   return loaded;
 }
@@ -158,13 +159,16 @@ function main([setPath, outDir]) {
     throw new BuildError(`cannot read the question set ${setPath}: ${e.message}`);
   }
   if (!set.model || set.state == null || !Array.isArray(set.questions) || set.questions.length === 0) throw new BuildError('the question set needs model, state, and a non-empty questions list');
+  if (!set.state.product || !set.state.context) throw new BuildError('the state needs product and context');
+  if (set.decider !== undefined && (typeof set.decider !== 'string' || !set.decider.trim())) throw new BuildError('decider, when given, names one person or role, such as "the tech lead"');
+  const askDeciderText = askDecider(set.decider ?? DEFAULT_DECIDER);
   const baseDir = dirname(resolve(setPath));
   const seen = new Set();
   for (const q of set.questions) {
-    if (!q.id || !q.question || !q.design_facts || !q.options || Object.keys(q.options).length === 0) {
-      throw new BuildError(`question ${q.id ?? '(no id)'} needs id, question, design_facts, and options`);
+    if (!q.id || !q.question || !q.facts || !q.options || Object.keys(q.options).length === 0) {
+      throw new BuildError(`question ${q.id ?? '(no id)'} needs id, question, facts, and options`);
     }
-    if ('ask_pm' in q.options) throw new BuildError(`${q.id}: remove the ask_pm option; the script adds it with the fixed wording`);
+    if ('ask_decider' in q.options) throw new BuildError(`${q.id}: remove the ask_decider option; the script adds it with the fixed wording`);
     if (seen.has(q.id)) throw new BuildError(`question id ${q.id} appears more than once`);
     seen.add(q.id);
   }
@@ -175,15 +179,15 @@ function main([setPath, outDir]) {
   const packed = set.questions.map((q) => {
     const images = (q.images ?? []).map((image, i) => loadImage(image, baseDir, `${q.id} image ${i + 1} (${image.path})`, cache));
     const instructions = {
-      question: `${q.question} Base the answer on \`design_facts\`, ${images.length ? 'the screenshots, ' : ''}and the shared spec in \`state\`.`,
-      design_facts: q.design_facts,
+      question: `${q.question} Base the answer on \`facts\`, ${images.length ? 'the images, ' : ''}and the shared context in \`state\`.`,
+      facts: q.facts,
     };
-    images.forEach((img, i) => { instructions[`screenshot_${i + 1}`] = img.ref; });
-    const body = { type: 'choice', instructions, criteria: { ...q.options, ask_pm: ASK_PM } };
+    images.forEach((img, i) => { instructions[`image_${i + 1}`] = img.ref; });
+    const body = { type: 'choice', instructions, criteria: { ...q.options, ask_decider: askDeciderText } };
     // Jev expands each reference where it occurs, so an image costs once per question that uses it.
     const tokens = textTokens({ [q.id]: body }) + images.reduce((sum, img) => sum + img.tokens, 0);
     if (stateTokens + tokens > BUDGET.stateAndOneQuestion) {
-      throw new BuildError(`${q.id}: state plus this question is ~${fmt(stateTokens + tokens)} tokens, over the ${fmt(BUDGET.stateAndOneQuestion)} budget for state plus one question; drop or shrink its screenshots`);
+      throw new BuildError(`${q.id}: state plus this question is ~${fmt(stateTokens + tokens)} tokens, over the ${fmt(BUDGET.stateAndOneQuestion)} budget for state plus one question; drop or shrink its images`);
     }
     return { id: q.id, body, images, tokens };
   });
@@ -206,7 +210,7 @@ function main([setPath, outDir]) {
     const readable = { ...request };
     if (images.length > 0) {
       request.assets = Object.fromEntries(images.map((img) => [img.ref, { type: 'image', format: img.format, data_base64: img.bytes.toString('base64') }]));
-      readable.assets = Object.fromEntries(images.map((img) => [img.ref, { type: 'image', format: img.format, file: `crops/${img.name}`, node: img.node }]));
+      readable.assets = Object.fromEntries(images.map((img) => [img.ref, { type: 'image', format: img.format, file: `crops/${img.name}`, source: img.source }]));
     }
     checkReferences(request, name);
     return { name, request, readable, images, batch };
