@@ -12,8 +12,8 @@ import { inflateSync, deflateSync, crc32 } from 'node:zlib';
 // while 30k batches passed, so this is the measured figure, not the documented one.
 const BUDGET = { stateAndOneQuestion: 30_000, perRequest: 30_000 };
 
-// Jev's image limits (https://docs.typesafe.ai/api.md, jev-1.13.0): PNG or JPEG, each side and the total pixel count in range.
-const IMAGE = { minSide: 256, maxSide: 1568, minPixels: 78_400, maxPixels: 2_458_624 };
+// Jev's image limits (https://docs.typesafe.ai/images): PNG or JPEG, each side and the total pixel count in range, inclusive.
+const IMAGE = { minSide: 280, maxSide: 1568, minPixels: 78_400, maxPixels: 2_458_624 };
 // Jev accepts assets only on a request sent with this header; a text-only request is sent without it.
 const IMAGE_HEADER = 'TypeSafe-Danger-Zone-Images: true';
 

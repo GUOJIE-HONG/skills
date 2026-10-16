@@ -169,7 +169,7 @@ test('a crop of an 8-bit RGB PNG has exactly the requested size and the source p
   assertCropMatches(3);
 });
 
-for (const [label, size] of [['a side over 1568 px', [1600, 300]], ['a side under 256 px', [400, 200]], ['under 78,400 pixels in total', [256, 256]]]) {
+for (const [label, size] of [['a side over 1568 px', [1600, 300]], ['a side of 279 px', [400, 279]]]) {
   test(`an image with ${label} fails the build naming the question and the size, and writes nothing`, () => {
     const dir = workdir();
     const ok = writePng(join(dir, 'ok.png'), 400, 300, { pattern: false });
@@ -181,6 +181,16 @@ for (const [label, size] of [['a side over 1568 px', [1600, 300]], ['a side unde
     assert.equal(existsSync(r.out) && readdirSync(r.out).length > 0, false);
   });
 }
+
+// The limits are inclusive: 280x280 is both the shortest side and the smallest total pixel count Jev accepts.
+test('an image at the smallest size Jev accepts is attached', () => {
+  const dir = workdir();
+  const min = writePng(join(dir, 'min.png'), 280, 280, { pattern: false });
+  const r = run(dir, questionSet([question('q1', [{ path: min, node: '1:1' }])]));
+  assert.equal(r.status, 0, r.stderr);
+  const [img] = attachedImages(readJson(join(r.out, 'request-1.json')));
+  assert.deepEqual(img.bytes, readFileSync(min));
+});
 
 // Every key and string value in the request outside the assets map, where Jev looks for references.
 function textOf(request) {
