@@ -4,6 +4,18 @@ Agent skills for the work before and around writing code: finding direction, set
 
 ## Language
 
+### Shared
+
+**Open question**:
+A gap in the source material that blocks the work until someone settles it, tagged with the role that settles it.
+_Avoid_: TBD, assumption, 待確認
+
+### Ask Jev
+
+**Decider**:
+The one person a run of Ask Jev names to settle the Open questions Jev cannot, the PM unless the run names someone else.
+_Avoid_: owner, PM (as a general term), approver
+
 ### Scrum kickoff
 
 **Product Backlog item**:
@@ -13,10 +25,6 @@ _Avoid_: Task, ticket, 任務
 **Task**:
 A piece of work the Developers split out of a Product Backlog item during a Sprint.
 _Avoid_: Product Backlog item
-
-**Open question**:
-A gap in the source material that keeps a Product Backlog item from being ready, tagged with the role that resolves it: PM for business questions, Engineer for technical ones.
-_Avoid_: TBD, assumption, 待確認
 
 **Sprint 1 draft**:
 The Product Owner's proposal for the first Sprint, a proposed Sprint Goal and the suggested Product Backlog items, which the Scrum Team settles at Sprint Planning.

@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { deflateSync, inflateSync, crc32 } from 'node:zlib';
 
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), 'pack-requests.mjs');
-const ASK_PM = 'Only the PM can settle this: it depends on a business rule, a product decision, or information the design and common UX practice do not determine.';
+const askDecider = (decider) => `Only ${decider} can settle this: it depends on a rule, a decision, or information that the facts, the shared context, and common practice do not determine.`;
 
 function workdir() {
   return mkdtempSync(join(tmpdir(), 'pack-requests-'));
@@ -29,14 +29,14 @@ function readJson(path) {
 }
 
 function questionSet(questions, extra = {}) {
-  return { model: 'jev-latest', state: { product: 'Site log app.' }, questions, ...extra };
+  return { model: 'jev-latest', state: { product: 'Site log app.', context: 'Building the case list screen.' }, questions, ...extra };
 }
 
 function question(id, images = [], extra = {}) {
   return {
     id,
     question: `Which filters should the list offer (${id})?`,
-    design_facts: 'The note lists 「搜尋案件」 (search case); the mockup shows a 「狀態」 (status) dropdown.',
+    facts: 'The note lists 「搜尋案件」 (search case); the mockup shows a 「狀態」 (status) dropdown.',
     options: { follow_notes: 'Search case and date range.', follow_mockup: 'Search case and status dropdown.' },
     images,
     ...extra,
@@ -121,22 +121,22 @@ function attachedImages(request) {
   return Object.entries(request.assets ?? {}).map(([ref, a]) => ({ ref, ...a, bytes: Buffer.from(a.data_base64, 'base64') }));
 }
 
-test('a run without images writes one request with no assets and ask_pm appended to every question', () => {
+test('a run without images writes one request with no assets and ask_decider appended to every question', () => {
   const dir = workdir();
   const r = run(dir, questionSet([question('q1'), question('q2')]));
   assert.equal(r.status, 0, r.stderr);
 
   const req = readJson(join(r.out, 'request-1.json'));
   assert.equal(req.model, 'jev-latest');
-  assert.deepEqual(req.state, { product: 'Site log app.' });
+  assert.deepEqual(req.state, { product: 'Site log app.', context: 'Building the case list screen.' });
   assert.equal('assets' in req, false);
   assert.deepEqual(Object.keys(req.questions), ['q1', 'q2']);
   for (const q of Object.values(req.questions)) {
     assert.equal(q.type, 'choice');
-    assert.deepEqual(Object.keys(q.criteria), ['follow_notes', 'follow_mockup', 'ask_pm']);
-    assert.equal(q.criteria.ask_pm, ASK_PM);
+    assert.deepEqual(Object.keys(q.criteria), ['follow_notes', 'follow_mockup', 'ask_decider']);
+    assert.equal(q.criteria.ask_decider, askDecider('the PM'));
     assert.match(q.instructions.question, /^Which filters should the list offer/);
-    assert.match(q.instructions.design_facts, /「搜尋案件」/);
+    assert.match(q.instructions.facts, /「搜尋案件」/);
   }
   assert.equal(existsSync(join(r.out, 'request-2.json')), false);
   assert.match(r.stdout, /^request-1\.json: q1, q2; 0 images; ~\d+ tokens; text only$/m);
@@ -146,7 +146,7 @@ test('a run without images writes one request with no assets and ask_pm appended
 function assertCropMatches(channels) {
   const dir = workdir();
   const src = writePng(join(dir, 'screen.png'), 400, 380, { channels });
-  const r = run(dir, questionSet([question('q1', [{ path: src, node: '789:38164', crop: [37, 21, 300, 280] }])]));
+  const r = run(dir, questionSet([question('q1', [{ path: src, source: '789:38164', crop: [37, 21, 300, 280] }])]));
   assert.equal(r.status, 0, r.stderr);
 
   const [img] = attachedImages(readJson(join(r.out, 'request-1.json')));
@@ -174,7 +174,7 @@ for (const [label, size] of [['a side over 1568 px', [1600, 300]], ['a side of 2
     const dir = workdir();
     const ok = writePng(join(dir, 'ok.png'), 400, 300, { pattern: false });
     const bad = writePng(join(dir, 'bad.png'), ...size, { pattern: false });
-    const r = run(dir, questionSet([question('q1', [{ path: ok, node: '1:1' }]), question('q7', [{ path: ok, node: '1:1' }, { path: bad, node: '1:2' }])]));
+    const r = run(dir, questionSet([question('q1', [{ path: ok, source: '1:1' }]), question('q7', [{ path: ok, source: '1:1' }, { path: bad, source: '1:2' }])]));
     assert.notEqual(r.status, 0);
     assert.match(r.stderr, /q7/);
     assert.match(r.stderr, new RegExp(`${size[0]}\\s*[x×]\\s*${size[1]}`));
@@ -186,7 +186,7 @@ for (const [label, size] of [['a side over 1568 px', [1600, 300]], ['a side of 2
 test('an image at the smallest size Jev accepts is attached', () => {
   const dir = workdir();
   const min = writePng(join(dir, 'min.png'), 280, 280, { pattern: false });
-  const r = run(dir, questionSet([question('q1', [{ path: min, node: '1:1' }])]));
+  const r = run(dir, questionSet([question('q1', [{ path: min, source: '1:1' }])]));
   assert.equal(r.status, 0, r.stderr);
   const [img] = attachedImages(readJson(join(r.out, 'request-1.json')));
   assert.deepEqual(img.bytes, readFileSync(min));
@@ -209,17 +209,17 @@ test('identical crops share one asset, and every reference is unique, attached, 
   const a = writePng(join(dir, 'list.png'), 600, 600);
   const b = writePng(join(dir, 'dialog.png'), 400, 300);
   const r = run(dir, questionSet([
-    question('q1', [{ path: a, node: '789:38164', crop: [0, 0, 500, 300] }, { path: b, node: '789:38220' }]),
-    question('q2', [{ path: a, node: '789:38164', crop: [0, 0, 500, 300] }, { path: a, node: '789:38164', crop: [100, 100, 400, 400] }]),
+    question('q1', [{ path: a, source: '789:38164', crop: [0, 0, 500, 300] }, { path: b, source: '789:38220' }]),
+    question('q2', [{ path: a, source: '789:38164', crop: [0, 0, 500, 300] }, { path: a, source: '789:38164', crop: [100, 100, 400, 400] }]),
   ]));
   assert.equal(r.status, 0, r.stderr);
 
   const req = readJson(join(r.out, 'request-1.json'));
   const refs = Object.keys(req.assets);
   assert.equal(refs.length, 3);
-  assert.equal(req.questions.q1.instructions.screenshot_1, req.questions.q2.instructions.screenshot_1);
-  const screenshots = Object.values(req.questions).flatMap((q) => Object.entries(q.instructions).filter(([k]) => k.startsWith('screenshot_')).map(([, v]) => v));
-  assert.deepEqual(new Set(screenshots), new Set(refs));
+  assert.equal(req.questions.q1.instructions.image_1, req.questions.q2.instructions.image_1);
+  const imageRefs = Object.values(req.questions).flatMap((q) => Object.entries(q.instructions).filter(([k]) => k.startsWith('image_')).map(([, v]) => v));
+  assert.deepEqual(new Set(imageRefs), new Set(refs));
   for (const ref of refs) {
     assert.match(ref, /^asset-[0-9a-f]{8,}$/);
     for (const s of textOf(req)) if (s !== ref) assert.equal(s.includes(ref), false, `${ref} occurs inside "${s}"`);
@@ -230,23 +230,23 @@ test('identical crops share one asset, and every reference is unique, attached, 
 test('a reference that also occurs in other request text fails the build', () => {
   const dir = workdir();
   const a = writePng(join(dir, 'list.png'), 400, 300);
-  const images = [{ path: a, node: '789:38164' }];
+  const images = [{ path: a, source: '789:38164' }];
   const first = run(dir, questionSet([question('q1', images)]), 'first');
-  const ref = readJson(join(first.out, 'request-1.json')).questions.q1.instructions.screenshot_1;
+  const ref = readJson(join(first.out, 'request-1.json')).questions.q1.instructions.image_1;
 
-  const r = run(dir, questionSet([question('q1', images), question('q2', [], { design_facts: `See ${ref} in the list.` })]), 'second');
+  const r = run(dir, questionSet([question('q1', images), question('q2', [], { facts: `See ${ref} in the list.` })]), 'second');
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, new RegExp(ref));
   assert.equal(existsSync(r.out) && readdirSync(r.out).length > 0, false);
 });
 
-test('the readable copy of a request carries no base64 and names each crop file and Figma node', () => {
+test('the readable copy of a request carries no base64 and names each crop file and its source', () => {
   const dir = workdir();
   const a = writePng(join(dir, 'list.png'), 600, 600);
   const b = writePng(join(dir, 'dialog.png'), 400, 300);
   const r = run(dir, questionSet([
-    question('q1', [{ path: a, node: '789:38164', crop: [0, 0, 500, 300] }]),
-    question('q2', [{ path: b, node: '789:38220' }]),
+    question('q1', [{ path: a, source: '789:38164', crop: [0, 0, 500, 300] }]),
+    question('q2', [{ path: b, source: '789:38220' }]),
   ]));
   assert.equal(r.status, 0, r.stderr);
 
@@ -256,10 +256,10 @@ test('the readable copy of a request carries no base64 and names each crop file 
   for (const a of Object.values(req.assets)) assert.equal(text.includes(a.data_base64.slice(0, 40)), false);
   assert.deepEqual({ ...readable, assets: undefined }, { ...req, assets: undefined });
 
-  const nodes = { [req.questions.q1.instructions.screenshot_1]: '789:38164', [req.questions.q2.instructions.screenshot_1]: '789:38220' };
-  assert.deepEqual(Object.keys(readable.assets).sort(), Object.keys(nodes).sort());
+  const sources = { [req.questions.q1.instructions.image_1]: '789:38164', [req.questions.q2.instructions.image_1]: '789:38220' };
+  assert.deepEqual(Object.keys(readable.assets).sort(), Object.keys(sources).sort());
   for (const [ref, asset] of Object.entries(readable.assets)) {
-    assert.equal(asset.node, nodes[ref]);
+    assert.equal(asset.source, sources[ref]);
     assert.match(asset.file, /^crops\/[^/]+\.png$/);
     assert.deepEqual(readFileSync(join(r.out, asset.file)), Buffer.from(req.assets[ref].data_base64, 'base64'));
     assert.equal('data_base64' in asset, false);
@@ -273,14 +273,14 @@ test('questions are packed in order into as few requests as stay under the per-r
   const a = writePng(join(dir, 'a.png'), 1568, 1568, { pattern: false });
   const b = writePng(join(dir, 'b.png'), 1568, 1568, { channels: 3, pattern: false });
   const ids = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9'];
-  const r = run(dir, questionSet(ids.map((id, i) => question(id, [{ path: i % 2 ? b : a, node: '1:1' }]))));
+  const r = run(dir, questionSet(ids.map((id, i) => question(id, [{ path: i % 2 ? b : a, source: '1:1' }]))));
   assert.equal(r.status, 0, r.stderr);
 
   const requests = [1, 2, 3].map((n) => readJson(join(r.out, `request-${n}.json`)));
   assert.equal(existsSync(join(r.out, 'request-4.json')), false);
   assert.deepEqual(requests.map((q) => Object.keys(q.questions)), [['q1', 'q2', 'q3', 'q4'], ['q5', 'q6', 'q7', 'q8'], ['q9']]);
   assert.deepEqual(requests.map((q) => Object.keys(q.assets).length), [2, 2, 1]);
-  for (const q of requests) assert.deepEqual(q.state, { product: 'Site log app.' });
+  for (const q of requests) assert.deepEqual(q.state, { product: 'Site log app.', context: 'Building the case list screen.' });
 
   const lines = r.stdout.split('\n').filter((l) => l.startsWith('request-'));
   assert.equal(lines.length, 3);
@@ -292,7 +292,7 @@ test('questions are packed in order into as few requests as stay under the per-r
 test('a question over the per-question budget fails the build with its estimated size', () => {
   const dir = workdir();
   const big = writePng(join(dir, 'big.png'), 1568, 1568, { pattern: false });
-  const images = [0, 1, 2, 3, 4].map((y) => ({ path: big, node: '1:1', crop: [0, y, 1568, 1560] }));
+  const images = [0, 1, 2, 3, 4].map((y) => ({ path: big, source: '1:1', crop: [0, y, 1568, 1560] }));
   const r = run(dir, questionSet([question('q1'), question('q2', images)]));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /q2/);
@@ -311,14 +311,14 @@ function writeJpeg(path, width, height) {
 test('a JPEG is attached unchanged as format jpg and still checked against the limits', () => {
   const dir = workdir();
   const ok = writeJpeg(join(dir, 'photo.jpg'), 800, 600);
-  const r = run(dir, questionSet([question('q1', [{ path: ok, node: '2:1' }])]));
+  const r = run(dir, questionSet([question('q1', [{ path: ok, source: '2:1' }])]));
   assert.equal(r.status, 0, r.stderr);
   const [img] = attachedImages(readJson(join(r.out, 'request-1.json')));
   assert.equal(img.format, 'jpg');
   assert.deepEqual(img.bytes, readFileSync(ok));
 
   const big = writeJpeg(join(dir, 'big.jpg'), 2000, 600);
-  const bad = run(dir, questionSet([question('q4', [{ path: big, node: '2:2' }])]), 'bad');
+  const bad = run(dir, questionSet([question('q4', [{ path: big, source: '2:2' }])]), 'bad');
   assert.notEqual(bad.status, 0);
   assert.match(bad.stderr, /q4/);
   assert.match(bad.stderr, /2000\s*[x×]\s*600/);
@@ -329,7 +329,7 @@ test('a crop on a JPEG or on a PNG the script cannot decode fails with the quest
   const jpg = writeJpeg(join(dir, 'photo.jpg'), 800, 600);
   const interlaced = writePng(join(dir, 'interlaced.png'), 400, 300, { interlace: 1 });
   for (const [id, path] of [['q5', jpg], ['q6', interlaced]]) {
-    const r = run(dir, questionSet([question(id, [{ path, node: '2:1', crop: [0, 0, 300, 280] }])]), id);
+    const r = run(dir, questionSet([question(id, [{ path, source: '2:1', crop: [0, 0, 300, 280] }])]), id);
     assert.notEqual(r.status, 0);
     assert.match(r.stderr, new RegExp(id));
   }
@@ -340,7 +340,7 @@ test('same-named exports from different folders keep separate crop files', () =>
   mkdirSync(join(dir, 'a')); mkdirSync(join(dir, 'b'));
   const a = writePng(join(dir, 'a', 'screen.png'), 400, 300);
   const b = writePng(join(dir, 'b', 'screen.png'), 300, 400);
-  const r = run(dir, questionSet([question('q1', [{ path: a, node: '1:1' }, { path: b, node: '1:2' }])]));
+  const r = run(dir, questionSet([question('q1', [{ path: a, source: '1:1' }, { path: b, source: '1:2' }])]));
   assert.equal(r.status, 0, r.stderr);
   const readable = readJson(join(r.out, 'request-1.readable.json'));
   const files = Object.values(readable.assets).map((x) => x.file);
@@ -355,12 +355,27 @@ test('a question set that repeats a question id fails the build', () => {
   assert.match(r.stderr, /q1/);
 });
 
-test('a question whose options include ask_pm fails the build, since the script adds that option itself', () => {
+test('a question whose options include ask_decider fails the build, since the script adds that option itself', () => {
   const dir = workdir();
-  const r = run(dir, questionSet([question('q1'), question('q2', [], { options: { follow_notes: 'Search case.', ask_pm: 'Ask the PM.' } })]));
+  const r = run(dir, questionSet([question('q1'), question('q2', [], { options: { follow_notes: 'Search case.', ask_decider: 'Ask the PM.' } })]));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /q2/);
-  assert.match(r.stderr, /ask_pm/);
+  assert.match(r.stderr, /ask_decider/);
+  assert.equal(existsSync(r.out) && readdirSync(r.out).length > 0, false);
+});
+
+test('a question set that names a decider routes ask_decider to that decider', () => {
+  const dir = workdir();
+  const r = run(dir, questionSet([question('q1')], { decider: 'the tech lead' }));
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(readJson(join(r.out, 'request-1.json')).questions.q1.criteria.ask_decider, askDecider('the tech lead'));
+});
+
+test('a state without product or context fails the build naming both', () => {
+  const dir = workdir();
+  const r = run(dir, questionSet([question('q1')], { state: { product: 'Site log app.' } }));
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /product and context/);
   assert.equal(existsSync(r.out) && readdirSync(r.out).length > 0, false);
 });
 
@@ -377,7 +392,7 @@ test('a question set without state fails the build with a message naming state',
 test('the summary names the image header only for requests that carry images', () => {
   const dir = workdir();
   const big = writePng(join(dir, 'big.png'), 1568, 1568, { pattern: false });
-  const r = run(dir, questionSet([question('q1', [{ path: big, node: '1:1' }]), question('q2', [], { design_facts: 'x'.repeat(75_000) })]));
+  const r = run(dir, questionSet([question('q1', [{ path: big, source: '1:1' }]), question('q2', [], { facts: 'x'.repeat(75_000) })]));
   assert.equal(r.status, 0, r.stderr);
   assert.equal('assets' in readJson(join(r.out, 'request-2.json')), false);
   const lines = r.stdout.split('\n').map((l) => l.trimEnd()).filter((l) => l.startsWith('request-'));
@@ -390,12 +405,12 @@ test('the summary names the image header only for requests that carry images', (
 test('the token estimate counts CJK characters, and only CJK characters, at one token each', () => {
   const dir = workdir();
   const cjk = '中㐀。あア한！'.repeat(4_500);
-  const over = run(dir, questionSet([question('q1', [], { design_facts: cjk })]), 'cjk');
+  const over = run(dir, questionSet([question('q1', [], { facts: cjk })]), 'cjk');
   assert.notEqual(over.status, 0);
   assert.match(over.stderr, /q1.*3[12],?\d{3}/);
 
   const emoji = '\u{1F4CC}'.repeat(31_500);
-  const ok = run(dir, questionSet([question('q1', [], { design_facts: emoji })]), 'emoji');
+  const ok = run(dir, questionSet([question('q1', [], { facts: emoji })]), 'emoji');
   assert.equal(ok.status, 0, ok.stderr);
   assert.match(ok.stdout, /~1[01],?\d{3} tokens/);
 });
@@ -403,7 +418,7 @@ test('the token estimate counts CJK characters, and only CJK characters, at one 
 test('a crop is checked against the limits, not the image it is cut from', () => {
   const dir = workdir();
   const src = writePng(join(dir, 'tall.png'), 1024, 2000, { pattern: false });
-  const r = run(dir, questionSet([question('q3', [{ path: src, node: '1:1', crop: [0, 0, 1024, 200] }])]));
+  const r = run(dir, questionSet([question('q3', [{ path: src, source: '1:1', crop: [0, 0, 1024, 200] }])]));
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /q3/);
   assert.match(r.stderr, /1024\s*[x×]\s*200/);
