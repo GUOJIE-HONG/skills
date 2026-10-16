@@ -156,7 +156,7 @@ Done when every question from this run has an entry and every readable request a
 
 Skip this step when no question came out as **Adopted, Decider to confirm** or **Decider question**.
 
-Write `jev/questionnaire/<topic>-<date>.md` in the user's language. When it exists, add the new questions under its existing sections instead. Fill this template:
+Write `jev/questionnaire/<topic>-<date>-<decider>.md` in the user's language, with `<decider>` the Decider's role in kebab-case without its article (`pm`, `tech-lead`), so each questionnaire goes to one Decider only. When it exists, it is addressed to the same Decider: add the new questions under its existing sections instead. Fill this template:
 
 <questionnaire-template>
 
@@ -198,7 +198,7 @@ Tell the user, in their language:
 
 - how many questions came out Adopted, Adopted with the Decider to confirm, and as Decider questions
 - how many requests were sent and their total input tokens, and that the run was text-only when it was
-- the paths of the record, this run's `run-<n>/` folder of crops and readable requests, and the questionnaire
+- the paths of the record, this run's `run-<n>/` folder of crops and readable requests, and the questionnaire, with the Decider it is addressed to
 - each `TODO` left in the code, with its file and line
 
 Leave committing to the user.
