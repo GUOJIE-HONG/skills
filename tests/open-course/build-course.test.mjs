@@ -1,5 +1,6 @@
-// Run with `node --test` from this folder. Each test writes a course data file to a temp folder, runs
-// build-course.mjs as a user would, and reads only its output folder, stdout, stderr, and exit code.
+// Run with `node --test` from the repo root. Kept outside the skill folder so installing the skill leaves
+// it out. Each test writes a course data file to a temp folder, runs build-course.mjs as a user would, and
+// reads only its output folder, stdout, stderr, and exit code.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -8,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), 'build-course.mjs');
+const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'skills', 'learning', 'open-course', 'scripts', 'build-course.mjs');
 
 function workdir() {
   return mkdtempSync(join(tmpdir(), 'build-course-'));

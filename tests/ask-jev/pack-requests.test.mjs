@@ -1,5 +1,6 @@
-// Run with `node --test` from this folder. Each test writes a question set and fixture images to a temp
-// folder, runs pack-requests.mjs as a user would, and reads only its output folder, stdout, and exit code.
+// Run with `node --test` from the repo root. Kept outside the skill folder so installing the skill leaves
+// it out. Each test writes a question set and fixture images to a temp folder, runs pack-requests.mjs as a
+// user would, and reads only its output folder, stdout, and exit code.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -9,7 +10,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deflateSync, inflateSync, crc32 } from 'node:zlib';
 
-const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), 'pack-requests.mjs');
+const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'skills', 'engineering', 'ask-jev', 'scripts', 'pack-requests.mjs');
 const askDecider = (decider) => `Only ${decider} can settle this: it depends on a rule, a decision, or information that the facts, the shared context, and common practice do not determine.`;
 
 function workdir() {
