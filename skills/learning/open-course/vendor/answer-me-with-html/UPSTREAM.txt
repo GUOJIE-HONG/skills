@@ -1,0 +1,12 @@
+Copied unchanged from Answer me with HTML, MIT License (see LICENSE).
+
+Upstream:  https://github.com/QingYunA/answer-me-with-html
+Commit:    7e71bc08f3df214af10fe4636fd00f95294ec3e9 (main, 2026-10-17; the bundle reports version 0.5.5)
+
+Files and their upstream paths:
+  am.mjs           skills/answer-me-with-html/scripts/am.mjs   (generated bundle, never edit it here)
+  OFL-Bangers.txt  skills/answer-me-with-html/licenses/OFL-Bangers.txt   (license of the Bangers font am.mjs embeds)
+  LICENSE          LICENSE
+
+open-course uses only `am.mjs video`. To update, copy the same three files from a newer upstream commit,
+replace the commit line above, and check that references/video.md still matches `node am.mjs help video`.

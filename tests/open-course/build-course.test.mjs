@@ -470,7 +470,7 @@ test('a successful build prints where the Course project is and how many Evidenc
   assert.match(r.stdout, /2 Evidence gaps?/);
 });
 
-// A stand-in for the player page `am video -o` writes, so tests never call am.
+// A stand-in for the player page the bundled `am video -o` writes, so tests never call am.
 function fakeVideo(dir, name = 'video.html') {
   const path = join(dir, 'videos-temp', name);
   mkdirSync(dirname(path), { recursive: true });
