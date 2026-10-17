@@ -34,6 +34,19 @@ function* claims(data) {
   }
 }
 
+function* slides(data) {
+  for (const { lesson, where } of lessons(data)) {
+    for (const [i, slide] of items(lesson.slides).entries()) yield { lesson, slide, where: `${where}, slide ${i + 1}` };
+  }
+}
+
+// Every point on every slide of every Lesson, with its Lesson and where it sits.
+function* points(data) {
+  for (const { lesson, slide, where } of slides(data)) {
+    for (const [i, point] of items(slide.points).entries()) yield { lesson, point, where: `${where}, point ${i + 1}` };
+  }
+}
+
 function duplicates(ids) {
   return ids.filter((id, i) => id !== undefined && ids.indexOf(id) !== i);
 }
@@ -84,6 +97,24 @@ const CHECKS = [
       list(claim.sources).filter((id) => !listed.has(id)).map((id) => ({ where, problem: `cites Source "${id}", which is not in the Source list` })),
     );
   },
+  function slidesHaveTheirParts(data) {
+    const problems = [];
+    for (const { lesson, where } of lessons(data)) if (items(lesson.slides).length === 0) problems.push({ where, problem: 'has no Slides' });
+    for (const { slide, where } of slides(data)) {
+      if (blank(slide.title)) problems.push({ where, problem: 'has no title' });
+      if (items(slide.points).length === 0) problems.push({ where, problem: 'has no points' });
+    }
+    for (const { point, where } of points(data)) if (blank(point.text)) problems.push({ where, problem: 'has no text' });
+    return problems;
+  },
+  // Slides say only what their Lesson's Handout says, so a point may cite only Sources that Handout cites.
+  function everySlidePointCitesItsHandout(data) {
+    return [...points(data)].flatMap(({ lesson, point, where }) => {
+      if (list(point.sources).length === 0) return [{ where, problem: 'cites no Source' }];
+      const inHandout = new Set(items(lesson.sections).flatMap((s) => items(s.claims).flatMap((c) => list(c.sources))));
+      return list(point.sources).filter((id) => !inHandout.has(id)).map((id) => ({ where, problem: `cites Source "${id}", which the Lesson's Handout does not cite` }));
+    });
+  },
   // The URL becomes a link on the page, so only schemes that open a document pass; javascript: and the like do not.
   function everySourceHasAUrlAndReadDate(data) {
     return items(data.sources).flatMap((s, i) => {
@@ -132,11 +163,12 @@ const piece = (v) => (v instanceof Markup ? v.text : Array.isArray(v) ? v.map(pi
 const html = (strings, ...values) => new Markup(strings.reduce((out, s, i) => out + s + (i < values.length ? piece(values[i]) : ''), ''));
 
 const CSS = new Markup(readFileSync(new URL('../assets/course.css', import.meta.url), 'utf8'));
+const SLIDES_SCRIPT = new Markup(readFileSync(new URL('../assets/slides.js', import.meta.url), 'utf8'));
 
 // Page labels in the Course's language, and what goes between two sentences; a language without its own labels gets English.
 const LABELS = {
-  en: { audience: 'Audience', level: 'Level', length: 'Total length', lessons: 'Lessons', lesson: (n) => `Lesson ${n}`, objectives: 'You will be able to', sources: 'Sources', read: (date) => `read ${date}`, between: ' ' },
-  zh: { audience: '學員', level: '程度', length: '總時數', lessons: '課程內容', lesson: (n) => `第 ${n} 課`, objectives: '學完這一課，你能夠', sources: '資料來源', read: (date) => `${date} 閱讀`, between: '' },
+  en: { audience: 'Audience', level: 'Level', length: 'Total length', lessons: 'Lessons', lesson: (n) => `Lesson ${n}`, objectives: 'You will be able to', sources: 'Sources', read: (date) => `read ${date}`, between: ' ', slides: 'Slides', handout: 'Handout', previous: 'Previous slide', next: 'Next slide' },
+  zh: { audience: '學員', level: '程度', length: '總時數', lessons: '課程內容', lesson: (n) => `第 ${n} 課`, objectives: '學完這一課，你能夠', sources: '資料來源', read: (date) => `${date} 閱讀`, between: '', slides: '投影片', handout: '講義', previous: '上一張', next: '下一張' },
 };
 const labelsFor = (language = 'en') => LABELS[language.toLowerCase().split('-')[0]] ?? LABELS.en;
 
@@ -169,6 +201,7 @@ function syllabusPage(data) {
     (l, i) => html`<li>
 <p class="eyebrow">${t.lesson(i + 1)}</p>
 <h3><a href="lessons/${l.id}/handout.html">${l.title}</a></h3>
+<p class="lesson-links"><a href="lessons/${l.id}/slides.html">${t.slides}</a></p>
 ${objectivesBlock(l, t)}
 <ul class="topics">${l.sections.map((s) => html`<li>${s.heading}</li>`)}</ul>
 </li>`,
@@ -206,10 +239,38 @@ function handoutPage(data, lesson, index) {
   return page({
     language: data.course.language,
     title: `${lesson.title} · ${data.course.title}`,
-    body: html`<nav class="crumb"><a href="../../index.html">${data.course.title}</a></nav>
+    body: html`<nav class="crumb"><a href="../../index.html">${data.course.title}</a> · <a href="slides.html">${t.slides}</a></nav>
 <header><p class="eyebrow">${t.lesson(index + 1)}</p><h1>${lesson.title}</h1>${objectivesBlock(lesson, t)}</header>
 ${sections}
 <section class="sources"><h2>${t.sources}</h2><ol>${sources}</ol></section>`,
+  });
+}
+
+// Slides number their citations as the Handout does and link each marker to the Source entry there.
+function slidesPage(data, lesson, index) {
+  const t = labelsFor(data.course.language);
+  const numbers = citationNumbers(lesson);
+  const markers = (ids) => ids.map((id) => html`<sup class="cite"><a href="handout.html#source-${numbers.get(id)}">[${numbers.get(id)}]</a></sup>`);
+  const slides = lesson.slides.map(
+    (s) => html`<section class="slide">
+<h2>${s.title}</h2>
+<ul class="points">${s.points.map((p) => html`<li>${p.text}${markers(p.sources)}</li>`)}</ul>
+</section>`,
+  );
+  const cited = [...numbers].filter(([id]) => lesson.slides.some((s) => s.points.some((p) => p.sources.includes(id))));
+  const sources = cited.map(([id, n]) => {
+    const s = data.sources.find((x) => x.id === id);
+    return html`<li value="${n}">${s.author}. <cite>${s.title}</cite>. <a href="${s.url}">${s.url}</a></li>`;
+  });
+  return page({
+    language: data.course.language,
+    title: `${t.slides} · ${lesson.title} · ${data.course.title}`,
+    body: html`<nav class="pager"><span class="crumb"><a href="../../index.html">${data.course.title}</a> · <a href="handout.html">${t.handout}</a></span>
+<span class="pager-controls"><button type="button" class="pager-prev" aria-label="${t.previous}">←</button> <span class="pager-count"></span> <button type="button" class="pager-next" aria-label="${t.next}">→</button></span></nav>
+<section class="slide"><p class="eyebrow">${t.lesson(index + 1)}</p><h1>${lesson.title}</h1>${objectivesBlock(lesson, t)}</section>
+${slides}
+<section class="slide sources"><h2>${t.sources}</h2><ol>${sources}</ol></section>
+<script>${SLIDES_SCRIPT}</script>`,
   });
 }
 
@@ -225,6 +286,7 @@ function main([dataPath, outDir]) {
   validate(data, outDir);
   const pages = { 'index.html': syllabusPage(data) };
   data.lessons.forEach((lesson, i) => { pages[`lessons/${lesson.id}/handout.html`] = handoutPage(data, lesson, i); });
+  data.lessons.forEach((lesson, i) => { pages[`lessons/${lesson.id}/slides.html`] = slidesPage(data, lesson, i); });
   writeProject(outDir, pages);
   console.log(`Course project: ${outDir}`);
   for (const path of Object.keys(pages)) console.log(`  ${path}`);

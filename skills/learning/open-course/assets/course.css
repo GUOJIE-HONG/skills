@@ -63,3 +63,20 @@ h3 { font-size: 1.1rem; margin: 0 0 0.5rem; }
 .sources li { margin-bottom: 0.5rem; overflow-wrap: anywhere; }
 .sources li:target { background: var(--accent-soft); border-radius: 0.25rem; }
 .sources .read { color: var(--muted); }
+
+/* Slides: without script every slide shows in turn; slides.js adds .presenting and shows one at a time. */
+.pager { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 1rem; font-size: 0.9rem; color: var(--muted); }
+.pager-controls { display: none; align-items: center; gap: 0.5rem; }
+.pager button { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 0.375rem; padding: 0.1rem 0.75rem; cursor: pointer; }
+.slide { padding: 2rem 0; border-bottom: 1px solid var(--line); }
+.slide h2 { margin-top: 0; border-bottom: 0; }
+.points { padding-left: 1.25rem; }
+.points li { margin-bottom: 0.5rem; }
+
+.presenting main { max-width: 64rem; min-height: 100vh; display: flex; flex-direction: column; padding-top: 1rem; padding-bottom: 1rem; }
+.presenting .pager { order: 1; }
+.presenting .pager-controls { display: flex; }
+.presenting .slide { flex: 1; display: flex; flex-direction: column; justify-content: center; border-bottom: 0; font-size: clamp(1.1rem, 2.2vw, 1.75rem); }
+.presenting .slide[hidden] { display: none; }
+.presenting .slide h1 { font-size: 2em; }
+.presenting .slide h2 { font-size: 1.5em; }

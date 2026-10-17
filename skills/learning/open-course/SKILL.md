@@ -1,12 +1,12 @@
 ---
 name: open-course
-description: Turn a topic into a Course project, a Syllabus and one Handout per Lesson, where every factual claim cites a Source read for this Course.
+description: Turn a topic into a Course project, a Syllabus plus a Handout and Slides per Lesson, where every factual claim cites a Source read for this Course.
 disable-model-invocation: true
 ---
 
 # Open Course
 
-Your deliverable is a **Course project**: a Syllabus page and, for each Lesson, a Handout page in which every factual claim carries a citation marker linking to the Handout's Source list. A bundled script builds the pages from a course data file you write; it refuses any claim that does not cite a listed Source.
+Your deliverable is a **Course project**: a Syllabus page and, for each Lesson, a Handout page in which every factual claim carries a citation marker linking to the Handout's Source list, plus Slides drawn from that Handout. A bundled script builds the pages from a course data file you write; it refuses any claim that does not cite a listed Source.
 
 If the user passed an argument, it is the topic. Otherwise take the topic from the conversation.
 
@@ -45,7 +45,8 @@ Write the whole Course as one JSON file in the system temp directory, using a fi
       "objectives": [""],
       "sections": [
         { "heading": "", "claims": [{ "text": "", "sources": ["noaa-tides"] }] }
-      ]
+      ],
+      "slides": [{ "title": "", "points": [{ "text": "", "sources": ["noaa-tides"] }] }]
     }
   ],
   "evidenceGaps": [{ "lesson": "what-is-a-tide", "point": "" }]
@@ -56,6 +57,7 @@ Write the whole Course as one JSON file in the system temp directory, using a fi
 - `author` names a person or the organisation that stands behind the work. `kind` is `primary` or `secondary`. `readOn` is the date you read it. `url` is an `http`, `https`, or `file` address.
 - Each Lesson `id` is lowercase letters, digits, and hyphens, and names its folder in the Course project.
 - A claim is one statement in the Handout's prose, with the ids of the Sources that back it. The claims of a section read as one paragraph, in order.
+- `slides` digest the Lesson's Handout for the teacher to present: each point restates something that Handout says, citing the Sources it cites there. What the Handout does not say stays off the Slides.
 - `evidenceGaps` is for your report only; no page shows it.
 
 ## 5. Build
@@ -66,7 +68,7 @@ Pass the data file by its path only. Never inline its content into a shell comma
 node "<this skill's folder>/scripts/build-course.mjs" "<data file>" "<Course project folder>"
 ```
 
-It needs Node 20 or later and nothing else. On success it prints the Course project's path and every page it wrote: `index.html` (the Syllabus) and `lessons/<id>/handout.html` per Lesson.
+It needs Node 20 or later and nothing else. On success it prints the Course project's path and every page it wrote: `index.html` (the Syllabus), and `lessons/<id>/handout.html` and `lessons/<id>/slides.html` per Lesson.
 
 When it refuses, it lists every problem with the Lesson, section, and claim, or the Source, it sits in, and writes nothing. Fix them all in the data file and run it again. A claim with no Source to cite is an Evidence gap: move it to `evidenceGaps` rather than inventing a citation.
 

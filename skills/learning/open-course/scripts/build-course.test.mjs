@@ -28,8 +28,20 @@ function source(id, extra = {}) {
   return { id, title: `Title of ${id}`, author: `Author of ${id}`, url: `https://example.org/${id}`, readOn: '2026-10-01', kind: 'primary', ...extra };
 }
 
+// By default a Lesson's Slides restate its Handout: one slide per section, one point per claim.
 function lesson(id, sections, extra = {}) {
-  return { id, title: `Lesson ${id}`, objectives: [`Objective of ${id}`], sections, ...extra };
+  const slides = list(sections).map((s) => slide(s.heading, s.claims.map((c) => point(c.text, [...c.sources]))));
+  return { id, title: `Lesson ${id}`, objectives: [`Objective of ${id}`], sections, slides, ...extra };
+}
+
+const list = (v) => (Array.isArray(v) ? v : []);
+
+function slide(title, points) {
+  return { title, points };
+}
+
+function point(text, sources) {
+  return { text, sources };
 }
 
 function section(heading, claims) {
@@ -67,6 +79,20 @@ test('a valid course builds a Syllabus page that links to a Handout page per Les
   }
 });
 
+test('a valid course builds Slides for each Lesson, linked from the Syllabus and from that Lesson\'s Handout', () => {
+  const dir = workdir();
+  const r = run(dir, courseData());
+  assert.equal(r.status, 0, r.stderr);
+  const syllabus = read(join(r.out, 'index.html'));
+  for (const id of ['l1', 'l2']) {
+    const slides = join(r.out, 'lessons', id, 'slides.html');
+    assert.ok(existsSync(slides), `missing ${slides}`);
+    assert.match(syllabus, new RegExp(`href="lessons/${id}/slides.html"`));
+    assert.match(read(join(r.out, 'lessons', id, 'handout.html')), /href="slides.html"/);
+    assert.match(read(slides), new RegExp(`Lesson ${id}`));
+  }
+});
+
 // The text of the element with this id, tags stripped, so assertions read what a learner sees.
 function elementText(html, id) {
   const m = html.match(new RegExp(`<(\\w+)[^>]*\\sid="${id}"[^>]*>([\\s\\S]*?)</\\1>`));
@@ -76,12 +102,12 @@ function elementText(html, id) {
 
 // The fragment targets of the citation markers between a claim's text and the next claim or paragraph end.
 // Claims in these tests all start with "Claim ".
-function citationsAfter(html, text) {
+function citationsAfter(html, text, link = /href="#([^"]+)"/g) {
   const at = html.indexOf(text);
   assert.ok(at >= 0, `claim not on the page: ${text}`);
   const rest = html.slice(at + text.length);
-  const end = rest.search(/Claim |<\/p>/);
-  return [...rest.slice(0, end).matchAll(/href="#([^"]+)"/g)].map((m) => m[1]);
+  const end = rest.search(/Claim |<\/p>|<\/li>/);
+  return [...rest.slice(0, end).matchAll(link)].map((m) => m[1]);
 }
 
 test('each citation marker in a Handout links to its Source entry, which shows title, author, URL, and read date', () => {
@@ -111,6 +137,35 @@ test('each citation marker in a Handout links to its Source entry, which shows t
   assert.ok(!html.includes('Title of unused'), 'a Source the Handout does not cite is listed');
 });
 
+test('each slide shows its title and points, and each point\'s citation markers link to the cited Source in the Handout', () => {
+  const dir = workdir();
+  const data = courseData({
+    sources: [source('noaa'), source('book', { kind: 'secondary' }), source('atlas')],
+    lessons: [
+      lesson('l1', [section('What a tide is', [claim('The sea rises.', ['book']), claim('The sea falls.', ['noaa']), claim('Maps show it.', ['atlas'])])], {
+        slides: [
+          slide('Rise and fall', [point('Claim A: the sea rises and falls.', ['noaa', 'book'])]),
+          slide('Twice a day', [point('Claim B: most coasts see two tides.', ['noaa'])]),
+        ],
+      }),
+    ],
+  });
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  const slides = read(join(r.out, 'lessons', 'l1', 'slides.html'));
+  const handout = read(join(r.out, 'lessons', 'l1', 'handout.html'));
+  assert.ok(slides.indexOf('Rise and fall') < slides.indexOf('Twice a day'), 'slides out of order or missing');
+  const expected = { 'Claim A: the sea rises and falls.': ['noaa', 'book'], 'Claim B: most coasts see two tides.': ['noaa'] };
+  for (const [text, ids] of Object.entries(expected)) {
+    const targets = citationsAfter(slides, text, /href="handout\.html#([^"]+)"/g);
+    assert.equal(targets.length, ids.length, `markers after "${text}"`);
+    targets.forEach((target, i) => assert.ok(elementText(handout, target).includes(`Title of ${ids[i]}`), `${target} is not ${ids[i]} in the Handout`));
+  }
+  const listed = slides.slice(slides.lastIndexOf('class="slide'));
+  for (const id of ['noaa', 'book']) assert.ok(listed.includes(`Title of ${id}`), `the last slide does not list ${id}`);
+  assert.ok(!slides.includes('Title of atlas'), 'the Slides list a Source no slide cites');
+});
+
 // A refused build exits non-zero, writes nothing next to the data file, and names each problem on its own
 // stderr line; each problem is given as the patterns that line must all match.
 function assertRefused(r, dir, ...problems) {
@@ -134,6 +189,35 @@ test('a claim that cites a Source id missing from the Source list is refused, na
   const data = courseData();
   data.lessons[0].sections[0].claims[0].sources.push('ghost');
   assertRefused(run(dir, data), dir, [/\bl1\b/, /section 1\b/, /claim 1\b/, /\bghost\b/]);
+});
+
+test('a slide point that cites no Source, or a Source its Lesson\'s Handout does not cite, is refused, naming the Lesson and slide', () => {
+  const dir = workdir();
+  const data = courseData();
+  data.lessons[0].slides.push(slide('Extra', [point('Uncited point.', []), point('Point from elsewhere.', ['book'])]));
+  data.lessons[1].slides[0].points[0].sources = ['ghost'];
+  assertRefused(
+    run(dir, data),
+    dir,
+    [/\bl1\b/, /slide 2\b/, /point 1\b/, /cites no Source/],
+    [/\bl1\b/, /slide 2\b/, /point 2\b/, /\bbook\b/, /Handout/],
+    [/\bl2\b/, /slide 1\b/, /point 1\b/, /\bghost\b/],
+  );
+});
+
+test('a Lesson without Slides, a slide without a title or points, and a point without text are refused, each where it is missing', () => {
+  const dir = workdir();
+  const data = courseData();
+  delete data.lessons[0].slides;
+  data.lessons[1].slides.push(slide('', []), slide('Fine', [{ sources: ['book'] }]));
+  assertRefused(
+    run(dir, data),
+    dir,
+    [/\bl1\b/, /Slides/],
+    [/\bl2\b/, /slide 2\b/, /title/],
+    [/\bl2\b/, /slide 2\b/, /points/],
+    [/\bl2\b/, /slide 3\b/, /point 1\b/, /text/],
+  );
 });
 
 test('a Source without a URL or without a read date is refused, naming the Source', () => {
@@ -193,7 +277,7 @@ test('HTML markup anywhere in the data shows as text on every page', () => {
   });
   const r = run(dir, data);
   assert.equal(r.status, 0, r.stderr);
-  for (const page of ['index.html', join('lessons', 'l1', 'handout.html')]) {
+  for (const page of ['index.html', join('lessons', 'l1', 'handout.html'), join('lessons', 'l1', 'slides.html')]) {
     const html = read(join(r.out, page));
     assert.ok(!html.includes('<script>alert'), `${page} runs a script from the data`);
     assert.ok(!html.includes('<b>bold'), `${page} renders markup from the data`);
