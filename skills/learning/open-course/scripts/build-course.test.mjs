@@ -172,6 +172,25 @@ test('each slide shows its title and points, and each point\'s citation markers 
   assert.ok(!slides.includes('Title of atlas'), 'the Slides list a Source no slide cites');
 });
 
+test('a slide point may cite a Source that only an Exercise answer in its Handout cites, and its marker links to that Source in the Handout', () => {
+  const dir = workdir();
+  const data = courseData({
+    sources: [source('noaa'), source('atlas')],
+    lessons: [
+      lesson('l1', [section('What a tide is', [claim('The sea rises.', ['noaa'])])], {
+        exercises: [exercise('Where are tides largest?', 'In the Bay of Fundy.', ['atlas'])],
+        slides: [slide('Biggest tides', [point('Claim C: Fundy has the largest tides.', ['atlas'])])],
+      }),
+    ],
+  });
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  const slides = read(join(r.out, 'lessons', 'l1', 'slides.html'));
+  const handout = read(join(r.out, 'lessons', 'l1', 'handout.html'));
+  const [target] = citationsAfter(slides, 'Claim C: Fundy has the largest tides.', /href="handout\.html#([^"]+)"/g);
+  assert.ok(elementText(handout, target).includes('Title of atlas'), `${target} is not atlas in the Handout`);
+});
+
 test('each Handout ends with its Lesson\'s Exercises, each answer collapsed until opened, with no script needed', () => {
   const dir = workdir();
   const data = courseData();
@@ -253,10 +272,22 @@ test('a slide point that cites no Source, or a Source its Lesson\'s Handout does
   assertRefused(
     run(dir, data),
     dir,
-    [/\bl1\b/, /slide 2\b/, /point 1\b/, /cites no Source/],
-    [/\bl1\b/, /slide 2\b/, /point 2\b/, /\bbook\b/, /Handout/],
-    [/\bl2\b/, /slide 1\b/, /point 1\b/, /\bghost\b/],
+    [/\bl1\b/, /slide 3\b/, /point 1\b/, /cites no Source/],
+    [/\bl1\b/, /slide 3\b/, /point 2\b/, /\bbook\b/, /Handout/],
+    [/\bl2\b/, /slide 2\b/, /point 1\b/, /\bghost\b/],
   );
+});
+
+test('a refused slide is numbered as the Slides page counts it, title slide included', () => {
+  const data = courseData();
+  data.lessons[0].slides.push(slide('Second data slide', [point('Fine point.', ['noaa'])]));
+  const built = run(workdir(), data);
+  assert.equal(built.status, 0, built.stderr);
+  const pages = read(join(built.out, 'lessons', 'l1', 'slides.html')).split(/<section class="slide/).slice(1);
+  const shownAs = pages.findIndex((s) => s.includes('Second data slide')) + 1;
+  const dir = workdir();
+  data.lessons[0].slides[1].points[0].sources = [];
+  assertRefused(run(dir, data), dir, [/\bl1\b/, new RegExp(`slide ${shownAs}\\b`), /cites no Source/]);
 });
 
 test('a Lesson without Slides, a slide without a title or points, and a point without text are refused, each where it is missing', () => {
@@ -268,9 +299,9 @@ test('a Lesson without Slides, a slide without a title or points, and a point wi
     run(dir, data),
     dir,
     [/\bl1\b/, /Slides/],
-    [/\bl2\b/, /slide 2\b/, /title/],
-    [/\bl2\b/, /slide 2\b/, /points/],
-    [/\bl2\b/, /slide 3\b/, /point 1\b/, /text/],
+    [/\bl2\b/, /slide 3\b/, /title/],
+    [/\bl2\b/, /slide 3\b/, /points/],
+    [/\bl2\b/, /slide 4\b/, /point 1\b/, /text/],
   );
 });
 
