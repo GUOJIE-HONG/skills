@@ -150,11 +150,11 @@ const CHECKS = [
       citationProblems({ where, sources: point.sources, allowed: new Set(handoutSources(lesson)), outside: "which the Lesson's Handout does not cite" }),
     );
   },
-  // The Handout frames the video, so it must be the player page `am video` writes, not a bare video file.
+  // The Handout frames the video, so it must be the player page the bundled `am video` writes, not a bare video file.
   function everyVideoIsAPlayerPageThatExists(data) {
     return [...sections(data)].flatMap(({ section, where }) => {
       if (section.video === undefined) return [];
-      if (blank(section.video) || !section.video.toLowerCase().endsWith('.html')) return [{ where, problem: `video "${section.video}" is not the path of the .html player page am video wrote` }];
+      if (blank(section.video) || !section.video.toLowerCase().endsWith('.html')) return [{ where, problem: `video "${section.video}" is not the path of the .html player page am video wrote (see references/video.md)` }];
       if (!statSync(section.video, { throwIfNoEntry: false })?.isFile()) return [{ where, problem: `video file ${section.video} does not exist` }];
       return [];
     });

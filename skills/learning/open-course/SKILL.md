@@ -61,13 +61,9 @@ Write the whole Course as one JSON file in the system temp directory, using a fi
 
 ### Explainer videos
 
-Make each video with `am video` from the `answer-me-with-html` skill, following that skill's video reference. When that skill is not installed, tell the user the Course will have no videos, and build it without them.
+Make each confirmed video with the CLI this skill bundles. Before the first one, read `references/video.md` in this skill's folder and follow it.
 
-Before making the first video, tell the user what they will hear: narration needs `ELEVENLABS_API_KEY` as an environment variable of the shell running `am` (a key limited to Text to Speech is enough; on Windows a newly set user variable reaches only terminals started afterwards); without it, a video made on Windows has captions only. When the user expects narration, pass `--voice elevenlabs`, so a key the shell cannot see fails the video instead of silently dropping the voice.
-
-The narration retells the section's claims and says nothing the Lesson's Sources do not back.
-
-Write each video with `-o` to an `.html` player page in the system temp directory; that page is what the section's `video` points to.
+The narration retells the section's claims and says nothing the Lesson's Sources do not back. The section's `video` is the path of the `.html` player page the CLI writes.
 
 ## Build
 

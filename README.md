@@ -6,8 +6,6 @@
 
 Install [mattpocock-skills](https://github.com/mattpocock/skills) first. The skills here that call his will not run without it.
 
-The Explainer videos in `open-course` need [answer-me-with-html](https://github.com/QingYunA/answer-me-with-html); without it, a Course is built with no videos.
-
 Then pick **one** route. Installing both leaves you with every skill twice.
 
 ### Claude Code plugin
