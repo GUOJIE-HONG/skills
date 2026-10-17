@@ -1,0 +1,6 @@
+interface:
+  display_name: "Open Course"
+  short_description: "Turn a topic into a Course whose every claim cites a Source"
+  default_prompt: "Use $open-course to open a Course on this topic."
+policy:
+  allow_implicit_invocation: false
