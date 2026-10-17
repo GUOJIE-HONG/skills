@@ -28,8 +28,10 @@ function source(id, extra = {}) {
   return { id, title: `Title of ${id}`, author: `Author of ${id}`, url: `https://example.org/${id}`, readOn: '2026-10-01', kind: 'primary', ...extra };
 }
 
+// A Lesson with one Exercise, whose answer cites what the Lesson's first claim cites.
 function lesson(id, sections, extra = {}) {
-  return { id, title: `Lesson ${id}`, objectives: [`Objective of ${id}`], sections, ...extra };
+  const exercises = [exercise(`Question of ${id}?`, `Answer of ${id}.`, sections?.[0]?.claims?.[0]?.sources ?? [])];
+  return { id, title: `Lesson ${id}`, objectives: [`Objective of ${id}`], sections, exercises, ...extra };
 }
 
 function section(heading, claims) {
@@ -38,6 +40,10 @@ function section(heading, claims) {
 
 function claim(text, sources) {
   return { text, sources };
+}
+
+function exercise(question, answer, sources) {
+  return { question, answer, sources };
 }
 
 function courseData(extra = {}) {
@@ -111,6 +117,54 @@ test('each citation marker in a Handout links to its Source entry, which shows t
   assert.ok(!html.includes('Title of unused'), 'a Source the Handout does not cite is listed');
 });
 
+test('each Handout ends with its Lesson\'s Exercises, each answer collapsed until opened, with no script needed', () => {
+  const dir = workdir();
+  const data = courseData();
+  data.lessons[0].exercises = [exercise('Question A1?', 'Answer A1.', ['noaa']), exercise('Question A2?', 'Answer A2.', ['noaa'])];
+  data.lessons[1].exercises = [exercise('Question B1?', 'Answer B1.', ['book'])];
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  for (const l of data.lessons) {
+    const html = read(join(r.out, 'lessons', l.id, 'handout.html'));
+    const lastClaim = html.lastIndexOf(l.sections.at(-1).claims.at(-1).text);
+    let previous = lastClaim;
+    for (const e of l.exercises) {
+      const at = html.indexOf(e.question);
+      assert.ok(at > previous, `${l.id}: "${e.question}" is missing or out of order after the Lesson's sections`);
+      previous = at;
+      const details = [...html.matchAll(/<details\b([^>]*)>([\s\S]*?)<\/details>/g)].find((m) => m[2].includes(e.answer));
+      assert.ok(details, `${l.id}: "${e.answer}" is not inside a collapsible element`);
+      assert.doesNotMatch(details[1], /\bopen\b/, `${l.id}: "${e.answer}" starts open`);
+    }
+    for (const other of data.lessons.filter((x) => x !== l)) for (const e of other.exercises) assert.ok(!html.includes(e.question), `${l.id} shows another Lesson's Exercise`);
+    assert.doesNotMatch(html, /<script\b/i, `${l.id} needs a script`);
+  }
+});
+
+test('each citation marker on an Exercise answer links to its Source entry, even for a Source only the answer cites', () => {
+  const dir = workdir();
+  const data = courseData({
+    sources: [source('noaa'), source('book', { readOn: '2026-09-15', kind: 'secondary' }), source('atlas')],
+    lessons: [
+      lesson('l1', [section('What a tide is', [claim('Claim one cites the book.', ['book'])])], {
+        exercises: [exercise('Question one?', 'Claim answer one cites NOAA and the atlas.', ['noaa', 'atlas']), exercise('Question two?', 'Claim answer two cites the book.', ['book'])],
+      }),
+    ],
+  });
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  const html = read(join(r.out, 'lessons', 'l1', 'handout.html'));
+  for (const e of data.lessons[0].exercises) {
+    const targets = citationsAfter(html, e.answer);
+    assert.equal(targets.length, e.sources.length, `markers after "${e.answer}"`);
+    targets.forEach((target, i) => {
+      const s = data.sources.find((x) => x.id === e.sources[i]);
+      const entry = elementText(html, target);
+      for (const field of [s.title, s.author, s.url, s.readOn]) assert.ok(entry.includes(field), `${target} lacks ${field}`);
+    });
+  }
+});
+
 // A refused build exits non-zero, writes nothing next to the data file, and names each problem on its own
 // stderr line; each problem is given as the patterns that line must all match.
 function assertRefused(r, dir, ...problems) {
@@ -134,6 +188,22 @@ test('a claim that cites a Source id missing from the Source list is refused, na
   const data = courseData();
   data.lessons[0].sections[0].claims[0].sources.push('ghost');
   assertRefused(run(dir, data), dir, [/\bl1\b/, /section 1\b/, /claim 1\b/, /\bghost\b/]);
+});
+
+test('an Exercise answer that cites no Source, or a Source missing from the Source list, is refused, naming its Lesson and Exercise', () => {
+  const dir = workdir();
+  const data = courseData();
+  data.lessons[0].exercises.push(exercise('Uncited question?', 'Uncited answer.', []));
+  data.lessons[1].exercises[0].sources = ['ghost'];
+  assertRefused(run(dir, data), dir, [/\bl1\b/, /Exercise 2\b/, /answer cites no Source/], [/\bl2\b/, /Exercise 1\b/, /\bghost\b/]);
+});
+
+test('a Lesson without Exercises, or an Exercise without a question or answer, is refused, naming its Lesson and Exercise', () => {
+  const dir = workdir();
+  const data = courseData();
+  delete data.lessons[0].exercises;
+  data.lessons[1].exercises.push({ answer: 'An answer.', sources: ['book'] }, exercise('A question?', '  ', ['book']));
+  assertRefused(run(dir, data), dir, [/\bl1\b/, /no Exercises/], [/\bl2\b/, /Exercise 2\b/, /question/], [/\bl2\b/, /Exercise 3\b/, /answer/]);
 });
 
 test('a Source without a URL or without a read date is refused, naming the Source', () => {
@@ -189,7 +259,7 @@ test('HTML markup anywhere in the data shows as text on every page', () => {
   const data = courseData({
     course: { title: `Tides ${evil}`, audience: `Kids ${evil}`, level: `Low ${evil}`, length: `1h ${evil}`, language: 'en' },
     sources: [source('noaa', { title: `T ${evil}`, author: `A ${evil}`, url: 'https://example.org/a"onmouseover="alert(1)' })],
-    lessons: [lesson('l1', [section(`H ${evil}`, [claim(`Claim ${evil}`, ['noaa'])])], { title: `L ${evil}`, objectives: [`O ${evil}`] })],
+    lessons: [lesson('l1', [section(`H ${evil}`, [claim(`Claim ${evil}`, ['noaa'])])], { title: `L ${evil}`, objectives: [`O ${evil}`], exercises: [exercise(`Q ${evil}`, `A ${evil}`, ['noaa'])] })],
   });
   const r = run(dir, data);
   assert.equal(r.status, 0, r.stderr);
