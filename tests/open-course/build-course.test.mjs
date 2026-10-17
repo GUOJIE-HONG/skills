@@ -575,3 +575,21 @@ test('the bundled am CLI runs through scripts/am.mjs', () => {
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /am video/);
 });
+
+test('a video frame leaves room under the picture for the player controls, and for its chapter strip when it has several scenes', () => {
+  const dir = workdir();
+  const player = (name, scenes) => {
+    const path = fakeVideo(dir, name);
+    const segments = Array.from({ length: scenes + 1 }, (_, i) => ({ id: String(i), title: `Part ${i}` }));
+    writeFileSync(path, `${read(path)}<script type="application/json" id="amv-data">${JSON.stringify({ segments })}</script>`);
+    return path;
+  };
+  const data = courseData();
+  data.lessons[0].sections[0].video = player('one-scene.html', 1);
+  data.lessons[1].sections[0].video = player('three-scenes.html', 3);
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  const figure = (id) => read(join(r.out, 'lessons', id, 'handout.html')).match(/<figure class="video"[^>]*>/)[0];
+  assert.match(figure('l1'), /--player-chrome: 56px/);
+  assert.match(figure('l2'), /--player-chrome: 96px/);
+});

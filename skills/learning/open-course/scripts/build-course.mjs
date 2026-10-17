@@ -299,6 +299,15 @@ const sourceEntry = (source) => html`${source.author}. <cite>${source.title}</ci
 // Where a section's Explainer video sits, relative to its Lesson folder; named like the section's anchor.
 const videoPath = (sectionIndex) => `videos/section-${sectionIndex + 1}.html`;
 
+// How much of a player page sits below its 16:9 picture, so the Handout sizes the frame to fit it without black bars:
+// the bundled player's 56px control bar, plus a 40px chapter strip when the video has more than one scene. It writes its
+// segments as JSON, a title card first and then one per scene; a page without that data gets the control bar only.
+function playerChrome(path) {
+  const data = /<script type="application\/json" id="amv-data">([\s\S]*?)<\/script>/.exec(readFileSync(path, 'utf8'));
+  const scenes = data ? JSON.parse(data[1]).segments.length - 1 : 1;
+  return scenes > 1 ? 96 : 56;
+}
+
 // A Lesson's Exercises, each answer in a closed <details> so learners try the question first, with no script.
 const exercisesBlock = (lesson, labels, markers) =>
   html`<section class="exercises" id="exercises"><h2>${labels.exercises}</h2><ol>${lesson.exercises.map(
@@ -333,7 +342,7 @@ function handoutPage(data, lesson, index) {
     (s, i) => html`<section id="section-${i + 1}">
 <h2>${s.heading}</h2>
 ${paragraphs(s.claims, labels, markers)}
-${s.video && html`<figure class="video"><iframe src="${videoPath(i)}" title="${labels.video}: ${s.heading}" allowfullscreen></iframe></figure>`}
+${s.video && html`<figure class="video" style="--player-chrome: ${playerChrome(s.video)}px"><iframe src="${videoPath(i)}" title="${labels.video}: ${s.heading}" allowfullscreen></iframe></figure>`}
 </section>`,
   );
   const contents = [...lesson.sections.map((s, i) => [`section-${i + 1}`, s.heading]), ['exercises', labels.exercises], ['sources', labels.sources]];

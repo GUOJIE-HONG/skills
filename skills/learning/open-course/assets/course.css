@@ -299,8 +299,9 @@ code {
 .window .cite a { color: var(--muted); font-family: var(--rail); letter-spacing: 0.02em; text-decoration: none; padding: 0 0.1em; }
 .window .cite a:hover { color: var(--tape-deep); }
 
-.video { margin: 1.25rem 0; }
-.video iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--line); background: var(--paper-2); }
+/* The frame is a 16:9 picture plus the player's controls below it (--player-chrome, set per video by the build), so the picture fills the width. */
+.video { margin: 1.25rem 0; container-type: inline-size; }
+.video iframe { display: block; width: 100%; height: calc(100cqi * 9 / 16 + var(--player-chrome, 0px)); border: 1px solid var(--line); background: var(--paper-2); }
 
 .exercises ol { list-style: none; counter-reset: exercise; margin: 0; padding: 0; }
 .exercises li { counter-increment: exercise; display: grid; grid-template-columns: 2.25rem minmax(0, 1fr); padding: 1.1rem 0; border-top: 1px solid var(--line); }
