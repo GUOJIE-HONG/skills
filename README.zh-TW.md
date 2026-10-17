@@ -6,8 +6,6 @@
 
 先裝 [mattpocock-skills](https://github.com/mattpocock/skills)，再裝這套。沒裝的話，會呼叫他 skill 的那幾個跑不起來。
 
-`open-course` 的 Explainer video 要先裝 [answer-me-with-html](https://github.com/QingYunA/answer-me-with-html)；沒裝的話，課程照樣建好，只是沒有 Explainer video。
-
 接著兩條路線挑一條就好。兩條都裝，每個 skill 會出現兩份。
 
 ### Claude Code plugin

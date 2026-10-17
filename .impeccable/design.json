@@ -1,0 +1,468 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-17T16:50:06.127Z",
+  "title": "Design System: open-course",
+  "extensions": {
+    "colorMeta": {
+      "bench": {
+        "role": "neutral",
+        "displayName": "Bench Black",
+        "canonical": "#0c0b0a",
+        "oklch": "oklch(15.0% 0.003 67.5)",
+        "dark": "unchanged",
+        "tonalRamp": [
+          "oklch(15% 0.002 67.5)",
+          "oklch(26% 0.003 67.5)",
+          "oklch(37% 0.003 67.5)",
+          "oklch(48% 0.003 67.5)",
+          "oklch(59% 0.003 67.5)",
+          "oklch(70% 0.003 67.5)",
+          "oklch(82% 0.003 67.5)",
+          "oklch(95% 0.002 67.5)"
+        ]
+      },
+      "bench-line": {
+        "role": "neutral",
+        "displayName": "Bench Line",
+        "canonical": "#2c2824",
+        "oklch": "oklch(28.0% 0.009 67.4)",
+        "dark": "unchanged",
+        "tonalRamp": [
+          "oklch(15% 0.006 67.4)",
+          "oklch(26% 0.009 67.4)",
+          "oklch(37% 0.009 67.4)",
+          "oklch(48% 0.009 67.4)",
+          "oklch(59% 0.009 67.4)",
+          "oklch(70% 0.009 67.4)",
+          "oklch(82% 0.009 67.4)",
+          "oklch(95% 0.006 67.4)"
+        ]
+      },
+      "bench-ink": {
+        "role": "neutral",
+        "displayName": "Bench Ink",
+        "canonical": "#ece6da",
+        "oklch": "oklch(92.6% 0.017 84.6)",
+        "dark": "unchanged",
+        "tonalRamp": [
+          "oklch(15% 0.010 84.6)",
+          "oklch(26% 0.017 84.6)",
+          "oklch(37% 0.017 84.6)",
+          "oklch(48% 0.017 84.6)",
+          "oklch(59% 0.017 84.6)",
+          "oklch(70% 0.017 84.6)",
+          "oklch(82% 0.017 84.6)",
+          "oklch(95% 0.010 84.6)"
+        ]
+      },
+      "bench-muted": {
+        "role": "neutral",
+        "displayName": "Bench Muted",
+        "canonical": "#a39a8c",
+        "oklch": "oklch(69.0% 0.023 79.0)",
+        "dark": "unchanged",
+        "tonalRamp": [
+          "oklch(15% 0.014 79.0)",
+          "oklch(26% 0.023 79.0)",
+          "oklch(37% 0.023 79.0)",
+          "oklch(48% 0.023 79.0)",
+          "oklch(59% 0.023 79.0)",
+          "oklch(70% 0.023 79.0)",
+          "oklch(82% 0.023 79.0)",
+          "oklch(95% 0.014 79.0)"
+        ]
+      },
+      "tape": {
+        "role": "primary",
+        "displayName": "Grain Tape Orange",
+        "canonical": "#e8620c",
+        "oklch": "oklch(65.6% 0.184 44.8)",
+        "dark": "unchanged",
+        "tonalRamp": [
+          "oklch(15% 0.096 44.8)",
+          "oklch(26% 0.160 44.8)",
+          "oklch(37% 0.160 44.8)",
+          "oklch(48% 0.160 44.8)",
+          "oklch(59% 0.160 44.8)",
+          "oklch(70% 0.160 44.8)",
+          "oklch(82% 0.160 44.8)",
+          "oklch(95% 0.096 44.8)"
+        ]
+      },
+      "tape-fold": {
+        "role": "primary",
+        "displayName": "Folded Tape",
+        "canonical": "#9c3d08",
+        "oklch": "oklch(48.5% 0.139 43.1)",
+        "dark": "unchanged",
+        "tonalRamp": [
+          "oklch(15% 0.083 43.1)",
+          "oklch(26% 0.139 43.1)",
+          "oklch(37% 0.139 43.1)",
+          "oklch(48% 0.139 43.1)",
+          "oklch(59% 0.139 43.1)",
+          "oklch(70% 0.139 43.1)",
+          "oklch(82% 0.139 43.1)",
+          "oklch(95% 0.083 43.1)"
+        ]
+      },
+      "tape-ink": {
+        "role": "primary",
+        "displayName": "Tape Ink",
+        "canonical": "#120a04",
+        "oklch": "oklch(15.4% 0.020 64.0)",
+        "dark": "unchanged",
+        "tonalRamp": [
+          "oklch(15% 0.012 64.0)",
+          "oklch(26% 0.020 64.0)",
+          "oklch(37% 0.020 64.0)",
+          "oklch(48% 0.020 64.0)",
+          "oklch(59% 0.020 64.0)",
+          "oklch(70% 0.020 64.0)",
+          "oklch(82% 0.020 64.0)",
+          "oklch(95% 0.012 64.0)"
+        ]
+      },
+      "tape-deep": {
+        "role": "secondary",
+        "displayName": "Deep Tape",
+        "canonical": "#a8410a",
+        "oklch": "oklch(51.0% 0.148 42.4)",
+        "dark": "#f08a45",
+        "tonalRamp": [
+          "oklch(15% 0.089 42.4)",
+          "oklch(26% 0.148 42.4)",
+          "oklch(37% 0.148 42.4)",
+          "oklch(48% 0.148 42.4)",
+          "oklch(59% 0.148 42.4)",
+          "oklch(70% 0.148 42.4)",
+          "oklch(82% 0.148 42.4)",
+          "oklch(95% 0.089 42.4)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#f5f1ea",
+        "oklch": "oklch(95.9% 0.010 81.8)",
+        "dark": "#1c1916",
+        "tonalRamp": [
+          "oklch(15% 0.006 81.8)",
+          "oklch(26% 0.010 81.8)",
+          "oklch(37% 0.010 81.8)",
+          "oklch(48% 0.010 81.8)",
+          "oklch(59% 0.010 81.8)",
+          "oklch(70% 0.010 81.8)",
+          "oklch(82% 0.010 81.8)",
+          "oklch(95% 0.006 81.8)"
+        ]
+      },
+      "paper-2": {
+        "role": "neutral",
+        "displayName": "Paper 2",
+        "canonical": "#ebe5d9",
+        "oklch": "oklch(92.3% 0.017 84.6)",
+        "dark": "#25211d",
+        "tonalRamp": [
+          "oklch(15% 0.010 84.6)",
+          "oklch(26% 0.017 84.6)",
+          "oklch(37% 0.017 84.6)",
+          "oklch(48% 0.017 84.6)",
+          "oklch(59% 0.017 84.6)",
+          "oklch(70% 0.017 84.6)",
+          "oklch(82% 0.017 84.6)",
+          "oklch(95% 0.010 84.6)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#1a1714",
+        "oklch": "oklch(20.7% 0.008 67.4)",
+        "dark": "#d6cfc2",
+        "tonalRamp": [
+          "oklch(15% 0.005 67.4)",
+          "oklch(26% 0.008 67.4)",
+          "oklch(37% 0.008 67.4)",
+          "oklch(48% 0.008 67.4)",
+          "oklch(59% 0.008 67.4)",
+          "oklch(70% 0.008 67.4)",
+          "oklch(82% 0.008 67.4)",
+          "oklch(95% 0.005 67.4)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "canonical": "#5f574d",
+        "oklch": "oklch(46.1% 0.019 73.5)",
+        "dark": "#9a9184",
+        "tonalRamp": [
+          "oklch(15% 0.011 73.5)",
+          "oklch(26% 0.019 73.5)",
+          "oklch(37% 0.019 73.5)",
+          "oklch(48% 0.019 73.5)",
+          "oklch(59% 0.019 73.5)",
+          "oklch(70% 0.019 73.5)",
+          "oklch(82% 0.019 73.5)",
+          "oklch(95% 0.011 73.5)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "canonical": "#d9d1c3",
+        "oklch": "oklch(86.3% 0.021 81.8)",
+        "dark": "#38322b",
+        "tonalRamp": [
+          "oklch(15% 0.013 81.8)",
+          "oklch(26% 0.021 81.8)",
+          "oklch(37% 0.021 81.8)",
+          "oklch(48% 0.021 81.8)",
+          "oklch(59% 0.021 81.8)",
+          "oklch(70% 0.021 81.8)",
+          "oklch(82% 0.021 81.8)",
+          "oklch(95% 0.013 81.8)"
+        ]
+      },
+      "tint": {
+        "role": "neutral",
+        "displayName": "Tint",
+        "canonical": "#fbe6d3",
+        "oklch": "oklch(93.7% 0.034 64.6)",
+        "dark": "#2f2117",
+        "tonalRamp": [
+          "oklch(15% 0.021 64.6)",
+          "oklch(26% 0.034 64.6)",
+          "oklch(37% 0.034 64.6)",
+          "oklch(48% 0.034 64.6)",
+          "oklch(59% 0.034 64.6)",
+          "oklch(70% 0.034 64.6)",
+          "oklch(82% 0.034 64.6)",
+          "oklch(95% 0.021 64.6)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Course title in the Syllabus masthead, on the bench; Latin and digits in Rail, CJK in the system sans."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "Frame numbers in the Syllabus list; scales to clamp(3.25rem, 2.2rem + 3vw, 5rem) at line-height 0.8 beside a Handout or title-slide title."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Lesson title on a Handout and title slide."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Handout section headings; Syllabus Lesson titles at 1.25rem/1.4; slide headings at 1.6em."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Handout running text in a 48rem column; 1.0625rem/1.85 below 640px."
+      },
+      "body-ui": {
+        "displayName": "Body (page default)",
+        "purpose": "Default size for everything outside the Handout text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Rail cells (1rem Handout, 1.25rem Slides, up to 1.6rem Syllabus), slide count, citation markers at 0.62em."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Topics, frame actions, crumbs, facts, Sources panel (0.875-0.95rem)."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Inline code only, on paper-2."
+      }
+    },
+    "shadows": [
+      {
+        "name": "source-highlight-bleed",
+        "value": "0 0 0 0.35rem var(--tint)",
+        "purpose": "Extends a targeted Source highlight past its text box. Not elevation; the system is flat."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The single easing: rail cell hover (0.2s), objectives chevron turn (0.2s), Source arrival flash (1.4s)."
+      },
+      {
+        "name": "cited",
+        "value": "1.4s from tape (tape-ink text) to tint",
+        "purpose": "The one authored moment: arriving at a Source from a citation. Disabled under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "640px"
+      },
+      {
+        "name": "masthead-stack",
+        "value": "760px"
+      },
+      {
+        "name": "handout-three-column",
+        "value": "1100px"
+      },
+      {
+        "name": "syllabus-dense-rail",
+        "value": "1200px"
+      }
+    ],
+    "constraints": [
+      "Every page is one offline HTML file that fetches nothing; CSS, script, and the Rail face (data URI) are inlined.",
+      "Latin numerals and labels use the embedded Rail face (Barlow Condensed 600, Latin subset, OFL); CJK uses the named system sans stack, never system-ui.",
+      "Exercise answers fold in native <details> without script.",
+      "Slides read without script (all slides in turn); slides.js adds one-at-a-time presenting.",
+      "Dark mode flips only the paper window tokens; the bench and rail stay."
+    ]
+  },
+  "components": [
+    {
+      "name": "Rail",
+      "kind": "nav",
+      "refersTo": "rail-cell",
+      "description": "The perforated tape strip carrying every Lesson or slide; fill and flag mark seen, current, and not yet.",
+      "html": "<nav class=\"ds-rail\" aria-label=\"Lessons\"><ol><li><a href=\"#\" class=\"seen\">01</a></li><li><a href=\"#\" class=\"seen\">02</a></li><li><a href=\"#\" aria-current=\"page\">03</a></li><li><a href=\"#\">04</a></li><li><a href=\"#\">05</a></li><li><a href=\"#\">06</a></li></ol></nav>",
+      "css": ".ds-rail { background: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='6'%3E%3Crect x='5' width='10' height='6' rx='1.5' fill='%230c0b0a'/%3E%3C/svg%3E\") repeat-x left 6px top 6px, url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='6'%3E%3Crect x='5' width='10' height='6' rx='1.5' fill='%230c0b0a'/%3E%3C/svg%3E\") repeat-x left 6px bottom 6px, var(--tape, #e8620c); padding: 20px 24px; } .ds-rail ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(2.5rem, 1fr)); gap: 4px; } .ds-rail a { position: relative; display: flex; align-items: flex-end; height: 3rem; padding: 0.2rem 0.4rem; border: 1.5px solid rgb(18 10 4 / 0.45); color: var(--tape-ink, #120a04); font: 600 1.15rem/1 \"Rail\", \"Bahnschrift\", \"Arial Narrow\", sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; text-decoration: none; transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-rail a:hover { background: rgb(18 10 4 / 0.14); } .ds-rail a:focus-visible { outline: 3px solid var(--bench, #0c0b0a); outline-offset: 1px; } .ds-rail a.seen { background: var(--bench, #0c0b0a); border-color: var(--bench, #0c0b0a); color: var(--tape, #e8620c); } .ds-rail a[aria-current] { background: #f5f1ea; border-color: #f5f1ea; color: #1a1714; } .ds-rail a[aria-current]::after { content: \"\"; position: absolute; top: -1.5px; right: -1.5px; width: 0.9rem; height: 0.9rem; background: linear-gradient(225deg, var(--tape, #e8620c) 50%, var(--tape-fold, #9c3d08) 50%); }"
+    },
+    {
+      "name": "Resume Button",
+      "kind": "button",
+      "refersTo": "resume",
+      "description": "Syllabus link back to the last-opened Lesson; appears only when progress is known.",
+      "html": "<a class=\"ds-resume\" href=\"#\">上次讀到　第 13 課：潮汐發電</a>",
+      "css": ".ds-resume { display: inline-block; background: var(--tape, #e8620c); color: var(--tape-ink, #120a04); font: 600 1.0625rem/1.75 \"Segoe UI\", \"Noto Sans TC\", \"Noto Sans CJK TC\", \"Microsoft JhengHei\", \"PingFang TC\", -apple-system, sans-serif; letter-spacing: 0.02em; padding: 0.35rem 0.85rem; text-decoration: none; } .ds-resume:hover { background: #f07a2c; } .ds-resume:focus-visible { outline: 2px solid var(--tape, #e8620c); outline-offset: 2px; }"
+    },
+    {
+      "name": "Answer Toggle",
+      "kind": "button",
+      "refersTo": "answer-toggle",
+      "description": "Exercise answer folded in native <details>; outlined at rest, tape-filled when open.",
+      "html": "<details class=\"ds-answer\"><summary>看答案</summary><p>月球每天比前一天晚約 50 分鐘通過同一經線。</p></details>",
+      "css": ".ds-answer { background: var(--paper, #f5f1ea); color: var(--ink, #1a1714); font: 400 1.125rem/1.9 \"Segoe UI\", \"Noto Sans TC\", \"Noto Sans CJK TC\", \"Microsoft JhengHei\", \"PingFang TC\", -apple-system, sans-serif; padding: 1rem; } .ds-answer summary { display: inline-block; cursor: pointer; list-style: none; padding: 0.1rem 0.8rem; border: 1.5px solid var(--tape-deep, #a8410a); color: var(--tape-deep, #a8410a); font-size: 0.95rem; font-weight: 600; } .ds-answer summary::-webkit-details-marker { display: none; } .ds-answer summary:hover { background: var(--tint, #fbe6d3); } .ds-answer summary:focus-visible { outline: 2px solid var(--tape, #e8620c); outline-offset: 2px; } .ds-answer[open] summary { background: var(--tape, #e8620c); border-color: var(--tape, #e8620c); color: var(--tape-ink, #120a04); } .ds-answer p { margin: 0.75rem 0 0; padding: 0.75rem 1rem; background: var(--paper-2, #ebe5d9); }"
+    },
+    {
+      "name": "Pager Button",
+      "kind": "button",
+      "refersTo": "pager-button",
+      "description": "Square outlined previous/next control on the Slides bench bar, with a drawn chevron.",
+      "html": "<span class=\"ds-pager\"><button type=\"button\" aria-label=\"上一張\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M10 3 5 8l5 5\"/></svg></button><span class=\"ds-pager-count\">3 / 4</span><button type=\"button\" aria-label=\"下一張\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"m6 3 5 5-5 5\"/></svg></button></span>",
+      "css": ".ds-pager { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--bench, #0c0b0a); color: var(--bench-ink, #ece6da); padding: 0.75rem; } .ds-pager button { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; padding: 0; color: var(--bench-ink, #ece6da); background: transparent; border: 1.5px solid var(--bench-line, #2c2824); cursor: pointer; } .ds-pager button:hover { border-color: var(--tape, #e8620c); color: var(--tape, #e8620c); } .ds-pager button:focus-visible { outline: 2px solid var(--tape, #e8620c); outline-offset: 2px; } .ds-pager svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 2; } .ds-pager-count { min-width: 4.5ch; text-align: center; font: 600 1.05rem/1 \"Rail\", \"Bahnschrift\", \"Arial Narrow\", sans-serif; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Syllabus Frame",
+      "kind": "custom",
+      "refersTo": "window",
+      "description": "One Lesson entry in the Syllabus contents list: Rail numeral, title, topics, links.",
+      "html": "<div class=\"ds-frame\"><span class=\"ds-frame-no\">02</span><div><h3><a href=\"#\">月球的引力</a></h3><p class=\"ds-topics\">潮汐是海面的週期性升降 · 月球比太陽更重要</p><p class=\"ds-frame-links\"><a href=\"#\">講義</a><a href=\"#\">投影片</a><span>2 題練習</span></p></div></div>",
+      "css": ".ds-frame { display: grid; grid-template-columns: 3.25rem minmax(0, 1fr); gap: 0 1rem; padding: 0.75rem 1.25rem; border-top: 1px solid var(--line, #d9d1c3); background: var(--paper, #f5f1ea); color: var(--ink, #1a1714); font-family: \"Segoe UI\", \"Noto Sans TC\", \"Noto Sans CJK TC\", \"Microsoft JhengHei\", \"PingFang TC\", -apple-system, sans-serif; letter-spacing: 0.02em; } .ds-frame-no { font: 600 2.25rem/1 \"Rail\", \"Bahnschrift\", \"Arial Narrow\", sans-serif; font-variant-numeric: tabular-nums; color: var(--tape-deep, #a8410a); } .ds-frame h3 { margin: 0; font-size: 1.25rem; line-height: 1.4; } .ds-frame h3 a { color: var(--ink, #1a1714); text-decoration: none; } .ds-frame h3 a:hover { color: var(--tape-deep, #a8410a); text-decoration: underline; text-underline-offset: 0.2em; } .ds-frame a:focus-visible { outline: 2px solid var(--tape, #e8620c); outline-offset: 2px; } .ds-topics { margin: 0.3rem 0 0; color: var(--muted, #5f574d); font-size: 0.9rem; line-height: 1.65; } .ds-frame-links { display: flex; gap: 0.25rem 1.1rem; margin: 0.4rem 0 0; font-size: 0.875rem; } .ds-frame-links a { color: var(--tape-deep, #a8410a); font-weight: 600; text-decoration: none; } .ds-frame-links a:hover { text-decoration: underline; } .ds-frame-links span { color: var(--muted, #5f574d); }"
+    },
+    {
+      "name": "Handout Section Heading",
+      "kind": "custom",
+      "refersTo": "window",
+      "description": "Section h2 inside the paper window, opened by a 2rem strip of tape, with a citation marker.",
+      "html": "<div class=\"ds-section\"><h2>月球比太陽更重要</h2><p>雖然太陽質量大得多，但月球距離地球近。<sup class=\"ds-cite\"><a href=\"#\">[1]</a></sup></p></div>",
+      "css": ".ds-section { background: var(--paper, #f5f1ea); color: var(--ink, #1a1714); padding: 1.5rem 2rem; font: 400 1.125rem/1.9 \"Segoe UI\", \"Noto Sans TC\", \"Noto Sans CJK TC\", \"Microsoft JhengHei\", \"PingFang TC\", -apple-system, sans-serif; letter-spacing: 0.02em; max-width: 48rem; } .ds-section h2 { font-size: 1.4rem; line-height: 1.3; margin: 0 0 0.9rem; } .ds-section h2::before { content: \"\"; display: block; width: 2rem; height: 4px; margin-bottom: 0.8rem; background: var(--tape, #e8620c); } .ds-cite { font-size: 0.62em; line-height: 0; } .ds-cite a { color: var(--muted, #5f574d); font-family: \"Rail\", \"Bahnschrift\", \"Arial Narrow\", sans-serif; letter-spacing: 0.02em; text-decoration: none; padding: 0 0.1em; } .ds-cite a:hover { color: var(--tape-deep, #a8410a); } .ds-cite a:focus-visible { outline: 2px solid var(--tape, #e8620c); outline-offset: 2px; }"
+    },
+    {
+      "name": "Objectives Box",
+      "kind": "card",
+      "refersTo": "objectives",
+      "description": "Tint-washed list of what the learner will be able to do, at the top of a Handout and title slide.",
+      "html": "<div class=\"ds-objectives\"><p>學完這一課，你能夠</p><ul><li>說明月球與太陽的引力如何讓海面週期性升降。</li><li>讀懂一份潮汐表上的時間與潮高。</li></ul></div>",
+      "css": ".ds-objectives { background: var(--tint, #fbe6d3); color: var(--ink, #1a1714); padding: 1rem 1.25rem; font: 400 1rem/1.75 \"Segoe UI\", \"Noto Sans TC\", \"Noto Sans CJK TC\", \"Microsoft JhengHei\", \"PingFang TC\", -apple-system, sans-serif; letter-spacing: 0.02em; } .ds-objectives p { font-weight: 600; margin: 0 0 0.25rem; } .ds-objectives ul { margin: 0; padding-left: 1.25rem; }"
+    },
+    {
+      "name": "Sources Panel",
+      "kind": "card",
+      "refersTo": "sources-panel",
+      "description": "Recessed paper-2 list of cited Sources; a followed citation flashes tape then settles to tint.",
+      "html": "<aside class=\"ds-sources\"><h2>資料來源</h2><ol><li class=\"is-target\">NOAA National Ocean Service. <cite>Tides and Water Levels</cite>. <a href=\"#\">https://oceanservice.noaa.gov/</a> (2026-10-12 閱讀)</li><li>王某某. <cite>海洋學導論</cite>. <a href=\"#\">https://example.org/</a></li></ol></aside>",
+      "css": ".ds-sources { background: var(--paper-2, #ebe5d9); color: var(--muted, #5f574d); padding: 1.5rem; font: 400 0.875rem/1.65 \"Segoe UI\", \"Noto Sans TC\", \"Noto Sans CJK TC\", \"Microsoft JhengHei\", \"PingFang TC\", -apple-system, sans-serif; letter-spacing: 0.02em; max-width: 21rem; } .ds-sources h2 { margin: 0 0 0.75rem; font-size: 1rem; color: var(--ink, #1a1714); } .ds-sources ol { margin: 0; padding-left: 1.6rem; } .ds-sources li { margin-bottom: 0.6rem; overflow-wrap: anywhere; } .ds-sources li::marker { font-family: \"Rail\", \"Bahnschrift\", \"Arial Narrow\", sans-serif; color: var(--tape-deep, #a8410a); } .ds-sources a { color: var(--muted, #5f574d); text-underline-offset: 0.2em; } .ds-sources a:hover { color: var(--tape-deep, #a8410a); } .ds-sources a:focus-visible { outline: 2px solid var(--tape, #e8620c); outline-offset: 2px; } .ds-sources li.is-target { background: var(--tint, #fbe6d3); box-shadow: 0 0 0 0.35rem var(--tint, #fbe6d3); animation: ds-cited 1.4s cubic-bezier(0.16, 1, 0.3, 1); } @keyframes ds-cited { from { background: var(--tape, #e8620c); box-shadow: 0 0 0 0.35rem var(--tape, #e8620c); color: var(--tape-ink, #120a04); } } @media (prefers-reduced-motion: reduce) { .ds-sources li.is-target { animation: none; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Cutting Bench",
+    "overview": "A Course is a strip of film laid on an editor's bench. The bench is near-black and owns the frame on every page, in both colour modes. The Lessons run along one perforated orange rail as numbered frames; on Slides the same rail carries the slides. Reading happens only inside paper windows punched into the bench, so the long-form text always sits on a calm, warm surface, never on the dark.\n\nState is a mark, not a hue. A paper-filled frame is where you are (or where you last stopped), an inked frame is one opened before, an outlined frame is not opened yet; a folded tape flag tags the marked frame. Numbers are the system's display voice: frame numbers, citation markers, exercise counters, and the slide count all set in one condensed grotesk, while CJK text falls to the system sans.\n\nThe pages are dense but quiet: a 30-Lesson Course fits one rail row at 1440px and a two-column contents list, and a Handout reads at a 48rem measure with generous leading. The world refuses the course-platform card grid and the endless document scroll.",
+    "keyCharacteristics": [
+      "Bench black frames every page in both modes; only the paper windows flip in dark mode.",
+      "One perforated orange rail is the navigation on all three page types.",
+      "Square everything: no corner radius anywhere a reader can touch.",
+      "Flat by default: depth comes from bench, rail, and paper planes, not shadows.",
+      "Numerals in the embedded condensed face; CJK in the system sans; no web fetch."
+    ],
+    "rules": [
+      {
+        "name": "The Bench Stays Rule",
+        "body": "Dark mode dims the paper window and nothing else. The bench and the rail are the same in both modes; the current rail cell is hard-set to light paper (`#f5f1ea` on `#1a1714`) so it still reads as a lit frame on the tape in dark mode.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Tape Rule",
+        "body": "Orange is the only hue. On the bench it is `tape`; inside a window it is `tape-deep`. Never introduce a second accent; distinguish states by fill, outline, and flag instead.",
+        "section": "colors"
+      },
+      {
+        "name": "The Soft Ink Rule",
+        "body": "Text on a dark surface is a step softer than white (`bench-ink`, dark-mode `ink` `#d6cfc2`), because near-white on near-black glares over a long read.",
+        "section": "colors"
+      },
+      {
+        "name": "The Edge Number Rule",
+        "body": "Every numeral that counts or locates (Lesson, slide, exercise, citation, Source marker, Course scope) sets in Rail with tabular figures. Numbers are padded to the width of the largest (`01`–`30`, but `1`–`9`).",
+        "section": "typography"
+      },
+      {
+        "name": "The No system-ui Rule",
+        "body": "CJK text never resolves through `system-ui`: on Windows in Chinese it falls back to PMingLiU, a thin serif that tires the eyes. Use the named sans stack. This is a product constraint, not taste.",
+        "section": "typography"
+      },
+      {
+        "name": "The Embedded Face Rule",
+        "body": "The only non-system face is Rail, inlined as a data URI so every page renders its numerals offline. Never link a web font or CDN; never extend Rail to CJK.",
+        "section": "typography"
+      },
+      {
+        "name": "The Three Planes Rule",
+        "body": "Bench, tape, paper, in that order; never a card floating on paper, never a shadow to lift something. A new surface is either a window (paper), a recess (paper-2 or tint), or a mark on the tape.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Square Frame Rule",
+        "body": "Nothing a reader touches is rounded. The sprocket hole is the world's own material and the only exception.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "**Do** keep bench black (`#0c0b0a`) as the page ground on every page in both modes, and flip only the window tokens in dark mode.",
+      "**Do** put every Lesson (or slide) on one perforated rail and mark position with fill and flag: paper = here, bench = seen, outline = not yet.",
+      "**Do** set every counting or locating numeral in Rail 600 with tabular figures, padded to the widest number.",
+      "**Do** keep running text inside a paper window at a 48rem measure with 1.9 line-height.",
+      "**Do** use `tape` on the bench and `tape-deep` inside the window, so orange text clears 4.5:1 on paper.",
+      "**Do** fold Exercise answers in native `<details>`, and keep Slides fully readable with script off.",
+      "**Do** theme the browser surfaces from the palette: `::selection` in tape, 2px `tape` focus ring at 2px offset, bench scrollbars.",
+      "**Do** ship every page as one file that fetches nothing: CSS, script, and the Rail face inlined."
+    ],
+    "donts": [
+      "**Don't** use `system-ui` anywhere in a font stack; CJK on Windows would fall to PMingLiU.",
+      "**Don't** link a web font, CDN, or any network asset; don't extend Rail beyond Latin and numerals.",
+      "**Don't** round corners on windows, cells, buttons, or panels; the sprocket hole is the only curve.",
+      "**Don't** add shadows for depth or float cards on the paper; use the three planes.",
+      "**Don't** introduce a second accent hue or signal state by colour change alone.",
+      "**Don't** set paragraphs, claims, or Sources on the bench; the bench carries titles, facts, crumbs, and navigation only.",
+      "**Don't** add a small label above a heading; the heading carries its own weight. The tape strip above a section heading is a mark, not text.",
+      "**Don't** turn the Syllabus into a card grid or a single long scroll; it is the rail plus a two-column contents list."
+    ]
+  }
+}

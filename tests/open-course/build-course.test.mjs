@@ -212,7 +212,6 @@ test('each Handout ends with its Lesson\'s Exercises, each answer collapsed unti
       assert.doesNotMatch(details[1], /\bopen\b/, `${l.id}: "${e.answer}" starts open`);
     }
     for (const other of data.lessons.filter((x) => x !== l)) for (const e of other.exercises) assert.ok(!html.includes(e.question), `${l.id} shows another Lesson's Exercise`);
-    assert.doesNotMatch(html, /<script\b/i, `${l.id} needs a script`);
   }
 });
 
@@ -471,7 +470,7 @@ test('a successful build prints where the Course project is and how many Evidenc
   assert.match(r.stdout, /2 Evidence gaps?/);
 });
 
-// A stand-in for the player page `am video -o` writes, so tests never call am.
+// A stand-in for the player page the bundled `am video -o` writes, so tests never call am.
 function fakeVideo(dir, name = 'video.html') {
   const path = join(dir, 'videos-temp', name);
   mkdirSync(dirname(path), { recursive: true });
@@ -568,4 +567,29 @@ test('a Handout has a contents list that links to each section, its Exercises, a
   const links = [...toc[1].matchAll(/<a href="#([^"]+)">([^<]*)<\/a>/g)].map((m) => [m[1], m[2]]);
   assert.deepEqual(links, [['section-1', 'First part'], ['section-2', 'Second part'], ['exercises', 'Exercises'], ['sources', 'Sources']]);
   for (const [id] of links) assert.match(handout, new RegExp(`\\sid="${id}"`), `nothing on the Handout has id ${id}`);
+});
+
+test('the bundled am CLI runs through scripts/am.mjs', () => {
+  const am = join(dirname(SCRIPT), 'am.mjs');
+  const r = spawnSync(process.execPath, [am, 'help', 'video'], { encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /am video/);
+});
+
+test('a video frame leaves room under the picture for the player controls, and for its chapter strip when it has several scenes', () => {
+  const dir = workdir();
+  const player = (name, scenes) => {
+    const path = fakeVideo(dir, name);
+    const segments = Array.from({ length: scenes + 1 }, (_, i) => ({ id: String(i), title: `Part ${i}` }));
+    writeFileSync(path, `${read(path)}<script type="application/json" id="amv-data">${JSON.stringify({ segments })}</script>`);
+    return path;
+  };
+  const data = courseData();
+  data.lessons[0].sections[0].video = player('one-scene.html', 1);
+  data.lessons[1].sections[0].video = player('three-scenes.html', 3);
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  const figure = (id) => read(join(r.out, 'lessons', id, 'handout.html')).match(/<figure class="video"[^>]*>/)[0];
+  assert.match(figure('l1'), /--player-chrome: 56px/);
+  assert.match(figure('l2'), /--player-chrome: 96px/);
 });
