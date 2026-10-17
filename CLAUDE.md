@@ -11,3 +11,7 @@ Issues 放在 GitHub Issues（GUOJIE-HONG/skills），用 `gh` CLI 操作。See 
 ### Domain docs
 
 Single-context：根目錄一份 `GLOSSARY.md` + `docs/adr/`。See `docs/agents/domain.md`.
+
+### 新增 skill、發版
+
+新增或搬動 skill、寫測試、升版本、發 release 前讀 `docs/agents/adding-a-skill.md`。
