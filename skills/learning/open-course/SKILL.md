@@ -63,7 +63,7 @@ Write the whole Course as one JSON file in the system temp directory, using a fi
 
 Make each video with `am video` from the `answer-me-with-html` skill, following that skill's video reference. When that skill is not installed, tell the user the Course will have no videos, and build it without them.
 
-Before making the first video, tell the user what they will hear: narration needs `ELEVENLABS_API_KEY`; without it, a video made on Windows has captions only.
+Before making the first video, tell the user what they will hear: narration needs `ELEVENLABS_API_KEY` as an environment variable of the shell running `am` (a key limited to Text to Speech is enough; on Windows a newly set user variable reaches only terminals started afterwards); without it, a video made on Windows has captions only. When the user expects narration, pass `--voice elevenlabs`, so a key the shell cannot see fails the video instead of silently dropping the voice.
 
 The narration retells the section's claims and says nothing the Lesson's Sources do not back.
 
