@@ -1,0 +1,65 @@
+/* The one look every page of a Course project shares; build-course.mjs inlines it into each page. */
+:root {
+  color-scheme: light dark;
+  --bg: #fbfaf7;
+  --surface: #ffffff;
+  --text: #1f2328;
+  --muted: #5b636e;
+  --line: #e3e0d8;
+  --accent: #1d5fa8;
+  --accent-soft: #e6eef8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171a;
+    --surface: #1d2024;
+    --text: #e6e7e9;
+    --muted: #9aa2ad;
+    --line: #30343a;
+    --accent: #7fb2f0;
+    --accent-soft: #1f2d3d;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 17px/1.7 system-ui, -apple-system, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+}
+
+main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+
+a { color: var(--accent); }
+a:hover { text-decoration-thickness: 2px; }
+
+h1, h2, h3 { line-height: 1.3; }
+h1 { font-size: 2rem; margin: 0.25rem 0 1rem; }
+h2 { font-size: 1.35rem; margin: 2.25rem 0 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.1rem; margin: 0 0 0.5rem; }
+
+.crumb { font-size: 0.9rem; color: var(--muted); }
+.eyebrow { font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0; }
+
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; margin: 0 0 1rem; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; }
+
+.objectives { background: var(--accent-soft); border-radius: 0.5rem; padding: 0.75rem 1rem; margin: 1rem 0; }
+.objectives ul { margin: 0; padding-left: 1.25rem; }
+.objectives-title { font-weight: 600; margin: 0 0 0.25rem; }
+
+.lessons { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
+.lessons > li { background: var(--surface); border: 1px solid var(--line); border-radius: 0.75rem; padding: 1rem 1.25rem; }
+.lessons .topics { color: var(--muted); margin: 0.25rem 0 0; padding-left: 1.25rem; }
+
+.cite { font-size: 0.75em; line-height: 0; }
+.cite a { text-decoration: none; padding: 0 0.1em; }
+
+.sources ol { padding-left: 1.75rem; }
+.sources li { margin-bottom: 0.5rem; overflow-wrap: anywhere; }
+.sources li:target { background: var(--accent-soft); border-radius: 0.25rem; }
+.sources .read { color: var(--muted); }
