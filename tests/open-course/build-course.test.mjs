@@ -568,3 +568,10 @@ test('a Handout has a contents list that links to each section, its Exercises, a
   assert.deepEqual(links, [['section-1', 'First part'], ['section-2', 'Second part'], ['exercises', 'Exercises'], ['sources', 'Sources']]);
   for (const [id] of links) assert.match(handout, new RegExp(`\\sid="${id}"`), `nothing on the Handout has id ${id}`);
 });
+
+test('the bundled am CLI runs through scripts/am.mjs', () => {
+  const am = join(dirname(SCRIPT), 'am.mjs');
+  const r = spawnSync(process.execPath, [am, 'help', 'video'], { encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /am video/);
+});

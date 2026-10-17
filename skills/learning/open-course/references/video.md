@@ -1,16 +1,16 @@
 # Explainer videos
 
-This skill bundles the `am` CLI from [Answer me with HTML](https://github.com/QingYunA/answer-me-with-html) at `vendor/answer-me-with-html/am.mjs`. Below, `am` means the full command, with both environment variables set on every run:
+This skill bundles the `am` CLI from [Answer me with HTML](https://github.com/QingYunA/answer-me-with-html). Run it through `scripts/am.mjs`, the same command on Windows and macOS; below, `am` means:
 
 ```sh
-AM_HOME="<system temp>/open-course-am" AM_NO_UPDATE_CHECK=1 node "<this skill's folder>/vendor/answer-me-with-html/am.mjs"
+node "<this skill's folder>/scripts/am.mjs"
 ```
 
-`AM_HOME` keeps the CLI's settings, state and voice-over cache in the temp directory, so a separate answer-me-with-html install and its settings never touch the video. `AM_NO_UPDATE_CHECK` stops the CLI from checking GitHub for releases: this copy updates with this skill, so its update hints do not apply.
+It keeps the CLI's settings and voice-over cache in the system temp directory, away from any separate answer-me-with-html install, and turns off the CLI's update check, since this copy updates with the skill. Never run `vendor/answer-me-with-html/am.mjs` directly.
 
 ## Voice
 
-Before making the first video, tell the user what they will hear. Narration needs `ELEVENLABS_API_KEY` as an environment variable of the shell running `am`; a key limited to Text to Speech is enough. On Windows a newly set user variable reaches only terminals started afterwards. Without the key, `am` uses the system voice (macOS `say`, Linux `espeak-ng`), and a video made on Windows has captions only.
+Before making the first video, tell the user what they will hear. Narration needs `ELEVENLABS_API_KEY` as an environment variable of the shell running `am`; a key limited to Text to Speech is enough. A newly set key reaches only terminals started afterwards: on Windows, set it as a user environment variable; on macOS, export it in `~/.zshrc`. Without the key, a video made on macOS is narrated by the system voice (`say`), and one made on Windows has captions only.
 
 - When the user expects narration, pass `--voice elevenlabs`, so a key the shell cannot see fails the video instead of silently dropping the voice.
 - When the user wants no sound, pass `--voice off`.
