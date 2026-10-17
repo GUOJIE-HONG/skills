@@ -527,3 +527,45 @@ test('the output folder may sit in a folder that does not exist yet, as courses/
   assert.ok(existsSync(join(r.out, 'index.html')));
   assert.deepEqual(readdirSync(join(dir, 'courses')), ['tides'], 'the build left a temporary folder behind');
 });
+
+test('text in backticks shows as code on Handouts and Slides, and markup inside the backticks still shows as text', () => {
+  const dir = workdir();
+  const data = courseData();
+  data.lessons[0] = lesson('l1', [section('Listing', [claim('Claim run `ls -a` to see `<b>` files.', ['noaa'])])], { objectives: ['Use `pwd`.'] });
+  data.lessons[0].exercises = [exercise('What does `cd` do?', 'It moves you, as `cd /tmp` shows.', ['noaa'])];
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  const handout = read(join(r.out, 'lessons', 'l1', 'handout.html'));
+  const slides = read(join(r.out, 'lessons', 'l1', 'slides.html'));
+  for (const code of ['ls -a', '&lt;b&gt;', 'pwd', 'cd', 'cd /tmp']) assert.ok(handout.includes(`<code>${code}</code>`), `Handout does not show ${code} as code`);
+  for (const code of ['ls -a', 'pwd']) assert.ok(slides.includes(`<code>${code}</code>`), `Slides do not show ${code} as code`);
+  const shown = (page) => page.replace(/<(style|script)>[\s\S]*?<\/\1>/g, '');
+  assert.ok(!shown(handout).includes('`') && !shown(slides).includes('`'), 'a backtick is left on the page');
+});
+
+test("a section's claims show in order, two to a paragraph", () => {
+  const dir = workdir();
+  const data = courseData();
+  const texts = ['Claim one.', 'Claim two.', 'Claim three.', 'Claim four.', 'Claim five.'];
+  data.lessons[0] = lesson('l1', [section('Five claims', texts.map((t) => claim(t, ['noaa'])))]);
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  const paragraphs = [...elementHtml(read(join(r.out, 'lessons', 'l1', 'handout.html')), 'section-1').matchAll(/<p>([\s\S]*?)<\/p>/g)].map((m) =>
+    m[1].replace(/<sup[\s\S]*?<\/sup>/g, '').replace(/<[^>]+>/g, '').trim(),
+  );
+  assert.deepEqual(paragraphs, ['Claim one. Claim two.', 'Claim three. Claim four.', 'Claim five.']);
+});
+
+test('a Handout has a contents list that links to each section, its Exercises, and its Sources', () => {
+  const dir = workdir();
+  const data = courseData();
+  data.lessons[0] = lesson('l1', [section('First part', [claim('Claim a.', ['noaa'])]), section('Second part', [claim('Claim b.', ['noaa'])])]);
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  const handout = read(join(r.out, 'lessons', 'l1', 'handout.html'));
+  const toc = handout.match(/<nav class="toc"[^>]*>([\s\S]*?)<\/nav>/);
+  assert.ok(toc, 'the Handout has no contents list');
+  const links = [...toc[1].matchAll(/<a href="#([^"]+)">([^<]*)<\/a>/g)].map((m) => [m[1], m[2]]);
+  assert.deepEqual(links, [['section-1', 'First part'], ['section-2', 'Second part'], ['exercises', 'Exercises'], ['sources', 'Sources']]);
+  for (const [id] of links) assert.match(handout, new RegExp(`\\sid="${id}"`), `nothing on the Handout has id ${id}`);
+});

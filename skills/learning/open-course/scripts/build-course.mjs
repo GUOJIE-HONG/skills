@@ -193,18 +193,20 @@ const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&
 const escape = (text) => String(text).replace(/[&<>"']/g, (ch) => ESCAPES[ch]);
 const toMarkup = (v) => (v instanceof Markup ? v.text : Array.isArray(v) ? v.map(toMarkup).join('') : v == null || v === false ? '' : escape(v));
 const html = (strings, ...values) => new Markup(strings.reduce((out, s, i) => out + s + (i < values.length ? toMarkup(values[i]) : ''), ''));
+// Body text from the data: escaped like any value, then each span in backticks shown as code.
+const prose = (text) => new Markup(escape(text).replace(/`([^`]+)`/g, '<code>$1</code>'));
 
 const CSS = new Markup(readFileSync(new URL('../assets/course.css', import.meta.url), 'utf8'));
 const SLIDES_SCRIPT = new Markup(readFileSync(new URL('../assets/slides.js', import.meta.url), 'utf8'));
 
 // Page labels in the Course's language, and what goes between two sentences; a language without its own labels gets English.
 const LABELS = {
-  en: { audience: 'Audience', level: 'Level', length: 'Total length', lessons: 'Lessons', lesson: (n) => `Lesson ${n}`, objectives: 'You will be able to', sources: 'Sources', read: (date) => `read ${date}`, between: ' ', exercises: 'Exercises', answer: 'Show answer', video: 'Video', slides: 'Slides', handout: 'Handout', previous: 'Previous slide', next: 'Next slide' },
-  zh: { audience: '學員', level: '程度', length: '總時數', lessons: '課程內容', lesson: (n) => `第 ${n} 課`, objectives: '學完這一課，你能夠', sources: '資料來源', read: (date) => `${date} 閱讀`, between: '', exercises: '練習題', answer: '看答案', video: '影片', slides: '投影片', handout: '講義', previous: '上一張', next: '下一張' },
+  en: { audience: 'Audience', level: 'Level', length: 'Total length', lessons: 'Lessons', lesson: (n) => `Lesson ${n}`, objectives: 'You will be able to', contents: 'Contents', sources: 'Sources', read: (date) => `read ${date}`, between: ' ', exercises: 'Exercises', answer: 'Show answer', video: 'Video', slides: 'Slides', handout: 'Handout', previous: 'Previous slide', next: 'Next slide' },
+  zh: { audience: '學員', level: '程度', length: '總時數', lessons: '課程內容', lesson: (n) => `第 ${n} 課`, objectives: '學完這一課，你能夠', contents: '本課內容', sources: '資料來源', read: (date) => `${date} 閱讀`, between: '', exercises: '練習題', answer: '看答案', video: '影片', slides: '投影片', handout: '講義', previous: '上一張', next: '下一張' },
 };
 const labelsFor = (language) => LABELS[language.toLowerCase().split('-')[0]] ?? LABELS.en;
 
-function page({ language, title, body }) {
+function page({ language, title, body, layout }) {
   return html`<!doctype html>
 <html lang="${language}">
 <head>
@@ -214,7 +216,7 @@ function page({ language, title, body }) {
 <style>${CSS}</style>
 </head>
 <body>
-<main>
+<main${layout && html` class="${layout}"`}>
 ${body}
 </main>
 </body>
@@ -223,7 +225,7 @@ ${body}
 }
 
 const objectivesBlock = (lesson, labels) =>
-  html`<div class="objectives"><p class="objectives-title">${labels.objectives}</p><ul>${lesson.objectives.map((o) => html`<li>${o}</li>`)}</ul></div>`;
+  html`<div class="objectives"><p class="objectives-title">${labels.objectives}</p><ul>${lesson.objectives.map((o) => html`<li>${prose(o)}</li>`)}</ul></div>`;
 
 function syllabusPage(data) {
   const { course } = data;
@@ -263,29 +265,44 @@ const videoPath = (sectionIndex) => `videos/section-${sectionIndex + 1}.html`;
 
 // A Lesson's Exercises, each answer in a closed <details> so learners try the question first, with no script.
 const exercisesBlock = (lesson, labels, markers) =>
-  html`<section class="exercises"><h2>${labels.exercises}</h2><ol>${lesson.exercises.map(
-    (e, i) => html`<li id="exercise-${i + 1}"><p>${e.question}</p><details><summary>${labels.answer}</summary><p>${e.answer}${markers(e.sources)}</p></details></li>`,
+  html`<section class="exercises" id="exercises"><h2>${labels.exercises}</h2><ol>${lesson.exercises.map(
+    (e, i) => html`<li id="exercise-${i + 1}"><p>${prose(e.question)}</p><details><summary>${labels.answer}</summary><p>${prose(e.answer)}${markers(e.sources)}</p></details></li>`,
   )}</ol></section>`;
 
+// A section's claims in order, two to a paragraph, so a long section does not read as one block of text.
+function paragraphs(claims, labels, markers) {
+  const out = [];
+  for (let i = 0; i < claims.length; i += 2) {
+    out.push(html`<p>${claims.slice(i, i + 2).map((c, j) => html`${j > 0 ? labels.between : ''}${prose(c.text)}${markers(c.sources)}`)}</p>`);
+  }
+  return out;
+}
+
+// On a wide screen the Handout reads in three columns: contents, text, and its Source list beside the text.
 function handoutPage(data, lesson, index) {
   const labels = labelsFor(data.course.language);
   const { cited, markers } = citations(data, lesson);
   const sectionBlocks = lesson.sections.map(
     (s, i) => html`<section id="section-${i + 1}">
 <h2>${s.heading}</h2>
-<p>${s.claims.map((c, j) => html`${j > 0 ? labels.between : ''}${c.text}${markers(c.sources)}`)}</p>
+${paragraphs(s.claims, labels, markers)}
 ${s.video && html`<figure class="video"><iframe src="${videoPath(i)}" title="${labels.video}: ${s.heading}" allowfullscreen></iframe></figure>`}
 </section>`,
   );
+  const contents = [...lesson.sections.map((s, i) => [`section-${i + 1}`, s.heading]), ['exercises', labels.exercises], ['sources', labels.sources]];
   const sourceList = cited.map(({ number, source }) => html`<li id="source-${number}">${sourceEntry(source)} <span class="read">(${labels.read(source.readOn)})</span></li>`);
   return page({
     language: data.course.language,
     title: `${lesson.title} · ${data.course.title}`,
-    body: html`<nav class="crumb"><a href="../../index.html">${data.course.title}</a> · <a href="slides.html">${labels.slides}</a></nav>
+    layout: 'handout',
+    body: html`<nav class="toc" aria-label="${labels.contents}"><p class="toc-title">${labels.contents}</p>${contents.map(([id, text]) => html`<a href="#${id}">${text}</a>`)}</nav>
+<div class="handout-text">
+<nav class="crumb"><a href="../../index.html">${data.course.title}</a> · <a href="slides.html">${labels.slides}</a></nav>
 <header><p class="eyebrow">${labels.lesson(index + 1)}</p><h1>${lesson.title}</h1>${objectivesBlock(lesson, labels)}</header>
 ${sectionBlocks}
 ${exercisesBlock(lesson, labels, markers)}
-<section class="sources"><h2>${labels.sources}</h2><ol>${sourceList}</ol></section>`,
+</div>
+<aside class="sources" id="sources"><h2>${labels.sources}</h2><ol>${sourceList}</ol></aside>`,
   });
 }
 
@@ -296,7 +313,7 @@ function slidesPage(data, lesson, index) {
   const slideBlocks = lesson.slides.map(
     (s) => html`<section class="slide">
 <h2>${s.title}</h2>
-<ul class="points">${s.points.map((p) => html`<li>${p.text}${markers(p.sources)}</li>`)}</ul>
+<ul class="points">${s.points.map((p) => html`<li>${prose(p.text)}${markers(p.sources)}</li>`)}</ul>
 </section>`,
   );
   const onSlides = cited.filter(({ id }) => lesson.slides.some((s) => s.points.some((p) => p.sources.includes(id))));

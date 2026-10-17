@@ -54,7 +54,7 @@ Write the whole Course as one JSON file in the system temp directory, using a fi
 }
 ```
 
-- The claims of a section read as one paragraph, in order.
+- The claims of a section read as prose, in order, two to a paragraph. A command, path, or other literal goes in backticks and shows as code.
 - An Exercise practises one of the Lesson's objectives and is answerable from what the Handout teaches. A question whose answer no Source backs is an Evidence gap, not an Exercise.
 - Slides digest the Lesson's Handout for the teacher to present; what the Handout does not say stays off the Slides.
 - `evidenceGaps` is for your report only; no page shows it.
@@ -63,7 +63,7 @@ Write the whole Course as one JSON file in the system temp directory, using a fi
 
 Make each video with `am video` from the `answer-me-with-html` skill, following that skill's video reference. When that skill is not installed, tell the user the Course will have no videos, and build it without them.
 
-Before making the first video, tell the user what they will hear: narration needs `ELEVENLABS_API_KEY`; without it, a video made on Windows has captions only.
+Before making the first video, tell the user what they will hear: narration needs `ELEVENLABS_API_KEY` as an environment variable of the shell running `am` (a key limited to Text to Speech is enough; on Windows a newly set user variable reaches only terminals started afterwards); without it, a video made on Windows has captions only. When the user expects narration, pass `--voice elevenlabs`, so a key the shell cannot see fails the video instead of silently dropping the voice.
 
 The narration retells the section's claims and says nothing the Lesson's Sources do not back.
 
