@@ -63,3 +63,7 @@ h3 { font-size: 1.1rem; margin: 0 0 0.5rem; }
 .sources li { margin-bottom: 0.5rem; overflow-wrap: anywhere; }
 .sources li:target { background: var(--accent-soft); border-radius: 0.25rem; }
 .sources .read { color: var(--muted); }
+
+.video { margin: 1rem 0; }
+.video iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--line); border-radius: 0.5rem; background: var(--surface); }
+.has-video { font-size: 0.75em; color: var(--accent); background: var(--accent-soft); border-radius: 0.25rem; padding: 0 0.4em; }

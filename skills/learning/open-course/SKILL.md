@@ -28,6 +28,8 @@ A claim cites a Source only for what that Source actually says. A point you cann
 
 Draft the Syllabus in the conversation: the Lessons in order, and what each one teaches. Write no Lesson content until the user confirms the Lesson structure.
 
+In the same draft, mark the sections hard to follow from prose alone as suggested for an **Explainer video**. Make videos only for the sections the user confirms.
+
 ## 4. Write the course data file
 
 Write the whole Course as one JSON file in the system temp directory, using a file-writing tool:
@@ -57,6 +59,17 @@ Write the whole Course as one JSON file in the system temp directory, using a fi
 - Each Lesson `id` is lowercase letters, digits, and hyphens, and names its folder in the Course project.
 - A claim is one statement in the Handout's prose, with the ids of the Sources that back it. The claims of a section read as one paragraph, in order.
 - `evidenceGaps` is for your report only; no page shows it.
+- A section with an Explainer video carries `"video": "<path of its player page>"`.
+
+### Explainer videos
+
+Make each video with `am video` from the `answer-me-with-html` skill, following that skill's video reference. When that skill is not installed, tell the user the Course will have no videos, and build it without them.
+
+Before making the first video, tell the user what they will hear: narration needs `ELEVENLABS_API_KEY`; without it, a video made on Windows has captions only.
+
+The narration retells the section's claims and says nothing the Lesson's Sources do not back.
+
+Write each video with `-o` to an `.html` player page in the system temp directory; that page is what `video` points to. The build copies it into the Course project and embeds it in its Handout section.
 
 ## 5. Build
 
