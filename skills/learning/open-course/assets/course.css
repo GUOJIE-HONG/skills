@@ -64,6 +64,13 @@ h3 { font-size: 1.1rem; margin: 0 0 0.5rem; }
 .sources li:target { background: var(--accent-soft); border-radius: 0.25rem; }
 .sources .read { color: var(--muted); }
 
+.exercises ol { padding-left: 1.75rem; }
+.exercises li { margin-bottom: 1rem; }
+.exercises li > p { margin: 0 0 0.25rem; }
+.exercises details { background: var(--surface); border: 1px solid var(--line); border-radius: 0.5rem; padding: 0.25rem 0.75rem; }
+.exercises summary { cursor: pointer; color: var(--accent); }
+.exercises details p { margin: 0.5rem 0; }
+
 /* Slides: without script every slide shows in turn; slides.js adds .presenting and shows one at a time. */
 .pager { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 1rem; font-size: 0.9rem; color: var(--muted); }
 .pager-controls { display: none; align-items: center; gap: 0.5rem; }

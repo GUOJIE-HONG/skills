@@ -46,6 +46,7 @@ Write the whole Course as one JSON file in the system temp directory, using a fi
       "sections": [
         { "heading": "", "claims": [{ "text": "", "sources": ["noaa-tides"] }] }
       ],
+      "exercises": [{ "question": "", "answer": "", "sources": ["noaa-tides"] }],
       "slides": [{ "title": "", "points": [{ "text": "", "sources": ["noaa-tides"] }] }]
     }
   ],
@@ -57,6 +58,7 @@ Write the whole Course as one JSON file in the system temp directory, using a fi
 - `author` names a person or the organisation that stands behind the work. `kind` is `primary` or `secondary`. `readOn` is the date you read it. `url` is an `http`, `https`, or `file` address.
 - Each Lesson `id` is lowercase letters, digits, and hyphens, and names its folder in the Course project.
 - A claim is one statement in the Handout's prose, with the ids of the Sources that back it. The claims of a section read as one paragraph, in order.
+- `exercises` close the Handout, each answer hidden until the learner opens it. Every Lesson has at least one. A question practises one of the Lesson's objectives and is answerable from what the Handout teaches; its answer cites Sources exactly as a claim does. A question whose answer no Source backs is an Evidence gap, not an Exercise.
 - `slides` digest the Lesson's Handout for the teacher to present: each point restates something that Handout says, citing the Sources it cites there. What the Handout does not say stays off the Slides.
 - `evidenceGaps` is for your report only; no page shows it.
 

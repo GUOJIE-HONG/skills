@@ -34,6 +34,13 @@ function* claims(data) {
   }
 }
 
+// Every Exercise of every Lesson, with where it sits.
+function* exercises(data) {
+  for (const { lesson, where } of lessons(data)) {
+    for (const [i, exercise] of items(lesson.exercises).entries()) yield { exercise, where: `${where}, Exercise ${i + 1}` };
+  }
+}
+
 function* slides(data) {
   for (const { lesson, where } of lessons(data)) {
     for (const [i, slide] of items(lesson.slides).entries()) yield { lesson, slide, where: `${where}, slide ${i + 1}` };
@@ -127,6 +134,24 @@ const CHECKS = [
       return problems;
     });
   },
+  function exercisesHaveTheirParts(data) {
+    const problems = [];
+    for (const { lesson, where } of lessons(data)) if (items(lesson.exercises).length === 0) problems.push({ where, problem: 'has no Exercises' });
+    for (const { exercise, where } of exercises(data)) {
+      if (blank(exercise.question)) problems.push({ where, problem: 'has no question' });
+      if (blank(exercise.answer)) problems.push({ where, problem: 'has no answer' });
+    }
+    return problems;
+  },
+  // An Exercise answer is held to the same citation rule as a claim.
+  function everyExerciseAnswerCitesListedSources(data) {
+    const listed = new Set(items(data.sources).map((s) => s.id));
+    return [...exercises(data)].flatMap(({ exercise, where }) =>
+      list(exercise.sources).length === 0
+        ? [{ where, problem: 'answer cites no Source' }]
+        : list(exercise.sources).filter((id) => !listed.has(id)).map((id) => ({ where, problem: `answer cites Source "${id}", which is not in the Source list` })),
+    );
+  },
 ];
 
 function isDocumentUrl(url) {
@@ -167,8 +192,8 @@ const SLIDES_SCRIPT = new Markup(readFileSync(new URL('../assets/slides.js', imp
 
 // Page labels in the Course's language, and what goes between two sentences; a language without its own labels gets English.
 const LABELS = {
-  en: { audience: 'Audience', level: 'Level', length: 'Total length', lessons: 'Lessons', lesson: (n) => `Lesson ${n}`, objectives: 'You will be able to', sources: 'Sources', read: (date) => `read ${date}`, between: ' ', slides: 'Slides', handout: 'Handout', previous: 'Previous slide', next: 'Next slide' },
-  zh: { audience: '學員', level: '程度', length: '總時數', lessons: '課程內容', lesson: (n) => `第 ${n} 課`, objectives: '學完這一課，你能夠', sources: '資料來源', read: (date) => `${date} 閱讀`, between: '', slides: '投影片', handout: '講義', previous: '上一張', next: '下一張' },
+  en: { audience: 'Audience', level: 'Level', length: 'Total length', lessons: 'Lessons', lesson: (n) => `Lesson ${n}`, objectives: 'You will be able to', sources: 'Sources', read: (date) => `read ${date}`, between: ' ', exercises: 'Exercises', answer: 'Show answer', slides: 'Slides', handout: 'Handout', previous: 'Previous slide', next: 'Next slide' },
+  zh: { audience: '學員', level: '程度', length: '總時數', lessons: '課程內容', lesson: (n) => `第 ${n} 課`, objectives: '學完這一課，你能夠', sources: '資料來源', read: (date) => `${date} 閱讀`, between: '', exercises: '練習題', answer: '看答案', slides: '投影片', handout: '講義', previous: '上一張', next: '下一張' },
 };
 const labelsFor = (language = 'en') => LABELS[language.toLowerCase().split('-')[0]] ?? LABELS.en;
 
@@ -215,12 +240,19 @@ ${objectivesBlock(l, t)}
   });
 }
 
-// Numbers the Sources a Handout cites in order of first citation; the Handout lists only those.
+// Numbers the Sources a Handout cites, claims then Exercise answers, in order of first citation; the Handout lists only those.
 function citationNumbers(lesson) {
   const numbers = new Map();
-  for (const s of lesson.sections) for (const c of s.claims) for (const id of c.sources) if (!numbers.has(id)) numbers.set(id, numbers.size + 1);
+  const cited = [...lesson.sections.flatMap((s) => s.claims), ...lesson.exercises].flatMap((x) => x.sources);
+  for (const id of cited) if (!numbers.has(id)) numbers.set(id, numbers.size + 1);
   return numbers;
 }
+
+// A Lesson's Exercises, each answer in a closed <details> so learners try the question first, with no script.
+const exercisesBlock = (lesson, t, markers) =>
+  html`<section class="exercises"><h2>${t.exercises}</h2><ol>${lesson.exercises.map(
+    (e, i) => html`<li id="exercise-${i + 1}"><p>${e.question}</p><details><summary>${t.answer}</summary><p>${e.answer}${markers(e.sources)}</p></details></li>`,
+  )}</ol></section>`;
 
 function handoutPage(data, lesson, index) {
   const t = labelsFor(data.course.language);
@@ -242,6 +274,7 @@ function handoutPage(data, lesson, index) {
     body: html`<nav class="crumb"><a href="../../index.html">${data.course.title}</a> · <a href="slides.html">${t.slides}</a></nav>
 <header><p class="eyebrow">${t.lesson(index + 1)}</p><h1>${lesson.title}</h1>${objectivesBlock(lesson, t)}</header>
 ${sections}
+${exercisesBlock(lesson, t, markers)}
 <section class="sources"><h2>${t.sources}</h2><ol>${sources}</ol></section>`,
   });
 }
