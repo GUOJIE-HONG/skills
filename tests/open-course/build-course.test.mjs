@@ -212,7 +212,6 @@ test('each Handout ends with its Lesson\'s Exercises, each answer collapsed unti
       assert.doesNotMatch(details[1], /\bopen\b/, `${l.id}: "${e.answer}" starts open`);
     }
     for (const other of data.lessons.filter((x) => x !== l)) for (const e of other.exercises) assert.ok(!html.includes(e.question), `${l.id} shows another Lesson's Exercise`);
-    assert.doesNotMatch(html, /<script\b/i, `${l.id} needs a script`);
   }
 });
 

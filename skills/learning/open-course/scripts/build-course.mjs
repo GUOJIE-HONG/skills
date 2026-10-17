@@ -196,17 +196,26 @@ const html = (strings, ...values) => new Markup(strings.reduce((out, s, i) => ou
 // Body text from the data: escaped like any value, then each span in backticks shown as code.
 const prose = (text) => new Markup(escape(text).replace(/`([^`]+)`/g, '<code>$1</code>'));
 
-const CSS = new Markup(readFileSync(new URL('../assets/course.css', import.meta.url), 'utf8'));
-const SLIDES_SCRIPT = new Markup(readFileSync(new URL('../assets/slides.js', import.meta.url), 'utf8'));
+const asset = (name, encoding) => readFileSync(new URL(`../assets/${name}`, import.meta.url), encoding);
+// The rail font is embedded in every page so its numerals render offline; it covers Latin only, and CJK falls through to the system face.
+const RAIL_FONT = `@font-face{font-family:"Rail";src:url(data:font/woff2;base64,${asset('rail.woff2').toString('base64')}) format("woff2");font-weight:600;font-display:swap}`;
+const CSS = new Markup(`${RAIL_FONT}\n${asset('course.css', 'utf8')}`);
+const PROGRESS_SCRIPT = new Markup(asset('progress.js', 'utf8'));
+const SLIDES_SCRIPT = new Markup(asset('slides.js', 'utf8'));
+const ARROW = { prev: new Markup('<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>'), next: new Markup('<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg>') };
 
 // Page labels in the Course's language, and what goes between two sentences; a language without its own labels gets English.
 const LABELS = {
-  en: { audience: 'Audience', level: 'Level', length: 'Total length', lessons: 'Lessons', lesson: (n) => `Lesson ${n}`, objectives: 'You will be able to', contents: 'Contents', sources: 'Sources', read: (date) => `read ${date}`, between: ' ', exercises: 'Exercises', answer: 'Show answer', video: 'Video', slides: 'Slides', handout: 'Handout', previous: 'Previous slide', next: 'Next slide' },
-  zh: { audience: '學員', level: '程度', length: '總時數', lessons: '課程內容', lesson: (n) => `第 ${n} 課`, objectives: '學完這一課，你能夠', contents: '本課內容', sources: '資料來源', read: (date) => `${date} 閱讀`, between: '', exercises: '練習題', answer: '看答案', video: '影片', slides: '投影片', handout: '講義', previous: '上一張', next: '下一張' },
+  en: { audience: 'Audience', level: 'Level', length: 'Total length', lessons: 'Lessons', lesson: (n) => `Lesson ${n}`, lessonCount: (n) => `${n} Lesson${n === 1 ? '' : 's'}`, sourceCount: (n) => `${n} Source${n === 1 ? '' : 's'}`, exerciseCount: (n) => `${n} exercise${n === 1 ? '' : 's'}`, objectives: 'You will be able to', objectivesShort: 'Objectives', contents: 'Contents', sources: 'Sources', read: (date) => `read ${date}`, between: ' ', exercises: 'Exercises', answer: 'Show answer', video: 'Video', slides: 'Slides', handout: 'Handout', syllabus: 'Syllabus', scope: 'Scope', lastOpened: 'Last opened', previousLesson: 'Previous Lesson', nextLesson: 'Next Lesson', previous: 'Previous slide', next: 'Next slide' },
+  zh: { audience: '學員', level: '程度', length: '總時數', lessons: '課程內容', lesson: (n) => `第 ${n} 課`, lessonCount: (n) => `${n} 課`, sourceCount: (n) => `${n} 份資料來源`, exerciseCount: (n) => `${n} 題練習`, objectives: '學完這一課，你能夠', objectivesShort: '學習目標', contents: '本課內容', sources: '資料來源', read: (date) => `${date} 閱讀`, between: '', exercises: '練習題', answer: '看答案', video: '影片', slides: '投影片', handout: '講義', syllabus: '課程大綱', scope: '份量', lastOpened: '上次讀到', previousLesson: '上一課', nextLesson: '下一課', previous: '上一張', next: '下一張' },
 };
 const labelsFor = (language) => LABELS[language.toLowerCase().split('-')[0]] ?? LABELS.en;
 
-function page({ language, title, body, layout }) {
+// A frame number padded to the width of the largest one, so the rail and lists line up: 01 to 30, but 1 to 9.
+const frameNumber = (n, total) => String(n).padStart(String(total).length, '0');
+
+// `course` names this Course's entry in the browser's progress memory (progress.js); `lesson` marks a Handout, which records a visit.
+function page({ language, title, kind, course, lesson, body, script }) {
   return html`<!doctype html>
 <html lang="${language}">
 <head>
@@ -215,10 +224,9 @@ function page({ language, title, body, layout }) {
 <title>${title}</title>
 <style>${CSS}</style>
 </head>
-<body>
-<main${layout && html` class="${layout}"`}>
+<body class="${kind}" data-course="${course}"${lesson && html` data-lesson="${lesson}"`}>
 ${body}
-</main>
+${script && html`<script>${script}</script>`}
 </body>
 </html>
 `.text;
@@ -227,25 +235,53 @@ ${body}
 const objectivesBlock = (lesson, labels) =>
   html`<div class="objectives"><p class="objectives-title">${labels.objectives}</p><ul>${lesson.objectives.map((o) => html`<li>${prose(o)}</li>`)}</ul></div>`;
 
+// Every Lesson as one numbered frame on the perforated rail; `href` gives each frame's Handout address from the page,
+// and `current` the frame this page belongs to.
+function lessonRail(data, labels, { href, current }) {
+  const total = data.lessons.length;
+  const cells = data.lessons.map(
+    (l, i) => html`<li><a href="${href(l)}" data-lesson="${l.id}" title="${labels.lesson(i + 1)}：${l.title}"${i === current && html` aria-current="page"`}>${frameNumber(i + 1, total)}</a></li>`,
+  );
+  return html`<nav class="rail" aria-label="${labels.lessons}" data-flag="${labels.lastOpened}"><ol>${cells}</ol></nav>`;
+}
+
+// The Sources the Course's Handouts cite, across every Lesson.
+const citedSources = (data) => new Set(data.lessons.flatMap(handoutSources));
+
 function syllabusPage(data) {
   const { course } = data;
   const labels = labelsFor(course.language);
-  const facts = [[labels.audience, course.audience], [labels.level, course.level], [labels.length, course.length]].map(([k, v]) => html`<dt>${k}</dt><dd>${v}</dd>`);
-  const lessonEntries = data.lessons.map(
-    (l, i) => html`<li>
-<p class="eyebrow">${labels.lesson(i + 1)}</p>
-<h3><a href="lessons/${l.id}/handout.html">${l.title}</a></h3>
-<p class="lesson-links"><a href="lessons/${l.id}/slides.html">${labels.slides}</a></p>
-${objectivesBlock(l, labels)}
+  const total = data.lessons.length;
+  const facts = [[labels.audience, course.audience], [labels.level, course.level], [labels.length, course.length]].map(([k, v]) => html`<div><dt>${k}</dt><dd>${v}</dd></div>`);
+  const frames = data.lessons.map(
+    (l, i) => html`<li class="frame" data-lesson="${l.id}">
+<span class="frame-no" aria-hidden="true">${frameNumber(i + 1, total)}</span>
+<div class="frame-body">
+<h3><a href="lessons/${l.id}/handout.html"><span class="visually-hidden">${labels.lesson(i + 1)}：</span>${l.title}</a></h3>
 <ul class="topics">${l.sections.map((s) => html`<li>${s.heading}${s.video && html` <span class="has-video">${labels.video}</span>`}</li>`)}</ul>
+<div class="frame-actions">
+<p class="frame-links"><a href="lessons/${l.id}/handout.html">${labels.handout}</a><a href="lessons/${l.id}/slides.html">${labels.slides}</a><span>${labels.exerciseCount(l.exercises.length)}</span></p>
+<details class="frame-objectives"><summary>${labels.objectivesShort}</summary><ul>${l.objectives.map((o) => html`<li>${prose(o)}</li>`)}</ul></details>
+</div>
+</div>
 </li>`,
   );
   return page({
     language: course.language,
     title: course.title,
-    body: html`<header><h1>${course.title}</h1><dl class="facts">${facts}</dl></header>
-<h2>${labels.lessons}</h2>
-<ol class="lessons">${lessonEntries}</ol>`,
+    kind: 'syllabus-page',
+    course: course.title,
+    body: html`<header class="masthead">
+<h1>${course.title}</h1>
+<dl class="facts">${facts}<div><dt>${labels.scope}</dt><dd class="figure">${labels.lessonCount(total)} · ${labels.sourceCount(citedSources(data).size)}</dd></div></dl>
+</header>
+${lessonRail(data, labels, { href: (l) => `lessons/${l.id}/handout.html` })}
+<p class="resume-line"><a class="resume" href="#" hidden></a></p>
+<main class="window">
+<h2 class="visually-hidden">${labels.lessons}</h2>
+<ol class="frames">${frames}</ol>
+</main>`,
+    script: PROGRESS_SCRIPT,
   });
 }
 
@@ -278,6 +314,17 @@ function paragraphs(claims, labels, markers) {
   return out;
 }
 
+// The frame number and title that open a Handout and the title slide.
+const lessonHead = (data, index, lesson) =>
+  html`<span class="frame-no" aria-hidden="true">${frameNumber(index + 1, data.lessons.length)}</span><h1>${lesson.title}</h1>`;
+
+// The way on from a Handout: the Lessons before and after it, or the Syllabus at either end of the Course.
+function lessonNav(data, index, labels) {
+  const step = (l, label, rel) =>
+    l ? html`<a rel="${rel}" href="../${l.id}/handout.html"><span>${label}</span>${l.title}</a>` : html`<a href="../../index.html"><span>${labels.syllabus}</span>${data.course.title}</a>`;
+  return html`<nav class="lesson-nav" aria-label="${labels.lessons}">${step(data.lessons[index - 1], labels.previousLesson, 'prev')}${step(data.lessons[index + 1], labels.nextLesson, 'next')}</nav>`;
+}
+
 // On a wide screen the Handout reads in three columns: contents, text, and its Source list beside the text.
 function handoutPage(data, lesson, index) {
   const labels = labelsFor(data.course.language);
@@ -294,15 +341,25 @@ ${s.video && html`<figure class="video"><iframe src="${videoPath(i)}" title="${l
   return page({
     language: data.course.language,
     title: `${lesson.title} · ${data.course.title}`,
-    layout: 'handout',
-    body: html`<nav class="toc" aria-label="${labels.contents}"><p class="toc-title">${labels.contents}</p>${contents.map(([id, text]) => html`<a href="#${id}">${text}</a>`)}</nav>
-<div class="handout-text">
-<nav class="crumb"><a href="../../index.html">${data.course.title}</a> · <a href="slides.html">${labels.slides}</a></nav>
-<header><p class="eyebrow">${labels.lesson(index + 1)}</p><h1>${lesson.title}</h1>${objectivesBlock(lesson, labels)}</header>
+    kind: 'handout-page',
+    course: data.course.title,
+    lesson: lesson.id,
+    body: html`<header class="bench-bar">
+<nav class="crumb"><a href="../../index.html">${data.course.title}</a><a href="slides.html">${labels.slides}</a></nav>
+${lessonRail(data, labels, { href: (l) => `../${l.id}/handout.html`, current: index })}
+</header>
+<div class="handout">
+<nav class="toc" aria-label="${labels.contents}"><p class="toc-title">${labels.contents}</p>${contents.map(([id, text]) => html`<a href="#${id}">${text}</a>`)}</nav>
+<main class="window handout-text">
+<header class="lesson-head">${lessonHead(data, index, lesson)}</header>
+${objectivesBlock(lesson, labels)}
 ${sectionBlocks}
 ${exercisesBlock(lesson, labels, markers)}
-</div>
-<aside class="sources" id="sources"><h2>${labels.sources}</h2><ol>${sourceList}</ol></aside>`,
+${lessonNav(data, index, labels)}
+</main>
+<aside class="window sources" id="sources"><h2>${labels.sources}</h2><ol>${sourceList}</ol></aside>
+</div>`,
+    script: PROGRESS_SCRIPT,
   });
 }
 
@@ -311,22 +368,32 @@ function slidesPage(data, lesson, index) {
   const labels = labelsFor(data.course.language);
   const { cited, markers } = citations(data, lesson, 'handout.html');
   const slideBlocks = lesson.slides.map(
-    (s) => html`<section class="slide">
+    (s, i) => html`<section class="slide" id="slide-${i + 2}">
 <h2>${s.title}</h2>
 <ul class="points">${s.points.map((p) => html`<li>${prose(p.text)}${markers(p.sources)}</li>`)}</ul>
 </section>`,
   );
   const onSlides = cited.filter(({ id }) => lesson.slides.some((s) => s.points.some((p) => p.sources.includes(id))));
   const sourceList = onSlides.map(({ number, source }) => html`<li value="${number}">${sourceEntry(source)}</li>`);
+  // Title slide, the data's slides, and the Sources slide, each a frame on the rail.
+  const count = lesson.slides.length + 2;
+  const rail = Array.from({ length: count }, (_, i) => html`<li><a href="#slide-${i + 1}">${frameNumber(i + 1, count)}</a></li>`);
   return page({
     language: data.course.language,
     title: `${labels.slides} · ${lesson.title} · ${data.course.title}`,
-    body: html`<nav class="pager"><span class="crumb"><a href="../../index.html">${data.course.title}</a> · <a href="handout.html">${labels.handout}</a></span>
-<span class="pager-controls"><button type="button" class="pager-prev" aria-label="${labels.previous}">←</button> <span class="pager-count"></span> <button type="button" class="pager-next" aria-label="${labels.next}">→</button></span></nav>
-<section class="slide"><p class="eyebrow">${labels.lesson(index + 1)}</p><h1>${lesson.title}</h1>${objectivesBlock(lesson, labels)}</section>
+    kind: 'slides-page',
+    course: data.course.title,
+    body: html`<header class="bench-bar pager">
+<nav class="crumb"><a href="../../index.html">${data.course.title}</a><a href="handout.html">${labels.handout}</a></nav>
+<span class="pager-controls"><button type="button" class="pager-prev" aria-label="${labels.previous}">${ARROW.prev}</button><span class="pager-count"></span><button type="button" class="pager-next" aria-label="${labels.next}">${ARROW.next}</button></span>
+</header>
+<main class="deck">
+<section class="slide slide-cover" id="slide-1"><header class="lesson-head">${lessonHead(data, index, lesson)}</header>${objectivesBlock(lesson, labels)}</section>
 ${slideBlocks}
-<section class="slide sources"><h2>${labels.sources}</h2><ol>${sourceList}</ol></section>
-<script>${SLIDES_SCRIPT}</script>`,
+<section class="slide sources" id="slide-${count}"><h2>${labels.sources}</h2><ol>${sourceList}</ol></section>
+</main>
+<nav class="rail slide-rail" aria-label="${labels.slides}"><ol>${rail}</ol></nav>`,
+    script: SLIDES_SCRIPT,
   });
 }
 

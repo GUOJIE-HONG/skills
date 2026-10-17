@@ -1,3 +1,5 @@
 typesafe-key.header
 progress/ask-jev-*/
 .claude/worktrees/
+.impeccable/mocks/
+.impeccable/review/

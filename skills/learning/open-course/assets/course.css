@@ -1,130 +1,402 @@
-/* The one look every page of a Course project shares; build-course.mjs inlines it into each page. */
+/* The one look every page of a Course project shares; build-course.mjs inlines it into each page, after the rail font.
+   The world: a film cutting bench. Bench black owns the frame in both modes, the Lessons run as numbered frames on one
+   perforated orange rail, and reading happens only inside paper windows. State is a mark, not a hue: a paper frame is
+   where you are, an inked frame is one opened before, an outlined frame is not opened yet. */
 :root {
   color-scheme: light dark;
-  --bg: #fbfaf7;
-  --surface: #ffffff;
-  --text: #1f2328;
-  --muted: #5b636e;
-  --line: #e3e0d8;
-  --accent: #1d5fa8;
-  --accent-soft: #e6eef8;
+  --bench: #0c0b0a;
+  --bench-line: #2c2824;
+  --bench-ink: #ece6da;
+  --bench-muted: #a39a8c;
+  --tape: #e8620c;
+  --tape-fold: #9c3d08;
+  --tape-ink: #120a04;
+  --paper: #f5f1ea;
+  --paper-2: #ebe5d9;
+  --ink: #1a1714;
+  --muted: #5f574d;
+  --line: #d9d1c3;
+  --tint: #fbe6d3;
+  --tape-deep: #a8410a;
+  --gutter: clamp(1rem, 3vw, 3rem);
+  /* The Syllabus's left and right edge: the masthead, rail, and window all start here. */
+  --inset: max(var(--gutter), (100% - 84rem) / 2);
+  /* No system-ui: on Windows in Chinese it draws Chinese text in PMingLiU, a thin serif that tires the eyes. */
+  --sans: "Segoe UI", "Noto Sans TC", "Noto Sans CJK TC", "Microsoft JhengHei", "PingFang TC", -apple-system, sans-serif;
+  /* Rail is embedded and holds Latin and numerals only; CJK in a label falls through to the system face. */
+  --rail: "Rail", "Bahnschrift", "Arial Narrow", "Microsoft JhengHei", "PingFang TC", sans-serif;
+  --perforation: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='6'%3E%3Crect x='5' width='10' height='6' rx='1.5' fill='%230c0b0a'/%3E%3C/svg%3E");
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Text a step softer than white: near-white on near-black glares over a long read. */
-    --bg: #1b1d21;
-    --surface: #23262b;
-    --text: #c4c8ce;
-    --muted: #8b929c;
-    --line: #30343a;
-    --accent: #8ab4e8;
-    --accent-soft: #232f3d;
+    /* The window dims, the bench stays; text a step softer than white, since near-white on near-black glares over a long read. */
+    --paper: #1c1916;
+    --paper-2: #25211d;
+    --ink: #d6cfc2;
+    --muted: #9a9184;
+    --line: #38322b;
+    --tint: #2f2117;
+    --tape-deep: #f08a45;
   }
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
-/* No system-ui: on Windows in Chinese it draws Chinese text in PMingLiU, a thin serif that tires the eyes. */
+html { background: var(--bench); scrollbar-color: var(--bench-line) var(--bench); }
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font: 18px/1.9 "Segoe UI", "Noto Sans TC", "Noto Sans CJK TC", "Microsoft JhengHei", "PingFang TC", -apple-system, sans-serif;
+  background: var(--bench);
+  color: var(--bench-ink);
+  font: 1.0625rem/1.75 var(--sans);
   letter-spacing: 0.02em;
 }
+::selection { background: var(--tape); color: var(--tape-ink); }
+:focus-visible { outline: 2px solid var(--tape); outline-offset: 2px; }
 
-main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+h1, h2, h3 { line-height: 1.3; text-wrap: balance; }
 p { margin: 0 0 1.1em; }
 
 code {
   font-family: Consolas, "Cascadia Mono", Menlo, monospace;
-  font-size: 0.9em;
+  font-size: 0.88em;
   letter-spacing: 0;
   padding: 0.1em 0.35em;
-  border-radius: 0.3em;
-  background: var(--accent-soft);
+  background: var(--paper-2);
 }
 
-/* Handout: contents | text | Sources on a wide screen; one column, Sources last, on a narrow one. */
-.toc { display: none; }
-@media (min-width: 1100px) {
-  main.handout {
-    max-width: none;
-    margin: 0;
-    padding: 2rem 2rem 4rem;
-    display: grid;
-    grid-template-columns: 14rem minmax(0, 46rem) minmax(16rem, 1fr);
-    gap: 3rem;
-    align-items: start;
-  }
-  .handout .toc, .handout > .sources { position: sticky; top: 1.5rem; max-height: calc(100vh - 3rem); overflow: auto; }
-  .handout .toc { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.9rem; border-left: 2px solid var(--line); padding-left: 1rem; }
-  .handout > .sources { font-size: 0.85rem; line-height: 1.6; color: var(--muted); }
-  .handout > .sources h2 { margin-top: 0; font-size: 1rem; }
-  .handout > .sources li:target { color: var(--text); }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
 }
-.toc-title { color: var(--muted); font-size: 0.8rem; margin: 0 0 0.4rem; }
-.toc a { color: var(--muted); text-decoration: none; padding: 0.25rem 0; }
-.toc a:hover { color: var(--accent); }
-.handout-text section { margin-bottom: 2.5rem; }
 
-a { color: var(--accent); }
-a:hover { text-decoration-thickness: 2px; }
+/* ---- the window: the only place running text sits ---- */
+.window { background: var(--paper); color: var(--ink); }
+.window a { color: var(--ink); }
+.window a:hover { color: var(--tape-deep); }
 
-h1, h2, h3 { line-height: 1.3; }
-h1 { font-size: 2rem; margin: 0.25rem 0 1rem; }
-h2 { font-size: 1.35rem; margin: 2.25rem 0 0.75rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--line); }
-h3 { font-size: 1.1rem; margin: 0 0 0.5rem; }
+/* ---- the rail: every Lesson (or, on Slides, every slide) as a numbered frame between two rows of perforations ---- */
+.rail {
+  background: var(--perforation) repeat-x left 6px top 6px, var(--perforation) repeat-x left 6px bottom 6px, var(--tape);
+  padding: 20px var(--gutter);
+}
+.rail ol {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(2.5rem, 1fr));
+  gap: 4px;
+}
+.rail a {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  height: 3rem;
+  padding: 0.2rem 0.4rem;
+  border: 1.5px solid rgb(18 10 4 / 0.45);
+  color: var(--tape-ink);
+  font: 600 1.15rem/1 var(--rail);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rail a:hover { background: rgb(18 10 4 / 0.14); }
+.rail a:focus-visible { outline: 3px solid var(--bench); outline-offset: 1px; }
+.rail a.seen { background: var(--bench); border-color: var(--bench); color: var(--tape); }
+.rail a[aria-current], .rail a.last { background: #f5f1ea; border-color: #f5f1ea; color: #1a1714; }
+/* The tape flag: the marked frame's corner folded back. */
+.rail a[aria-current]::after, .rail a.last::after {
+  content: "";
+  position: absolute;
+  top: -1.5px;
+  right: -1.5px;
+  width: 0.9rem;
+  height: 0.9rem;
+  background: linear-gradient(225deg, var(--tape) 50%, var(--tape-fold) 50%);
+}
 
-.crumb { font-size: 0.9rem; color: var(--muted); }
-.eyebrow { font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0; }
+/* A rail on a Handout or Slides is one strip that scrolls sideways rather than wrapping. */
+.bench-bar .rail ol, .slide-rail ol {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--tape-fold) transparent;
+}
+.bench-bar .rail li { flex: 0 0 2.5rem; }
+.bench-bar .rail a { height: 2.25rem; font-size: 1rem; }
+/* Slides are few, so their frames stretch to be read from the back of a classroom. */
+.slide-rail li { flex: 1 1 0; min-width: 2.5rem; max-width: 6rem; }
+.slide-rail a { height: 3rem; font-size: 1.25rem; }
 
-.facts { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; margin: 0 0 1rem; }
-.facts dt { color: var(--muted); }
+/* On the Syllabus the rail is the way in: every Lesson stays in view at any width, wrapping rather than scrolling. */
+.syllabus-page .rail { padding-inline: var(--inset); }
+.syllabus-page .rail ol { grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr)); }
+.syllabus-page .rail a { height: clamp(2.75rem, 1.5rem + 3vw, 4.5rem); font-size: clamp(1.15rem, 0.8rem + 1vw, 1.6rem); padding: 0.3rem 0.45rem; }
+/* The last opened frame carries the tape flag, a ribbon hanging from its top edge. */
+.syllabus-page .rail a.last::after {
+  z-index: 1;
+  top: -0.45rem;
+  right: 0.25rem;
+  width: 0.8rem;
+  height: 1.5rem;
+  background: var(--tape-fold);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%);
+}
+@media (min-width: 1200px) { .syllabus-page .rail ol { grid-template-columns: repeat(auto-fill, minmax(2.5rem, 1fr)); } }
+
+/* ---- bench bar: where you are, above a Handout or Slides ---- */
+.bench-bar { padding: 0.9rem var(--gutter) 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.9rem; }
+.bench-bar .rail { margin: 0 calc(-1 * var(--gutter)); }
+.crumb { display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; font-size: 0.9rem; }
+.crumb a { color: var(--bench-muted); text-decoration: none; }
+.crumb a:first-child { color: var(--bench-ink); font-weight: 600; }
+.crumb a:hover { color: var(--tape); }
+
+/* ---- Syllabus ---- */
+.masthead {
+  padding: clamp(2rem, 6vw, 4rem) var(--inset) clamp(1.75rem, 3vw, 2.5rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1.5rem 3rem;
+  align-items: end;
+}
+/* Rail covers Latin and numerals only, so a title's numbers set condensed while its CJK falls through to the system face. */
+.masthead h1, .lesson-head h1 { font-family: "Rail", var(--sans); }
+.masthead h1 {
+  margin: 0;
+  max-width: 16em;
+  font-size: clamp(2.25rem, 1.1rem + 3.6vw, 4.25rem);
+  line-height: 1.12;
+  letter-spacing: 0.01em;
+}
+.facts { display: grid; grid-template-columns: max-content minmax(0, 22rem); gap: 0.3rem 1.25rem; margin: 0; font-size: 0.95rem; }
+.facts div { display: contents; }
+.facts dt { color: var(--bench-muted); }
 .facts dd { margin: 0; }
+.facts .figure { font-family: var(--rail); font-size: 1.05rem; letter-spacing: 0.03em; }
+@media (max-width: 760px) { .masthead { grid-template-columns: 1fr; } }
 
-.objectives { background: var(--accent-soft); border-radius: 0.5rem; padding: 0.75rem 1rem; margin: 1rem 0; }
+.resume-line { margin: 0; padding: 1rem var(--inset) 0; }
+.resume {
+  display: inline-block;
+  background: var(--tape);
+  color: var(--tape-ink);
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  text-decoration: none;
+}
+.resume:hover { background: #f07a2c; }
+
+.syllabus-page .window {
+  margin: 1.5rem var(--inset) 4rem;
+  padding: clamp(0.75rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2.5rem) clamp(1rem, 2.5vw, 2rem);
+}
+/* Down the first column, then the second, like a printed contents page. The clip drops the rule above each column's first frame. */
+.frames { list-style: none; margin: 0; padding: 0; columns: 2 26rem; column-gap: 3rem; clip-path: inset(2px -1rem -1rem -1rem); }
+.frame {
+  break-inside: avoid;
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  gap: 0 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--line);
+}
+.frame-no {
+  font: 600 2.25rem/1 var(--rail);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--tape-deep);
+}
+.frame.last .frame-no { color: var(--tape-ink); background: var(--tape); padding: 0.15rem 0.3rem 0; align-self: start; }
+.frame h3 { margin: 0; font-size: 1.25rem; line-height: 1.4; }
+.frame h3 a { text-decoration: none; }
+.frame h3 a:hover { text-decoration: underline; }
+.topics { list-style: none; margin: 0.3rem 0 0; padding: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.65; }
+.topics li { display: inline; }
+.topics li + li::before { content: "·"; margin: 0 0.45em; }
+.has-video {
+  font: 600 0.72rem/1 var(--rail), var(--sans);
+  letter-spacing: 0.04em;
+  color: var(--tape-ink);
+  background: var(--tape);
+  padding: 0.15em 0.4em;
+  vertical-align: 0.1em;
+  white-space: nowrap;
+}
+.frame-actions { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 1.1rem; margin-top: 0.4rem; font-size: 0.875rem; }
+.frame-links { display: flex; flex-wrap: wrap; gap: 0.25rem 1.1rem; margin: 0; }
+.window .frame-links a { color: var(--tape-deep); font-weight: 600; text-decoration: none; }
+.window .frame-links a:hover { text-decoration: underline; }
+.frame-links span { color: var(--muted); }
+.frame-objectives { color: var(--muted); }
+.frame-objectives[open] { flex-basis: 100%; }
+.frame-objectives summary { cursor: pointer; width: fit-content; list-style: none; display: flex; align-items: center; gap: 0.4rem; }
+.frame-objectives summary::-webkit-details-marker { display: none; }
+/* A drawn chevron in place of the browser's triangle; it turns down when the objectives open. */
+.frame-objectives summary::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 2px solid var(--tape-deep);
+  border-bottom: 2px solid var(--tape-deep);
+  transform: rotate(-45deg);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.frame-objectives[open] summary::before { transform: rotate(45deg); }
+.frame-objectives summary:hover { color: var(--ink); }
+.frame-objectives ul { margin: 0.35rem 0 0; padding-left: 1.2rem; color: var(--ink); font-size: 0.9rem; }
+@media (max-width: 640px) {
+  .topics { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .topics li { display: inline; }
+}
+
+/* ---- Handout: contents | text | Sources on a wide screen; contents as a strip and Sources last on a narrow one ---- */
+.handout { padding: 1.5rem var(--gutter) 4rem; }
+.handout-text { max-width: 48rem; margin: 0 auto; padding: clamp(1.25rem, 4vw, 3.25rem); font-size: 1.125rem; line-height: 1.9; }
+.handout-text section { scroll-margin-top: 1rem; }
+
+.toc { display: flex; gap: 0.25rem 1.25rem; overflow-x: auto; white-space: nowrap; padding: 0 0 1rem; font-size: 0.9rem; scrollbar-width: thin; }
+.toc-title { display: none; }
+.toc a { color: var(--bench-muted); text-decoration: none; padding: 0.2rem 0; }
+.toc a:hover { color: var(--bench-ink); }
+
+@media (min-width: 1100px) {
+  .handout {
+    display: grid;
+    grid-template-columns: 12rem minmax(0, 48rem) minmax(15rem, 21rem);
+    gap: 2.5rem;
+    justify-content: center;
+    align-items: start;
+    padding-top: 2rem;
+  }
+  .handout-text { margin: 0; }
+  .toc, .handout > .sources { position: sticky; top: 1.5rem; max-height: calc(100vh - 3rem); overflow: auto; }
+  .toc { flex-direction: column; white-space: normal; gap: 0.1rem; padding: 0; }
+  .toc-title { display: block; margin: 0 0 0.5rem; color: var(--tape); font: 600 0.8rem/1.4 var(--rail), var(--sans); letter-spacing: 0.08em; }
+  .toc a { padding: 0.3rem 0; line-height: 1.5; }
+}
+
+.lesson-head { display: flex; align-items: flex-start; gap: 0.5rem 1.1rem; margin-bottom: 1.75rem; }
+.lesson-head .frame-no { font-size: clamp(3.25rem, 2.2rem + 3vw, 5rem); line-height: 0.8; }
+.lesson-head h1 { margin: 0; padding-top: 0.15rem; font-size: clamp(1.75rem, 1.25rem + 1.6vw, 2.5rem); line-height: 1.25; }
+
+.objectives { background: var(--tint); padding: 1rem 1.25rem; margin: 0 0 1rem; font-size: 1rem; line-height: 1.75; }
 .objectives ul { margin: 0; padding-left: 1.25rem; }
 .objectives-title { font-weight: 600; margin: 0 0 0.25rem; }
 
-.lessons { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
-.lessons > li { background: var(--surface); border: 1px solid var(--line); border-radius: 0.75rem; padding: 1rem 1.25rem; }
-.lessons .topics { color: var(--muted); margin: 0.25rem 0 0; padding-left: 1.25rem; }
+/* Each section opens with a strip of tape. */
+.handout-text h2 { font-size: 1.4rem; margin: 3.25rem 0 0.9rem; }
+.handout-text h2::before { content: ""; display: block; width: 2rem; height: 4px; margin-bottom: 0.8rem; background: var(--tape); }
 
-/* Markers in a muted color, so a citation after every sentence does not pull the eye off the text. */
+/* Markers set small and muted, so a citation after every sentence does not pull the eye off the text. */
 .cite { font-size: 0.62em; line-height: 0; }
-.cite a { color: var(--muted); text-decoration: none; padding: 0 0.1em; }
+.window .cite a { color: var(--muted); font-family: var(--rail); letter-spacing: 0.02em; text-decoration: none; padding: 0 0.1em; }
+.window .cite a:hover { color: var(--tape-deep); }
 
-.sources ol { padding-left: 1.75rem; }
-.sources li { margin-bottom: 0.5rem; overflow-wrap: anywhere; }
-.sources li:target { background: var(--accent-soft); border-radius: 0.25rem; }
+.video { margin: 1.25rem 0; }
+.video iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--line); background: var(--paper-2); }
+
+.exercises ol { list-style: none; counter-reset: exercise; margin: 0; padding: 0; }
+.exercises li { counter-increment: exercise; display: grid; grid-template-columns: 2.25rem minmax(0, 1fr); padding: 1.1rem 0; border-top: 1px solid var(--line); }
+.exercises li::before { content: counter(exercise); font: 600 1.35rem/1.4 var(--rail); color: var(--tape-deep); }
+.exercises li > * { grid-column: 2; }
+.exercises li > p { margin: 0 0 0.6rem; }
+.exercises summary {
+  display: inline-block;
+  cursor: pointer;
+  list-style: none;
+  padding: 0.1rem 0.8rem;
+  border: 1.5px solid var(--tape-deep);
+  color: var(--tape-deep);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.exercises summary::-webkit-details-marker { display: none; }
+.exercises summary:hover { background: var(--tint); }
+.exercises details[open] summary { background: var(--tape); border-color: var(--tape); color: var(--tape-ink); }
+.exercises details p { margin: 0.75rem 0 0; padding: 0.75rem 1rem; background: var(--paper-2); }
+
+.lesson-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); line-height: 1.5; }
+.window .lesson-nav a { text-decoration: none; font-weight: 600; }
+.lesson-nav a:last-child { text-align: right; }
+.lesson-nav span { display: block; margin-bottom: 0.2rem; color: var(--tape-deep); font: 600 0.85rem/1.4 var(--rail), var(--sans); letter-spacing: 0.06em; }
+
+.sources h2 { margin: 0 0 0.75rem; font-size: 1rem; }
+.sources ol { margin: 0; padding-left: 1.6rem; }
+.sources li { margin-bottom: 0.6rem; overflow-wrap: anywhere; }
+.sources li::marker { font-family: var(--rail); color: var(--tape-deep); }
+/* Following a citation lands on its Source lit in tape orange, which settles to the quiet tint. */
+.sources li:target { background: var(--tint); box-shadow: 0 0 0 0.35rem var(--tint); animation: cited 1.4s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes cited {
+  from { background: var(--tape); box-shadow: 0 0 0 0.35rem var(--tape); color: var(--tape-ink); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sources li:target { animation: none; }
+  .rail a, .frame-objectives summary::before { transition: none; }
+}
 .sources .read { color: var(--muted); }
+.handout > .sources { margin: 1.5rem auto 0; max-width: 48rem; padding: 1.5rem; background: var(--paper-2); font-size: 0.875rem; line-height: 1.65; color: var(--muted); }
+.handout > .sources a { color: var(--muted); }
+@media (min-width: 1100px) { .handout > .sources { margin: 0; } }
 
-.exercises ol { padding-left: 1.75rem; }
-.exercises li { margin-bottom: 1rem; }
-.exercises li > p { margin: 0 0 0.25rem; }
-.exercises details { background: var(--surface); border: 1px solid var(--line); border-radius: 0.5rem; padding: 0.25rem 0.75rem; }
-.exercises summary { cursor: pointer; color: var(--accent); }
-.exercises details p { margin: 0.5rem 0; }
+@media (max-width: 640px) {
+  .handout { padding: 0.75rem 0 3rem; }
+  .toc { padding: 0 var(--gutter) 0.75rem; }
+  .handout-text { font-size: 1.0625rem; line-height: 1.85; }
+  .handout > .sources { margin-top: 0.75rem; }
+  .lesson-nav { grid-template-columns: 1fr; }
+  .lesson-nav a:last-child { text-align: left; }
+}
 
-.video { margin: 1rem 0; }
-.video iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--line); border-radius: 0.5rem; background: var(--surface); }
-.has-video { font-size: 0.75em; color: var(--accent); background: var(--accent-soft); border-radius: 0.25rem; padding: 0 0.4em; }
-
-/* Slides: without script every slide shows in turn; slides.js adds .presenting and shows one at a time. */
-.pager { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 1rem; font-size: 0.9rem; color: var(--muted); }
+/* ---- Slides: without script every slide shows in turn; slides.js adds .presenting and shows one at a time ---- */
+.pager { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 1rem; padding-bottom: 0.9rem; }
 .pager-controls { display: none; align-items: center; gap: 0.5rem; }
-.pager button { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 0.375rem; padding: 0.1rem 0.75rem; cursor: pointer; }
-.slide { padding: 2rem 0; border-bottom: 1px solid var(--line); }
-.slide h2 { margin-top: 0; border-bottom: 0; }
-.points { padding-left: 1.25rem; }
-.points li { margin-bottom: 0.5rem; }
+.pager button {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  color: var(--bench-ink);
+  background: transparent;
+  border: 1.5px solid var(--bench-line);
+  cursor: pointer;
+}
+.pager button:hover { border-color: var(--tape); color: var(--tape); }
+.pager svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 2; }
+@media (max-width: 640px) { .pager button { width: 2.75rem; height: 2.75rem; } }
+.pager-count { min-width: 4.5ch; text-align: center; font: 600 1.05rem/1 var(--rail); font-variant-numeric: tabular-nums; }
 
-.presenting main { max-width: 64rem; min-height: 100vh; display: flex; flex-direction: column; padding-top: 1rem; padding-bottom: 1rem; }
-.presenting .pager { order: 1; }
+.deck { display: grid; gap: 1.25rem; max-width: 72rem; margin: 0 auto; padding: 0 var(--gutter) 2.5rem; }
+.slide { background: var(--paper); color: var(--ink); padding: clamp(1.5rem, 4vw, 3.5rem); scroll-margin-top: 1rem; }
+.slide a { color: var(--ink); }
+.slide h2 { font-size: 1.6em; margin: 0 0 0.8em; }
+.points { margin: 0; padding-left: 1.2em; }
+.points li { margin-bottom: 0.55em; }
+.points li::marker { color: var(--tape-deep); }
+.slide .cite a { color: var(--muted); font-family: var(--rail); text-decoration: none; }
+.slide.sources { font-size: 0.9em; }
+
+.presenting .slides-page { height: 100vh; height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
 .presenting .pager-controls { display: flex; }
-.presenting .slide { flex: 1; display: flex; flex-direction: column; justify-content: center; border-bottom: 0; font-size: clamp(1.1rem, 2.2vw, 1.75rem); }
-.presenting .slide[hidden] { display: none; }
-.presenting .slide h1 { font-size: 2em; }
-.presenting .slide h2 { font-size: 1.5em; }
+.presenting .deck { display: flex; min-height: 0; max-width: none; width: 100%; padding: 0 var(--gutter) 1rem; }
+.presenting .slide {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: auto;
+  padding: clamp(1.5rem, 5vw, 5rem);
+  font-size: clamp(1.25rem, 0.8rem + 1.7vw, 2.5rem);
+  line-height: 1.6;
+}
+.presenting .slide > * { max-width: 42em; }
+.presenting .slide-cover .lesson-head .frame-no { font-size: 2.6em; }
+.presenting .slide-cover h1 { font-size: 1.9em; }
+.presenting .slide-cover .objectives { font-size: 0.8em; }
