@@ -439,6 +439,55 @@ test('a successful build prints where the Course project is and how many Evidenc
   assert.match(r.stdout, /2 Evidence gaps?/);
 });
 
+// A stand-in for the player page `am video -o` writes, so tests never call am.
+function fakeVideo(dir, name = 'video.html') {
+  const path = join(dir, 'videos-temp', name);
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, `<!doctype html><title>fake player ${name}</title><p>VIDEO-MARKER-${name}</p>`);
+  return path;
+}
+
+// The Syllabus topic line that shows this section heading, tags stripped.
+function topicLine(html, heading) {
+  const m = [...html.matchAll(/<li>([\s\S]*?)<\/li>/g)].map((x) => x[1]).find((li) => li.includes(heading) && !li.includes('<li>'));
+  assert.ok(m, `no topic line for ${heading}`);
+  return m.replace(/<[^>]+>/g, ' ');
+}
+
+test('a section with an Explainer video gets the video copied into the Course project, embedded in its Handout section, and marked on the Syllabus', () => {
+  const dir = workdir();
+  const video = fakeVideo(dir);
+  const data = courseData();
+  data.lessons[0].sections.push({ ...section('How big a tide gets', [claim('Claim about range.', ['noaa'])]), video });
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  const copied = join(r.out, 'lessons', 'l1', 'videos', 'section-2.html');
+  assert.equal(read(copied), read(video), 'the video in the Course project differs from the one made');
+  const handout = read(join(r.out, 'lessons', 'l1', 'handout.html'));
+  assert.match(elementHtml(handout, 'section-2'), /<iframe[^>]*\ssrc="videos\/section-2\.html"/);
+  assert.doesNotMatch(elementHtml(handout, 'section-1'), /<iframe/);
+  assert.doesNotMatch(read(join(r.out, 'lessons', 'l2', 'handout.html')), /<iframe/);
+  const syllabus = read(join(r.out, 'index.html'));
+  assert.match(topicLine(syllabus, 'How big a tide gets'), /Video/);
+  assert.doesNotMatch(topicLine(syllabus, 'What a tide is'), /Video/);
+  assert.doesNotMatch(topicLine(syllabus, 'Why the Moon matters'), /Video/);
+});
+
+test('a section marked for a video whose file does not exist, or is not a player page, is refused naming its Lesson and section', () => {
+  const dir = workdir();
+  const data = courseData();
+  data.lessons[0].sections[0].video = join(dir, 'videos-temp', 'never-made.html');
+  data.lessons[1].sections[0].video = fakeVideo(workdir(), 'clip.mp4');
+  assertRefused(run(dir, data), dir, [/\bl1\b/, /section 1\b/, /video/, /never-made\.html/], [/\bl2\b/, /section 1\b/, /video/, /clip\.mp4/]);
+});
+
+// The markup inside the element with this id.
+function elementHtml(html, id) {
+  const m = html.match(new RegExp(`<(\\w+)[^>]*\\sid="${id}"[^>]*>([\\s\\S]*?)</\\1>`));
+  assert.ok(m, `no element with id ${id}`);
+  return m[2];
+}
+
 test('the output folder may sit in a folder that does not exist yet, as courses/<topic>/ often does', () => {
   const dir = workdir();
   const r = run(dir, courseData(), join('courses', 'tides'));

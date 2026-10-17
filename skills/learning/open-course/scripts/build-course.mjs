@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // usage: node build-course.mjs <course.json> <out-dir>
 // Builds a Course project from the course data file open-course writes. Node 20+, built-ins only.
-import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, renameSync, rmSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, renameSync, rmSync, existsSync, statSync } from 'node:fs';
 import { join, resolve, dirname, basename } from 'node:path';
 
 class BuildError extends Error {}
@@ -152,6 +152,15 @@ const CHECKS = [
         : list(exercise.sources).filter((id) => !listed.has(id)).map((id) => ({ where, problem: `answer cites Source "${id}", which is not in the Source list` })),
     );
   },
+  // The Handout frames the video, so it must be the player page `am video` writes, not a bare video file.
+  function everyVideoIsAPlayerPageThatExists(data) {
+    return [...sections(data)].flatMap(({ section, where }) => {
+      if (section.video === undefined) return [];
+      if (blank(section.video) || !section.video.toLowerCase().endsWith('.html')) return [{ where, problem: `video "${section.video}" is not the path of the .html player page am video wrote` }];
+      if (!statSync(section.video, { throwIfNoEntry: false })?.isFile()) return [{ where, problem: `video file ${section.video} does not exist` }];
+      return [];
+    });
+  },
 ];
 
 function isDocumentUrl(url) {
@@ -192,8 +201,8 @@ const SLIDES_SCRIPT = new Markup(readFileSync(new URL('../assets/slides.js', imp
 
 // Page labels in the Course's language, and what goes between two sentences; a language without its own labels gets English.
 const LABELS = {
-  en: { audience: 'Audience', level: 'Level', length: 'Total length', lessons: 'Lessons', lesson: (n) => `Lesson ${n}`, objectives: 'You will be able to', sources: 'Sources', read: (date) => `read ${date}`, between: ' ', exercises: 'Exercises', answer: 'Show answer', slides: 'Slides', handout: 'Handout', previous: 'Previous slide', next: 'Next slide' },
-  zh: { audience: '學員', level: '程度', length: '總時數', lessons: '課程內容', lesson: (n) => `第 ${n} 課`, objectives: '學完這一課，你能夠', sources: '資料來源', read: (date) => `${date} 閱讀`, between: '', exercises: '練習題', answer: '看答案', slides: '投影片', handout: '講義', previous: '上一張', next: '下一張' },
+  en: { audience: 'Audience', level: 'Level', length: 'Total length', lessons: 'Lessons', lesson: (n) => `Lesson ${n}`, objectives: 'You will be able to', sources: 'Sources', read: (date) => `read ${date}`, between: ' ', exercises: 'Exercises', answer: 'Show answer', video: 'Video', slides: 'Slides', handout: 'Handout', previous: 'Previous slide', next: 'Next slide' },
+  zh: { audience: '學員', level: '程度', length: '總時數', lessons: '課程內容', lesson: (n) => `第 ${n} 課`, objectives: '學完這一課，你能夠', sources: '資料來源', read: (date) => `${date} 閱讀`, between: '', exercises: '練習題', answer: '看答案', video: '影片', slides: '投影片', handout: '講義', previous: '上一張', next: '下一張' },
 };
 const labelsFor = (language = 'en') => LABELS[language.toLowerCase().split('-')[0]] ?? LABELS.en;
 
@@ -228,7 +237,7 @@ function syllabusPage(data) {
 <h3><a href="lessons/${l.id}/handout.html">${l.title}</a></h3>
 <p class="lesson-links"><a href="lessons/${l.id}/slides.html">${t.slides}</a></p>
 ${objectivesBlock(l, t)}
-<ul class="topics">${l.sections.map((s) => html`<li>${s.heading}</li>`)}</ul>
+<ul class="topics">${l.sections.map((s) => html`<li>${s.heading}${s.video && html` <span class="has-video">${t.video}</span>`}</li>`)}</ul>
 </li>`,
   );
   return page({
@@ -248,6 +257,9 @@ function citationNumbers(lesson) {
   return numbers;
 }
 
+// Where a section's Explainer video sits, relative to its Lesson folder; named like the section's anchor.
+const videoPath = (sectionIndex) => `videos/section-${sectionIndex + 1}.html`;
+
 // A Lesson's Exercises, each answer in a closed <details> so learners try the question first, with no script.
 const exercisesBlock = (lesson, t, markers) =>
   html`<section class="exercises"><h2>${t.exercises}</h2><ol>${lesson.exercises.map(
@@ -262,6 +274,7 @@ function handoutPage(data, lesson, index) {
     (s, i) => html`<section id="section-${i + 1}">
 <h2>${s.heading}</h2>
 <p>${s.claims.map((c, j) => html`${j > 0 ? t.between : ''}${c.text}${markers(c.sources)}`)}</p>
+${s.video && html`<figure class="video"><iframe src="${videoPath(i)}" title="${t.video}: ${s.heading}" allowfullscreen></iframe></figure>`}
 </section>`,
   );
   const sources = [...numbers].map(([id, n]) => {
@@ -320,6 +333,9 @@ function main([dataPath, outDir]) {
   const pages = { 'index.html': syllabusPage(data) };
   data.lessons.forEach((lesson, i) => { pages[`lessons/${lesson.id}/handout.html`] = handoutPage(data, lesson, i); });
   data.lessons.forEach((lesson, i) => { pages[`lessons/${lesson.id}/slides.html`] = slidesPage(data, lesson, i); });
+  for (const lesson of data.lessons) {
+    lesson.sections.forEach((s, i) => { if (s.video) pages[`lessons/${lesson.id}/${videoPath(i)}`] = readFileSync(s.video); });
+  }
   writeProject(outDir, pages);
   console.log(`Course project: ${outDir}`);
   for (const path of Object.keys(pages)) console.log(`  ${path}`);
