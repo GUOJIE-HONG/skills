@@ -200,11 +200,8 @@ const asset = (name, encoding) => readFileSync(new URL(`../assets/${name}`, impo
 // The rail font is embedded in every page so its numerals render offline; it covers Latin only, and CJK falls through to the system face.
 const RAIL_FONT = `@font-face{font-family:"Rail";src:url(data:font/woff2;base64,${asset('rail.woff2').toString('base64')}) format("woff2");font-weight:600;font-display:swap}`;
 const CSS = new Markup(`${RAIL_FONT}\n${asset('course.css', 'utf8')}`);
-// Each page's script: rail.js first, since the others call the centerFrame it defines.
-const pageScript = (...names) => new Markup(['rail.js', ...names].map((name) => asset(name, 'utf8')).join('\n'));
-const SYLLABUS_SCRIPT = pageScript('progress.js');
-const HANDOUT_SCRIPT = pageScript();
-const SLIDES_SCRIPT = pageScript('slides.js');
+const PROGRESS_SCRIPT = new Markup(asset('progress.js', 'utf8'));
+const SLIDES_SCRIPT = new Markup(asset('slides.js', 'utf8'));
 const ARROW = { prev: new Markup('<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>'), next: new Markup('<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg>') };
 
 // Page labels in the Course's language, and what goes between two sentences; a language without its own labels gets English.
@@ -217,8 +214,8 @@ const labelsFor = (language) => LABELS[language.toLowerCase().split('-')[0]] ?? 
 // A frame number padded to the width of the largest one, so the rail and lists line up: 01 to 30, but 1 to 9.
 const frameNumber = (n, total) => String(n).padStart(String(total).length, '0');
 
-// `course`, on the Syllabus only, names this Course's entry in the browser's progress memory (progress.js).
-function page({ language, title, kind, course, body, script }) {
+// `course` names this Course's entry in the browser's progress memory (progress.js); `lesson` marks a Handout, which records a visit.
+function page({ language, title, kind, course, lesson, body, script }) {
   return html`<!doctype html>
 <html lang="${language}">
 <head>
@@ -227,7 +224,7 @@ function page({ language, title, kind, course, body, script }) {
 <title>${title}</title>
 <style>${CSS}</style>
 </head>
-<body class="${kind}"${course && html` data-course="${course}"`}>
+<body class="${kind}" data-course="${course}"${lesson && html` data-lesson="${lesson}"`}>
 ${body}
 ${script && html`<script>${script}</script>`}
 </body>
@@ -284,7 +281,7 @@ ${lessonRail(data, labels, { href: (l) => `lessons/${l.id}/handout.html` })}
 <h2 class="visually-hidden">${labels.lessons}</h2>
 <ol class="frames">${frames}</ol>
 </main>`,
-    script: SYLLABUS_SCRIPT,
+    script: PROGRESS_SCRIPT,
   });
 }
 
@@ -330,14 +327,10 @@ function paragraphs(claims, labels, markers) {
 const lessonHead = (data, index, lesson) =>
   html`<span class="frame-no" aria-hidden="true">${frameNumber(index + 1, data.lessons.length)}</span><h1>${lesson.title}</h1>`;
 
-// A link back to the Syllabus from a Lesson's page. It names the Lesson, because the Syllabus keeps the progress record
-// itself: pages opened from disk may not share browser storage with one another (see progress.js).
-const syllabusHref = (lesson) => `../../index.html#from=${lesson.id}`;
-
 // The way on from a Handout: the Lessons before and after it, or the Syllabus at either end of the Course.
 function lessonNav(data, index, labels) {
   const step = (l, label, rel) =>
-    l ? html`<a rel="${rel}" href="../${l.id}/handout.html"><span>${label}</span>${l.title}</a>` : html`<a href="${syllabusHref(data.lessons[index])}"><span>${labels.syllabus}</span>${data.course.title}</a>`;
+    l ? html`<a rel="${rel}" href="../${l.id}/handout.html"><span>${label}</span>${l.title}</a>` : html`<a href="../../index.html"><span>${labels.syllabus}</span>${data.course.title}</a>`;
   return html`<nav class="lesson-nav" aria-label="${labels.lessons}">${step(data.lessons[index - 1], labels.previousLesson, 'prev')}${step(data.lessons[index + 1], labels.nextLesson, 'next')}</nav>`;
 }
 
@@ -358,8 +351,10 @@ ${s.video && html`<figure class="video" style="--player-chrome: ${playerChrome(s
     language: data.course.language,
     title: `${lesson.title} · ${data.course.title}`,
     kind: 'handout-page',
+    course: data.course.title,
+    lesson: lesson.id,
     body: html`<header class="bench-bar">
-<nav class="crumb"><a href="${syllabusHref(lesson)}">${data.course.title}</a><a href="slides.html">${labels.slides}</a></nav>
+<nav class="crumb"><a href="../../index.html">${data.course.title}</a><a href="slides.html">${labels.slides}</a></nav>
 ${lessonRail(data, labels, { href: (l) => `../${l.id}/handout.html`, current: index })}
 </header>
 <div class="handout">
@@ -373,7 +368,7 @@ ${lessonNav(data, index, labels)}
 </main>
 <aside class="window sources" id="sources"><h2>${labels.sources}</h2><ol>${sourceList}</ol></aside>
 </div>`,
-    script: HANDOUT_SCRIPT,
+    script: PROGRESS_SCRIPT,
   });
 }
 
@@ -396,8 +391,9 @@ function slidesPage(data, lesson, index) {
     language: data.course.language,
     title: `${labels.slides} · ${lesson.title} · ${data.course.title}`,
     kind: 'slides-page',
+    course: data.course.title,
     body: html`<header class="bench-bar pager">
-<nav class="crumb"><a href="${syllabusHref(lesson)}">${data.course.title}</a><a href="handout.html">${labels.handout}</a></nav>
+<nav class="crumb"><a href="../../index.html">${data.course.title}</a><a href="handout.html">${labels.handout}</a></nav>
 <span class="pager-controls"><button type="button" class="pager-prev" aria-label="${labels.previous}">${ARROW.prev}</button><span class="pager-count"></span><button type="button" class="pager-next" aria-label="${labels.next}">${ARROW.next}</button></span>
 </header>
 <main class="deck">
