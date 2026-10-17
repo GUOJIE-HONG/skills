@@ -12,26 +12,62 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #15171a;
-    --surface: #1d2024;
-    --text: #e6e7e9;
-    --muted: #9aa2ad;
+    /* Text a step softer than white: near-white on near-black glares over a long read. */
+    --bg: #1b1d21;
+    --surface: #23262b;
+    --text: #c4c8ce;
+    --muted: #8b929c;
     --line: #30343a;
-    --accent: #7fb2f0;
-    --accent-soft: #1f2d3d;
+    --accent: #8ab4e8;
+    --accent-soft: #232f3d;
   }
 }
 
 * { box-sizing: border-box; }
 
+/* No system-ui: on Windows in Chinese it draws Chinese text in PMingLiU, a thin serif that tires the eyes. */
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 17px/1.7 system-ui, -apple-system, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font: 18px/1.9 "Segoe UI", "Noto Sans TC", "Noto Sans CJK TC", "Microsoft JhengHei", "PingFang TC", -apple-system, sans-serif;
+  letter-spacing: 0.02em;
 }
 
 main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+p { margin: 0 0 1.1em; }
+
+code {
+  font-family: Consolas, "Cascadia Mono", Menlo, monospace;
+  font-size: 0.9em;
+  letter-spacing: 0;
+  padding: 0.1em 0.35em;
+  border-radius: 0.3em;
+  background: var(--accent-soft);
+}
+
+/* Handout: contents | text | Sources on a wide screen; one column, Sources last, on a narrow one. */
+.toc { display: none; }
+@media (min-width: 1100px) {
+  main.handout {
+    max-width: none;
+    margin: 0;
+    padding: 2rem 2rem 4rem;
+    display: grid;
+    grid-template-columns: 14rem minmax(0, 46rem) minmax(16rem, 1fr);
+    gap: 3rem;
+    align-items: start;
+  }
+  .handout .toc, .handout > .sources { position: sticky; top: 1.5rem; max-height: calc(100vh - 3rem); overflow: auto; }
+  .handout .toc { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.9rem; border-left: 2px solid var(--line); padding-left: 1rem; }
+  .handout > .sources { font-size: 0.85rem; line-height: 1.6; color: var(--muted); }
+  .handout > .sources h2 { margin-top: 0; font-size: 1rem; }
+  .handout > .sources li:target { color: var(--text); }
+}
+.toc-title { color: var(--muted); font-size: 0.8rem; margin: 0 0 0.4rem; }
+.toc a { color: var(--muted); text-decoration: none; padding: 0.25rem 0; }
+.toc a:hover { color: var(--accent); }
+.handout-text section { margin-bottom: 2.5rem; }
 
 a { color: var(--accent); }
 a:hover { text-decoration-thickness: 2px; }
@@ -56,8 +92,9 @@ h3 { font-size: 1.1rem; margin: 0 0 0.5rem; }
 .lessons > li { background: var(--surface); border: 1px solid var(--line); border-radius: 0.75rem; padding: 1rem 1.25rem; }
 .lessons .topics { color: var(--muted); margin: 0.25rem 0 0; padding-left: 1.25rem; }
 
-.cite { font-size: 0.75em; line-height: 0; }
-.cite a { text-decoration: none; padding: 0 0.1em; }
+/* Markers in a muted color, so a citation after every sentence does not pull the eye off the text. */
+.cite { font-size: 0.62em; line-height: 0; }
+.cite a { color: var(--muted); text-decoration: none; padding: 0 0.1em; }
 
 .sources ol { padding-left: 1.75rem; }
 .sources li { margin-bottom: 0.5rem; overflow-wrap: anywhere; }

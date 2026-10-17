@@ -54,7 +54,7 @@ Write the whole Course as one JSON file in the system temp directory, using a fi
 }
 ```
 
-- The claims of a section read as one paragraph, in order.
+- The claims of a section read as prose, in order, two to a paragraph. A command, path, or other literal goes in backticks and shows as code.
 - An Exercise practises one of the Lesson's objectives and is answerable from what the Handout teaches. A question whose answer no Source backs is an Evidence gap, not an Exercise.
 - Slides digest the Lesson's Handout for the teacher to present; what the Handout does not say stays off the Slides.
 - `evidenceGaps` is for your report only; no page shows it.
