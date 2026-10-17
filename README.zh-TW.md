@@ -46,10 +46,6 @@ npx skills@latest add GUOJIE-HONG/skills --skill grill-softly
 
 檔案不會自己更新。想拉新版就跑 `npx skills update`。
 
-## 學習（learning）
-
-- `open-course`：給一個主題，產出一個 Course project：一份 Syllabus，每個 Lesson 一份 Handout，每個事實性的說法都引用開課時實際讀過的 Source。
-
 ## 動手之前
 
 第一行程式還沒落下，\

@@ -46,10 +46,6 @@ npx skills@latest add GUOJIE-HONG/skills --skill grill-softly
 
 Nothing updates behind your back. Pull the latest with `npx skills update`.
 
-## Learning
-
-- `open-course`: give it a topic and get a Course project, a Syllabus and one Handout per Lesson, where every factual claim cites a Source read while building it.
-
 ## Before the Code
 
 Before a single line is written,\
