@@ -129,7 +129,7 @@ components:
 
 # Design System: open-course
 
-Scope: only the pages the `open-course` skill builds (`skills/learning/open-course/`): the Syllabus (`index.html`), and per Lesson a Handout and Slides. Every rule below is evidenced by `assets/course.css`, `assets/progress.js`, `assets/slides.js`, `assets/rail.woff2`, and the page markup in `scripts/build-course.mjs`.
+Scope: only the pages the `open-course` skill builds (`skills/learning/open-course/`): the Syllabus (`index.html`), and per Lesson a Handout and Slides. Every rule below is evidenced by `assets/course.css`, `assets/rail.js`, `assets/progress.js`, `assets/slides.js`, `assets/rail.woff2`, and the page markup in `scripts/build-course.mjs`.
 
 ## Overview
 
@@ -236,7 +236,7 @@ Square film geometry. Windows, rail cells, buttons, the objectives box, answers,
 The signature component, the same perforated strip on all three pages.
 - **Body:** `tape` with two rows of `bench` sprocket holes along top and bottom edges, padding 20px × gutter.
 - **Cell (not opened):** 1.5px outline in tape-ink at 45%, Rail numeral bottom-left in `tape-ink`; hover washes tape-ink at 14%.
-- **Seen:** filled `bench`, numeral in `tape` (set by `progress.js` from `localStorage`; on Slides, every slide before the current one).
+- **Seen:** filled `bench`, numeral in `tape` (on the Syllabus, set by `progress.js` from the Syllabus's own `localStorage`; on Slides, every slide before the current one; a Handout's rail marks only its own Lesson).
 - **Current / last opened:** filled light paper with dark ink in both modes, plus the tape flag (Handout, Slides) or ribbon (Syllabus).
 - **Focus:** 3px `bench` outline at 1px offset. Background transition 0.2s on the system ease.
 - **Without script or storage:** cells render unmarked; the rail still links every Lesson or slide.

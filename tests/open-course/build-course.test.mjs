@@ -593,3 +593,20 @@ test('a video frame leaves room under the picture for the player controls, and f
   assert.match(figure('l1'), /--player-chrome: 56px/);
   assert.match(figure('l2'), /--player-chrome: 96px/);
 });
+
+// Pages opened from disk may not share browser storage, so the Syllabus keeps the progress record itself and each
+// Lesson's pages report the Lesson through their link back to it.
+test('a Handout and its Slides link back to the Syllabus naming their Lesson, and only the Syllabus uses browser storage', () => {
+  const dir = workdir();
+  const r = run(dir, courseData());
+  assert.equal(r.status, 0, r.stderr);
+  for (const id of ['l1', 'l2']) {
+    for (const page of ['handout.html', 'slides.html']) {
+      const html = read(join(r.out, 'lessons', id, page));
+      assert.match(html, new RegExp(`href="\.\./\.\./index\.html#from=${id}"`), `${id}/${page} does not name its Lesson on the way back`);
+      assert.doesNotMatch(html, /href="\.\.\/\.\.\/index\.html"/, `${id}/${page} links back to the Syllabus without naming its Lesson`);
+      assert.doesNotMatch(html, /localStorage/, `${id}/${page} uses browser storage`);
+    }
+  }
+  assert.match(read(join(r.out, 'index.html')), /localStorage/);
+});

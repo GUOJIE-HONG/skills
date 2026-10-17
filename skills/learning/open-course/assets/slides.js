@@ -1,9 +1,8 @@
-// Inlined into each Slides page by build-course.mjs. Shows one slide at a time: the left and right arrow keys
+// Inlined into each Slides page by build-course.mjs, after rail.js. Shows one slide at a time: the left and right arrow keys
 // change slide, and so do Page Up / Page Down, which presentation clickers send. The rail under the slide marks
 // where you are, and its frames jump to a slide. Without it every slide shows in turn and the rail links to each.
 const slides = [...document.querySelectorAll('.slide')];
 const cells = [...document.querySelectorAll('.slide-rail a')];
-const strip = document.querySelector('.slide-rail ol');
 const count = document.querySelector('.pager-count');
 let current = 0;
 
@@ -16,8 +15,7 @@ function show(n) {
     else cell.removeAttribute('aria-current');
   });
   count.textContent = `${current + 1} / ${slides.length}`;
-  const cell = cells[current];
-  if (cell && strip.scrollWidth > strip.clientWidth) strip.scrollLeft = cell.parentElement.offsetLeft - (strip.clientWidth - cell.offsetWidth) / 2;
+  centerFrame(cells[current]);
   try { history.replaceState(null, '', `#${slides[current].id}`); } catch {}
 }
 
