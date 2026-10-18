@@ -1,6 +1,6 @@
 interface:
   display_name: "Open Course"
-  short_description: "Turn a topic into a Course that cites a Source for every claim and lists unbacked points as unverified"
+  short_description: "Turn a topic into a sourced Course, unverified points listed"
   default_prompt: "Use $open-course to open a Course on this topic."
 policy:
   allow_implicit_invocation: false
