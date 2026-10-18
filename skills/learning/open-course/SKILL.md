@@ -57,7 +57,6 @@ Write the whole Course as one JSON file in the system temp directory, using a fi
 - The claims of a section read as prose, in order, two to a paragraph. A command, path, or other literal goes in backticks and shows as code.
 - An Exercise practises one of the Lesson's objectives and is answerable from what the Handout's claims teach. Leave out a question whose answer no Source backs; list the point behind it as an Unverified point only if it is worth teaching.
 - Slides digest the Lesson's Handout claims for the teacher to present; what those claims do not say, Unverified points included, stays off the Slides.
-- Each entry of `unverifiedPoints` is one point, written like a claim but citing nothing.
 
 ### Explainer videos
 
@@ -73,6 +72,6 @@ Pass the data file by its path only. Never inline its content into a shell comma
 node "<this skill's folder>/scripts/build-course.mjs" "<data file>" "<Course project folder>"
 ```
 
-It needs Node 20 or later and nothing else. When it refuses, it reports every problem and writes nothing; fix them in the data file and run it again. A claim with no Source to cite becomes one of its Lesson's Unverified points rather than taking an invented citation.
+It needs Node 20 or later and nothing else. When it refuses, it reports every problem and writes nothing; fix them in the data file and run it again.
 
 Finish by telling the user where the Course project is and, Lesson by Lesson, every Unverified point, so they can look for Sources later.

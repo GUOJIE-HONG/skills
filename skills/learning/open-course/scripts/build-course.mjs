@@ -122,7 +122,6 @@ const CHECKS = [
   },
   function unverifiedPointsAreText(data) {
     const problems = [];
-    if (data.evidenceGaps !== undefined) problems.push({ where: 'evidenceGaps', problem: "is no longer read; write each point as an Unverified point in its Lesson's unverifiedPoints" });
     for (const { lesson, where } of lessons(data)) {
       if (lesson.unverifiedPoints === undefined) continue;
       if (!Array.isArray(lesson.unverifiedPoints)) problems.push({ where, problem: 'unverifiedPoints must be a list of Unverified points, each a piece of text' });

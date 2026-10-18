@@ -645,12 +645,6 @@ test('Unverified points that are not a list, or a point that is blank or not tex
   assert.ok(!run(workdir(), data).stderr.includes('Unverified point 1'), 'a fine point is refused');
 });
 
-test('a data file that still lists evidenceGaps is refused, pointing to each Lesson\'s unverifiedPoints', () => {
-  const dir = workdir();
-  const data = courseData({ evidenceGaps: [{ lesson: 'l1', point: 'Spring tides double the range.' }] });
-  assertRefused(run(dir, data), dir, [/evidenceGaps/, /unverifiedPoints/]);
-});
-
 test('a claim that cites no Source is refused with a pointer to write it as its Lesson\'s Unverified point', () => {
   const dir = workdir();
   const data = courseData();
