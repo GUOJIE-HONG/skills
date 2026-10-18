@@ -67,7 +67,6 @@ function courseData(extra = {}) {
       lesson('l1', [section('What a tide is', [claim('Tides are the rise and fall of sea levels.', ['noaa'])])]),
       lesson('l2', [section('Why the Moon matters', [claim('The Moon pulls the ocean toward it.', ['book'])])]),
     ],
-    evidenceGaps: [],
     ...extra,
   };
 }
@@ -442,14 +441,6 @@ function projectFiles(root, sub = '') {
   );
 }
 
-test('no Evidence gap appears on any page', () => {
-  const dir = workdir();
-  const data = courseData({ evidenceGaps: [{ lesson: 'l1', point: 'GAP-MARKER-7f3: spring tides double the range' }] });
-  const r = run(dir, data);
-  assert.equal(r.status, 0, r.stderr);
-  for (const file of projectFiles(r.out)) assert.ok(!read(join(r.out, file)).includes('GAP-MARKER-7f3'), `${file} shows an Evidence gap`);
-});
-
 test('no page loads a script, stylesheet, or font from another address', () => {
   const dir = workdir();
   const r = run(dir, courseData());
@@ -460,14 +451,6 @@ test('no page loads a script, stylesheet, or font from another address', () => {
     assert.doesNotMatch(html, /<link[^>]*rel="?(stylesheet|preload|preconnect)/i, `${file} loads a stylesheet or font`);
     assert.doesNotMatch(html, /@import|url\(\s*['"]?(https?:)?\/\//i, `${file} pulls a resource from another address in CSS`);
   }
-});
-
-test('a successful build prints where the Course project is and how many Evidence gaps the data holds', () => {
-  const dir = workdir();
-  const r = run(dir, courseData({ evidenceGaps: [{ lesson: 'l1', point: 'one' }, { lesson: 'l2', point: 'two' }] }));
-  assert.equal(r.status, 0, r.stderr);
-  assert.ok(r.stdout.includes(r.out), r.stdout);
-  assert.match(r.stdout, /2 Evidence gaps?/);
 });
 
 // A stand-in for the player page the bundled `am video -o` writes, so tests never call am.
@@ -592,4 +575,113 @@ test('a video frame leaves room under the picture for the player controls, and f
   const figure = (id) => read(join(r.out, 'lessons', id, 'handout.html')).match(/<figure class="video"[^>]*>/)[0];
   assert.match(figure('l1'), /--player-chrome: 56px/);
   assert.match(figure('l2'), /--player-chrome: 96px/);
+});
+
+// The ids the Handout's contents list links to, in order.
+function contentsTargets(handout) {
+  const toc = handout.match(/<nav class="toc"[^>]*>([\s\S]*?)<\/nav>/);
+  assert.ok(toc, 'the Handout has no contents list');
+  return [...toc[1].matchAll(/<a href="#([^"]+)">/g)].map((m) => m[1]);
+}
+
+// The Unverified points listed on a Handout, in order, as markup.
+const unverifiedItems = (handout) => [...elementHtml(handout, 'unverified').matchAll(/<li>([\s\S]*?)<\/li>/g)].map((m) => m[1]);
+
+test("a Lesson's Unverified points show on its Handout as their own list, with a note, between its Exercises and its Sources, and in its contents", () => {
+  const dir = workdir();
+  const data = courseData();
+  data.lessons[0].unverifiedPoints = ['UNVERIFIED-ONE: spring tides double the range.', 'UNVERIFIED-TWO: some bays have no tides.'];
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  const handout = read(join(r.out, 'lessons', 'l1', 'handout.html'));
+  assert.deepEqual(unverifiedItems(handout), data.lessons[0].unverifiedPoints);
+  const shown = elementText(handout, 'unverified');
+  assert.match(shown, /Unverified points/);
+  assert.ok(shown.includes('No credible Source read for this Course backs these points; treat them as unconfirmed.'), 'the list has no note');
+  const at = handout.indexOf('id="unverified"');
+  assert.ok(handout.indexOf('id="exercises"') < at && at < handout.indexOf('id="sources"'), 'the list is not between the Exercises and the Sources');
+  assert.deepEqual(contentsTargets(handout).slice(-3), ['exercises', 'unverified', 'sources']);
+});
+
+test('a Chinese Course titles and explains its Unverified points in Chinese', () => {
+  const dir = workdir();
+  const data = courseData();
+  data.course.language = 'zh-TW';
+  data.lessons[0].unverifiedPoints = ['大潮時潮差會加倍。'];
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  const handout = read(join(r.out, 'lessons', 'l1', 'handout.html'));
+  const shown = elementText(handout, 'unverified');
+  assert.match(shown, /未驗證知識點/);
+  assert.ok(shown.includes('以下內容找不到可信來源可以驗證，僅供參考。'), 'the list has no Chinese note');
+  assert.match(handout, /<a href="#unverified">未驗證知識點<\/a>/);
+});
+
+test('a Lesson without Unverified points, or with an empty list, has no such list on its Handout or in its contents', () => {
+  const dir = workdir();
+  const data = courseData();
+  data.lessons[1].unverifiedPoints = [];
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  for (const id of ['l1', 'l2']) {
+    const handout = read(join(r.out, 'lessons', id, 'handout.html'));
+    assert.doesNotMatch(handout, /id="unverified"/, `${id} shows an Unverified points list`);
+    assert.ok(!contentsTargets(handout).includes('unverified'), `${id} lists Unverified points in its contents`);
+  }
+});
+
+test('Unverified points that are not a list, or a point that is blank or not text, are refused, naming the Lesson and point', () => {
+  const dir = workdir();
+  const data = courseData();
+  data.lessons[0].unverifiedPoints = ['A fine point.', '  ', 42];
+  data.lessons[1].unverifiedPoints = 'not a list';
+  assertRefused(
+    run(dir, data),
+    dir,
+    [/\bl1\b/, /Unverified point 2\b/],
+    [/\bl1\b/, /Unverified point 3\b/],
+    [/\bl2\b/, /unverifiedPoints/, /list/],
+  );
+  assert.ok(!run(workdir(), data).stderr.includes('Unverified point 1'), 'a fine point is refused');
+});
+
+test('a claim that cites no Source is refused with a pointer to write it as its Lesson\'s Unverified point', () => {
+  const dir = workdir();
+  const data = courseData();
+  data.lessons[0].sections[0].claims.push(claim('An uncited claim.', []));
+  assertRefused(run(dir, data), dir, [/\bl1\b/, /claim 2\b/, /cites no Source/, /Unverified point/]);
+});
+
+test('an Unverified point shows HTML markup as text and backticks as code, with no citation marker', () => {
+  const dir = workdir();
+  const data = courseData();
+  data.lessons[0].unverifiedPoints = ['Run `ls <dir>` then <script>alert("x")</script> & <b>bold</b>.'];
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  const [item] = unverifiedItems(read(join(r.out, 'lessons', 'l1', 'handout.html')));
+  assert.equal(item, 'Run <code>ls &lt;dir&gt;</code> then &lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt; &amp; &lt;b&gt;bold&lt;/b&gt;.');
+});
+
+test('a successful build prints where the Course project is and how many Unverified points its Lessons hold', () => {
+  const dir = workdir();
+  const data = courseData();
+  data.lessons[0].unverifiedPoints = ['One.', 'Two.'];
+  data.lessons[1].unverifiedPoints = ['Three.'];
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes(r.out), r.stdout);
+  assert.match(r.stdout, /\b3 Unverified points\b/);
+});
+
+test('Unverified points stay off the Slides and the Syllabus', () => {
+  const dir = workdir();
+  const data = courseData();
+  data.lessons[0].unverifiedPoints = ['UNVERIFIED-MARKER-9c1: spring tides double the range.'];
+  const r = run(dir, data);
+  assert.equal(r.status, 0, r.stderr);
+  for (const page of ['index.html', join('lessons', 'l1', 'slides.html')]) {
+    const html = read(join(r.out, page));
+    assert.ok(!html.includes('UNVERIFIED-MARKER-9c1'), `${page} shows an Unverified point`);
+    assert.ok(!html.includes('Unverified'), `${page} mentions Unverified points`);
+  }
 });

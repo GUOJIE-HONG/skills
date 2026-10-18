@@ -64,8 +64,8 @@ function handoutSources(lesson) {
 const listedSources = (data) => new Set(objectsOf(data.sources).map((s) => s.id));
 
 // The citation rule claims, Exercise answers, and slide points share: cite at least one Source, and only Sources in `allowed`.
-function citationProblems({ where, cites = 'cites', sources, allowed, outside }) {
-  if (arrayOf(sources).length === 0) return [{ where, problem: `${cites} no Source` }];
+function citationProblems({ where, cites = 'cites', uncited = `${cites} no Source`, sources, allowed, outside }) {
+  if (arrayOf(sources).length === 0) return [{ where, problem: uncited }];
   return arrayOf(sources).filter((id) => !allowed.has(id)).map((id) => ({ where, problem: `${cites} Source "${id}", ${outside}` }));
 }
 
@@ -117,7 +117,17 @@ const CHECKS = [
   },
   function everyClaimCitesListedSources(data) {
     const allowed = listedSources(data);
-    return [...claims(data)].flatMap(({ claim, where }) => citationProblems({ where, sources: claim.sources, allowed, outside: 'which is not in the Source list' }));
+    const uncited = "cites no Source; if no Source backs it, rewrite it as one of its Lesson's Unverified points (unverifiedPoints)";
+    return [...claims(data)].flatMap(({ claim, where }) => citationProblems({ where, uncited, sources: claim.sources, allowed, outside: 'which is not in the Source list' }));
+  },
+  function unverifiedPointsAreText(data) {
+    const problems = [];
+    for (const { lesson, where } of lessons(data)) {
+      if (lesson.unverifiedPoints === undefined) continue;
+      if (!Array.isArray(lesson.unverifiedPoints)) problems.push({ where, problem: 'unverifiedPoints must be a list of Unverified points, each a piece of text' });
+      else lesson.unverifiedPoints.forEach((p, i) => { if (blank(p)) problems.push({ where: `${where}, Unverified point ${i + 1}`, problem: 'is blank or not text' }); });
+    }
+    return problems;
   },
   function exercisesHaveTheirParts(data) {
     const problems = [];
@@ -206,8 +216,8 @@ const ARROW = { prev: new Markup('<svg viewBox="0 0 16 16" aria-hidden="true"><p
 
 // Page labels in the Course's language, and what goes between two sentences; a language without its own labels gets English.
 const LABELS = {
-  en: { audience: 'Audience', level: 'Level', length: 'Total length', lessons: 'Lessons', lesson: (n) => `Lesson ${n}`, lessonCount: (n) => `${n} Lesson${n === 1 ? '' : 's'}`, sourceCount: (n) => `${n} Source${n === 1 ? '' : 's'}`, exerciseCount: (n) => `${n} exercise${n === 1 ? '' : 's'}`, objectives: 'You will be able to', objectivesShort: 'Objectives', contents: 'Contents', sources: 'Sources', read: (date) => `read ${date}`, between: ' ', exercises: 'Exercises', answer: 'Show answer', video: 'Video', slides: 'Slides', handout: 'Handout', syllabus: 'Syllabus', scope: 'Scope', lastOpened: 'Last opened', previousLesson: 'Previous Lesson', nextLesson: 'Next Lesson', previous: 'Previous slide', next: 'Next slide' },
-  zh: { audience: '學員', level: '程度', length: '總時數', lessons: '課程內容', lesson: (n) => `第 ${n} 課`, lessonCount: (n) => `${n} 課`, sourceCount: (n) => `${n} 份資料來源`, exerciseCount: (n) => `${n} 題練習`, objectives: '學完這一課，你能夠', objectivesShort: '學習目標', contents: '本課內容', sources: '資料來源', read: (date) => `${date} 閱讀`, between: '', exercises: '練習題', answer: '看答案', video: '影片', slides: '投影片', handout: '講義', syllabus: '課程大綱', scope: '份量', lastOpened: '上次讀到', previousLesson: '上一課', nextLesson: '下一課', previous: '上一張', next: '下一張' },
+  en: { audience: 'Audience', level: 'Level', length: 'Total length', lessons: 'Lessons', lesson: (n) => `Lesson ${n}`, lessonCount: (n) => `${n} Lesson${n === 1 ? '' : 's'}`, sourceCount: (n) => `${n} Source${n === 1 ? '' : 's'}`, exerciseCount: (n) => `${n} exercise${n === 1 ? '' : 's'}`, objectives: 'You will be able to', objectivesShort: 'Objectives', contents: 'Contents', sources: 'Sources', read: (date) => `read ${date}`, between: ' ', exercises: 'Exercises', answer: 'Show answer', unverified: 'Unverified points', unverifiedNote: 'No credible Source read for this Course backs these points; treat them as unconfirmed.', video: 'Video', slides: 'Slides', handout: 'Handout', syllabus: 'Syllabus', scope: 'Scope', lastOpened: 'Last opened', previousLesson: 'Previous Lesson', nextLesson: 'Next Lesson', previous: 'Previous slide', next: 'Next slide' },
+  zh: { audience: '學員', level: '程度', length: '總時數', lessons: '課程內容', lesson: (n) => `第 ${n} 課`, lessonCount: (n) => `${n} 課`, sourceCount: (n) => `${n} 份資料來源`, exerciseCount: (n) => `${n} 題練習`, objectives: '學完這一課，你能夠', objectivesShort: '學習目標', contents: '本課內容', sources: '資料來源', read: (date) => `${date} 閱讀`, between: '', exercises: '練習題', answer: '看答案', unverified: '未驗證知識點', unverifiedNote: '以下內容找不到可信來源可以驗證，僅供參考。', video: '影片', slides: '投影片', handout: '講義', syllabus: '課程大綱', scope: '份量', lastOpened: '上次讀到', previousLesson: '上一課', nextLesson: '下一課', previous: '上一張', next: '下一張' },
 };
 const labelsFor = (language) => LABELS[language.toLowerCase().split('-')[0]] ?? LABELS.en;
 
@@ -314,6 +324,10 @@ const exercisesBlock = (lesson, labels, markers) =>
     (e, i) => html`<li id="exercise-${i + 1}"><p>${prose(e.question)}</p><details><summary>${labels.answer}</summary><p>${prose(e.answer)}${markers(e.sources)}</p></details></li>`,
   )}</ol></section>`;
 
+// The points a Lesson teaches that no Source backs, kept apart from its claims and uncited; a Lesson without any has no block.
+const unverifiedBlock = (lesson, labels) =>
+  html`<section class="unverified" id="unverified"><h2>${labels.unverified}</h2><p>${labels.unverifiedNote}</p><ul>${lesson.unverifiedPoints.map((p) => html`<li>${prose(p)}</li>`)}</ul></section>`;
+
 // A section's claims in order, two to a paragraph, so a long section does not read as one block of text.
 function paragraphs(claims, labels, markers) {
   const out = [];
@@ -345,7 +359,13 @@ ${paragraphs(s.claims, labels, markers)}
 ${s.video && html`<figure class="video" style="--player-chrome: ${playerChrome(s.video)}px"><iframe src="${videoPath(i)}" title="${labels.video}: ${s.heading}" allowfullscreen></iframe></figure>`}
 </section>`,
   );
-  const contents = [...lesson.sections.map((s, i) => [`section-${i + 1}`, s.heading]), ['exercises', labels.exercises], ['sources', labels.sources]];
+  const unverified = arrayOf(lesson.unverifiedPoints).length > 0;
+  const contents = [
+    ...lesson.sections.map((s, i) => [`section-${i + 1}`, s.heading]),
+    ['exercises', labels.exercises],
+    ...(unverified ? [['unverified', labels.unverified]] : []),
+    ['sources', labels.sources],
+  ];
   const sourceList = cited.map(({ number, source }) => html`<li id="source-${number}">${sourceEntry(source)} <span class="read">(${labels.read(source.readOn)})</span></li>`);
   return page({
     language: data.course.language,
@@ -364,6 +384,7 @@ ${lessonRail(data, labels, { href: (l) => `../${l.id}/handout.html`, current: in
 ${objectivesBlock(lesson, labels)}
 ${sectionBlocks}
 ${exercisesBlock(lesson, labels, markers)}
+${unverified && unverifiedBlock(lesson, labels)}
 ${lessonNav(data, index, labels)}
 </main>
 <aside class="window sources" id="sources"><h2>${labels.sources}</h2><ol>${sourceList}</ol></aside>
@@ -426,8 +447,8 @@ function main([dataPath, outDir]) {
   writeProject(outDir, pages);
   console.log(`Course project: ${outDir}`);
   for (const path of Object.keys(pages)) console.log(`  ${path}`);
-  const gaps = arrayOf(data.evidenceGaps).length;
-  console.log(`${gaps} Evidence gap${gaps === 1 ? '' : 's'} in the data, on no page; report them to the user.`);
+  const unverified = data.lessons.reduce((n, l) => n + arrayOf(l.unverifiedPoints).length, 0);
+  console.log(`${unverified} Unverified point${unverified === 1 ? '' : 's'} listed on the Handouts; report them to the user, Lesson by Lesson.`);
 }
 
 // Writes into a temporary sibling folder and renames it into place, so no half-built Course project is left.

@@ -11,7 +11,7 @@ A gap in the source material that blocks the work until someone settles it, tagg
 _Avoid_: TBD, assumption, 待確認
 
 **Evidence gap**:
-A point the work needs but cannot back with evidence, such as a Deployment plan recommendation or a Course claim, left out and put to the user as a question instead of stated as fact.
+A point the work needs but cannot back with evidence, such as a Deployment plan recommendation, left out and put to the user as a question instead of stated as fact.
 _Avoid_: Open question, assumption, 待確認, 待查證
 
 ### Ask Jev
@@ -53,7 +53,7 @@ _Avoid_: analogy, instance, 變形
 ### Course building
 
 **Course**:
-A set of Lessons on one topic, built for a named audience and total length, where every factual claim traces to a Source.
+A set of Lessons on one topic, built for a named audience and total length, where every factual claim traces to a Source or is listed as an Unverified point.
 _Avoid_: class, training, 課 (alone)
 
 **Syllabus**:
@@ -65,8 +65,12 @@ One teaching session of a Course, with its own Handout, Slides and Exercises.
 _Avoid_: chapter, unit
 
 **Handout**:
-The written material for one Lesson, where each factual claim carries the Source it rests on.
+The written material for one Lesson, where each factual claim carries the Source it rests on, followed by the Lesson's Unverified points.
 _Avoid_: notes, 教材
+
+**Unverified point**:
+A point a Lesson teaches that no Source read for the Course backs and none contradicts, listed apart from the Handout's claims and marked as unverified.
+_Avoid_: Evidence gap, 待查證, 未查證
 
 **Slides**:
 The material a teacher presents for one Lesson, drawn from that Lesson's Handout.
