@@ -14,7 +14,7 @@ If the user passed an argument, it is the topic. Otherwise take the topic from t
 
 Three things shape the whole Syllabus: who the learners are, their level, and the Course's total length. Take what the user already said, and ask, in one round, for only the ones still missing. Start nothing else until all three are known.
 
-The Course project goes to `courses/<topic>/` under the current folder unless the user names another path. When that folder already exists, stop and let the user choose another name, another path, or to cancel.
+The Course project goes to `<topic>/` under the current folder unless the user names another path. When that folder already exists, stop and let the user choose another name, another path, or to cancel.
 
 ## Sources
 

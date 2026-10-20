@@ -502,12 +502,12 @@ function elementHtml(html, id) {
   return m[2];
 }
 
-test('the output folder may sit in a folder that does not exist yet, as courses/<topic>/ often does', () => {
+test('the output folder may sit in a folder that does not exist yet, as a path the user names may', () => {
   const dir = workdir();
-  const r = run(dir, courseData(), join('courses', 'tides'));
+  const r = run(dir, courseData(), join('ocean', 'tides'));
   assert.equal(r.status, 0, r.stderr);
   assert.ok(existsSync(join(r.out, 'index.html')));
-  assert.deepEqual(readdirSync(join(dir, 'courses')), ['tides'], 'the build left a temporary folder behind');
+  assert.deepEqual(readdirSync(join(dir, 'ocean')), ['tides'], 'the build left a temporary folder behind');
 });
 
 test('text in backticks shows as code on Handouts and Slides, and markup inside the backticks still shows as text', () => {
