@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.4
+
+- `open-course`: the Course project now goes to `<topic>/` under the current folder, not `courses/<topic>/`. Run it inside the folder you keep Courses in and the Course lands right there, without an extra `courses/` level. Naming another path works as before, and a folder that already exists still stops the run.
+
 ## 1.7.3
 
 - `ptns`: on Claude Code, a handoff no longer ends when the prompt is sent. The prompt now asks the receiving session to send back, before it starts, the goal and the next step in its own words plus every question it has, replying to the `from` address on the handoff message, which reaches the sending session on any Claude Code version with session messaging, even when two sessions share a name. The sending session checks that synthesis against its own conversation, corrects each misreading, and answers every question the conversation already settled, in one message; only questions the conversation never settled come to you, and your answers go back in that same message. It then tells you in one line that the receiver is ready, naming any decision you made along the way. Before, a detail lost in a large handoff surfaced later as a surprise question in the new session, about something already decided. Other agents, such as Codex, still get the copyable block, unchanged.
