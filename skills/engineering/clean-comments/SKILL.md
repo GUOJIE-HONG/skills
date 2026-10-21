@@ -23,13 +23,13 @@ Rewrite a comment that:
 - records history or discussion;
 - refers vaguely to other code ("same as the service above"): name the class.
 
-Keep an XML doc comment that only restates the name (`/// <summary>日期格式。</summary>`), and keep pointers to other code such as `<see cref="..."/>`.
+Keep a doc comment that only restates the name (`/// <summary>日期格式。</summary>`, `/** Date format. */`), and keep pointers to other code such as `<see cref="..."/>` or `{@link Mailer}`.
 
 Do not open the documents a comment points to. Write the new comment from the code alone: why it exists and what its flow is, as short as it can be (`SMTP寄信通用服務`, `查詢BPM表的審核狀態`), in the comment's original language. When nothing is worth saying, delete the comment.
 
 Change comments only: no code, no names, and no new comments where there were none.
 
-Skip generated and third-party files: `Migrations/`, `*.Designer.cs`, `node_modules/`, and files that open with a license.
+Skip generated and third-party files: `Migrations/`, `*.Designer.cs`, `*.pb.go`, `node_modules/`, `vendor/`, and files that open with a license.
 
 ## Findings
 
@@ -67,9 +67,9 @@ Write the findings file to the system temp directory with a file-writing tool, a
 }
 ```
 
-- `scope` is the path the user gave, or `.` for the whole repo. `file` is relative to the repo root.
-- Line numbers start at 1 and ranges include both ends. `lines` are the lines the finding is about; the report marks them. `show` is what the row shows when opened: the whole method or property as one range, or, for a long class or interface, its declaration plus each member's signature.
-- `note` is the one sentence the user reads before opening the row.
+- `scope` is the path the user gave, or `.` for the whole repo.
+- Ranges include both ends. `lines` are the lines the finding is about; the report marks them. `show` is what the row shows when opened: the whole method or property as one range, or, for a long class or interface, its declaration plus each member's signature.
+- `note` is the one sentence the user reads before opening the row, written in the report's language.
 - `lang` is the report's language: `zh-TW` when most of the comments you read are Traditional Chinese, otherwise `en`.
 
 ## The report

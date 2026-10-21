@@ -8,7 +8,7 @@ Spec: #76. Integration branch: `feat/clean-comments`.
 - [x] #80 英文介面
 - [x] #81 內嵌字型並收掉設計原型 — 刪原型、改 ignore 規則與 brief 路徑已在 #77 完成，只剩內嵌字型
 - [ ] #82 手動驗收與發布（人工）
-- [ ] code review 時補：SKILL.md 寫明 findings 的 `note` 用報告語言（使用者在設計討論時決定「一句說明也跟著 repo 語言」，#80 沒加）
+- [x] code review 時補：SKILL.md 寫明 findings 的 `note` 用報告語言（使用者在設計討論時決定「一句說明也跟著 repo 語言」，#80 沒加）
 
 ## Decisions
 
@@ -24,11 +24,11 @@ Spec: #76. Integration branch: `feat/clean-comments`.
 - findings 錯誤訊息用 `findings[i]`（從 0 起算），跟 JSON 陣列索引一致。（#78 agent）
 - 驗證測試放獨立測試檔，避免跟 #79、#80 合併衝突；測試 repo 名加 `Refused` 前綴避免平行測試互相誤判。（#78 agent）
 - 另外擋下型別錯、JSON 讀不到或解析失敗、沒給參數、所有欄位的空字串；不擋會 crash 或產生錯的報告。（#78 agent）
-- `show` 段落相鄰算合法；`lines` 必須整個落在其中一段。行數不把檔尾換行算成多一行（含 `
-
-`）。（#78 agent）
+- `show` 段落相鄰算合法；`lines` 必須整個落在其中一段。行數不把檔尾換行算成多一行（含 `\r\n`）。（#78 agent）
 - highlight.js 用 `@highlightjs/cdn-assets@11.12.0` 的 ESM 常用語言單檔（36 種），改名 `.mjs` 讓 Node 直接 import；不在裡面的副檔名不上色。（#79 agent）
 - 整個檔案一起上色再取顯示的行，跨範圍的區塊註解顏色才正確；加 `ignoreIllegals: true` 避免無法解析時失敗。（#79 agent）
 - `report.css` 補兩條 C# 選擇器（highlight.js 對 C# 輸出 `.hljs-title`、`.hljs-function .hljs-title`），沿用原型的顏色變數。自訂型別名稱 highlight.js 不上色，跟原型手工上色不同。（#79 agent）
 - 字型檔命名 `fira-sans-<weight>.woff2`、`fira-sans-OFL.txt`，沿用 open-course `rail.woff2`／`rail-font-OFL.txt` 的寫法。（#81 agent）
 - `@font-face` 由 script 產生（要在產生報告時讀檔轉 base64），不放在 `report.css`，跟 open-course 的 `RAIL_FONT` 一樣。（#81 agent）
+- C# 專用的 `.hljs-title` 顏色規則限定在 `.language-cs` 底下：報告的 `<code>` 帶 `language-<副檔名>`（highlight.js 認得的副檔名才加）；Go、PHP、Lua、C++ 等也輸出光禿的 `.hljs-title`，不限定會被染成型別色。（code review）
+- SKILL.md 拿掉 script 會檢查的「行號從 1 起算」「`file` 相對於 repo 根目錄」，錯了 script 的訊息會說怎麼改。（code review）
