@@ -115,28 +115,28 @@ function code(f) {
 
 const byPlace = (a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : a.lines[0] - b.lines[0]);
 
-function row(f, t, open) {
+function row(f, labels, open) {
   const [from, to] = f.lines;
-  const old = f.kind === 'mismatch' ? `<div class="old"><span class="tag">${t.before}</span><pre>${escape(f.oldComment)}</pre></div>` : '';
+  const old = f.kind === 'mismatch' ? `<div class="old"><span class="tag">${labels.before}</span><pre>${escape(f.oldComment)}</pre></div>` : '';
   return `<details${open ? ' open' : ''}>
       <summary>${CHEVRON}<span class="lines">${from === to ? from : `${from}–${to}`}</span><span class="text">${escape(f.note)}</span></summary>
       <div class="body">${old}${code(f)}</div>
     </details>`;
 }
 
-function rows(items, t, first) {
+function rows(items, labels, openByDefault) {
   let file;
   return items
     .map((f) => {
       const heading = f.file === file ? '' : `<h3 class="file">${escape(f.file)}</h3>\n    `;
       file = f.file;
-      return heading + row(f, t, f === first);
+      return heading + row(f, labels, f === openByDefault);
     })
     .join('\n    ');
 }
 
-function section({ kind, pict, items }, t, first) {
-  const k = t.kinds[kind];
+function section({ kind, pict, items }, labels, openByDefault) {
+  const kindLabels = labels.kinds[kind];
   const band = (heading) => `<div class="band"><div class="wrap">
     <div class="pict" aria-hidden="true"><svg viewBox="0 0 24 24">${pict}</svg></div>
     <h2>${heading}</h2>
@@ -144,28 +144,28 @@ function section({ kind, pict, items }, t, first) {
   </div></div>`;
   if (items.length === 0) {
     return `<section class="kind empty" id="${kind}">
-  ${band(k.name)}
-  <div class="wrap"><p class="none">${t.none}</p></div>
+  ${band(kindLabels.name)}
+  <div class="wrap"><p class="none">${labels.none}</p></div>
 </section>`;
   }
   return `<section class="kind" id="${kind}">
-  ${band(`${k.name}<span class="q">${k.question}</span>`)}
+  ${band(`${kindLabels.name}<span class="q">${kindLabels.question}</span>`)}
   <div class="wrap">
-    <p class="ask"><strong>${k.question}</strong>${k.explain}</p>
-    ${rows(items, t, first)}
+    <p class="ask"><strong>${kindLabels.question}</strong>${kindLabels.explain}</p>
+    ${rows(items, labels, openByDefault)}
   </div>
 </section>`;
 }
 
 function page(data, now) {
-  const t = LABELS[data.lang];
-  const groups = KINDS.map((k) => ({ ...k, items: data.findings.filter((f) => f.kind === k.kind).sort(byPlace) }));
-  const first = groups.flatMap((g) => g.items)[0];
+  const labels = LABELS[data.lang];
+  const groups = KINDS.map((group) => ({ ...group, items: data.findings.filter((f) => f.kind === group.kind).sort(byPlace) }));
+  const openByDefault = groups.flatMap((g) => g.items)[0];
   const counts = groups
-    .map(({ kind, items }) => `<li${items.length === 0 ? ' class="zero"' : ''}><a href="#${kind}"><span class="cn">${items.length}</span><span class="cl">${t.kinds[kind].name}</span>${DOWN_ARROW}</a></li>`)
+    .map(({ kind, items }) => `<li${items.length === 0 ? ' class="zero"' : ''}><a href="#${kind}"><span class="cn">${items.length}</span><span class="cl">${labels.kinds[kind].name}</span>${DOWN_ARROW}</a></li>`)
     .join('\n      ');
   return `<!doctype html>
-<html lang="${t.htmlLang}">
+<html lang="${labels.htmlLang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -179,9 +179,9 @@ ${CSS}</style>
 <header class="head">
   <div class="wrap top">
     <h1>clean-comments <span>· ${escape(data.repo)}</span></h1>
-    <div class="meta"><span>${t.path} <code>${escape(data.scope)}</code></span><span>${shownTime(now)}</span></div>
+    <div class="meta"><span>${labels.path} <code>${escape(data.scope)}</code></span><span>${shownTime(now)}</span></div>
   </div>
-  <nav class="wrap" aria-label="${t.nav}">
+  <nav class="wrap" aria-label="${labels.nav}">
     <ul class="counts">
       ${counts}
     </ul>
@@ -190,7 +190,7 @@ ${CSS}</style>
 
 <main>
 
-${groups.map((g) => section(g, t, first)).join('\n\n')}
+${groups.map((g) => section(g, labels, openByDefault)).join('\n\n')}
 
 </main>
 </body>
@@ -236,44 +236,44 @@ function problems(data) {
   else data.findings.forEach((f, i) => checkFinding(f, `findings[${i}]`));
   return out;
 
-  function checkFinding(f, at) {
-    if (!isObject(f)) return say(at, 'must be an object with kind, file, lines, show, and note');
-    const p = `${at}.`;
-    const kindOk = oneOf(f, p, 'kind', KINDS.map((k) => k.kind));
-    const fileOk = text(f, p, 'file');
-    text(f, p, 'note');
+  function checkFinding(finding, at) {
+    if (!isObject(finding)) return say(at, 'must be an object with kind, file, lines, show, and note');
+    const prefix = `${at}.`;
+    const kindOk = oneOf(finding, prefix, 'kind', KINDS.map((k) => k.kind));
+    const fileOk = text(finding, prefix, 'file');
+    text(finding, prefix, 'note');
 
-    const linesOk = isRange(f.lines);
-    if (f.lines === undefined) say(`${p}lines`, 'missing');
-    else if (!linesOk) say(`${p}lines`, `must be ${RANGE}`);
-    const showOk = Array.isArray(f.show) && f.show.length > 0 && f.show.every(isRange);
-    if (f.show === undefined) say(`${p}show`, 'missing');
-    else if (!showOk) say(`${p}show`, `must be a non-empty list of ${RANGE}`);
+    const linesOk = isRange(finding.lines);
+    if (finding.lines === undefined) say(`${prefix}lines`, 'missing');
+    else if (!linesOk) say(`${prefix}lines`, `must be ${RANGE}`);
+    const showOk = Array.isArray(finding.show) && finding.show.length > 0 && finding.show.every(isRange);
+    if (finding.show === undefined) say(`${prefix}show`, 'missing');
+    else if (!showOk) say(`${prefix}show`, `must be a non-empty list of ${RANGE}`);
 
-    if (f.kind === 'mismatch') {
-      if (f.oldComment === undefined) say(`${p}oldComment`, "missing; a mismatch keeps the old comment's exact text");
-      else text(f, p, 'oldComment');
-    } else if (kindOk && f.oldComment !== undefined) {
-      say(`${p}oldComment`, `only a mismatch has one; remove it from this ${f.kind} finding`);
+    if (finding.kind === 'mismatch') {
+      if (finding.oldComment === undefined) say(`${prefix}oldComment`, "missing; a mismatch keeps the old comment's exact text");
+      else text(finding, prefix, 'oldComment');
+    } else if (kindOk && finding.oldComment !== undefined) {
+      say(`${prefix}oldComment`, `only a mismatch has one; remove it from this ${finding.kind} finding`);
     }
 
     if (showOk) {
-      f.show.slice(1).forEach((r, j) => {
-        const prev = f.show[j];
-        if (r[0] < prev[0]) say(`${p}show`, `${range(r)} comes after ${range(prev)}; list the ranges from top to bottom`);
-        else if (r[0] <= prev[1]) say(`${p}show`, `${range(r)} overlaps ${range(prev)}; merge them or split them apart`);
+      finding.show.slice(1).forEach((r, j) => {
+        const prev = finding.show[j];
+        if (r[0] < prev[0]) say(`${prefix}show`, `${range(r)} comes after ${range(prev)}; list the ranges from top to bottom`);
+        else if (r[0] <= prev[1]) say(`${prefix}show`, `${range(r)} overlaps ${range(prev)}; merge them or split them apart`);
       });
-      if (linesOk && !f.show.some(([start, end]) => start <= f.lines[0] && f.lines[1] <= end)) {
-        say(`${p}lines`, `${range(f.lines)} is not inside any one show range; widen a show range to cover it`);
+      if (linesOk && !finding.show.some(([start, end]) => start <= finding.lines[0] && finding.lines[1] <= end)) {
+        say(`${prefix}lines`, `${range(finding.lines)} is not inside any one show range; widen a show range to cover it`);
       }
     }
 
     if (!fileOk) return;
-    const count = readLines(f.file)?.length;
-    if (count === undefined) return say(`${p}file`, `${JSON.stringify(f.file)} does not exist or is not a file; give the path from the repo root`);
-    const past = `goes past the end of ${f.file}, which has ${count} lines`;
-    if (linesOk && f.lines[1] > count) say(`${p}lines`, past);
-    if (showOk && f.show.some((r) => r[1] > count)) say(`${p}show`, past);
+    const count = readLines(finding.file)?.length;
+    if (count === undefined) return say(`${prefix}file`, `${JSON.stringify(finding.file)} does not exist or is not a file; give the path from the repo root`);
+    const past = `goes past the end of ${finding.file}, which has ${count} lines`;
+    if (linesOk && finding.lines[1] > count) say(`${prefix}lines`, past);
+    if (showOk && finding.show.some((r) => r[1] > count)) say(`${prefix}show`, past);
   }
 }
 
