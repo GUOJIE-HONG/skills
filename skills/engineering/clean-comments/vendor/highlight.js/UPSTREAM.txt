@@ -1,0 +1,11 @@
+Copied unchanged from highlight.js, BSD-3-Clause License (see LICENSE).
+
+Upstream:  npm package @highlightjs/cdn-assets@11.12.0 (highlight.js v11.12.0, git f7f7d3803b)
+
+Files and their upstream paths:
+  highlight.min.mjs  es/highlight.min.js   (ES module with the common languages; renamed to .mjs so Node loads it
+                                            as a module without a package.json)
+  LICENSE            LICENSE
+
+scripts/build-report.mjs imports highlight.min.mjs to colour the report's code. To update, copy the same two files
+from a newer @highlightjs/cdn-assets release and replace the version line above.

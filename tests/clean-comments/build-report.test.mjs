@@ -37,7 +37,7 @@ function report(dir, findings) {
 
 const numbered = (n, make = (i) => `line ${i}`) => Array.from({ length: n }, (_, i) => make(i + 1)).join('\n');
 
-const unescape = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+const unescape = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#(?:39|x27);/g, "'").replace(/&amp;/g, '&');
 
 // Each code block in the report as plain lines: ">12 text" for a marked line, " 12 text" for another, "…" for the
 // break between two `show` ranges.
@@ -214,4 +214,38 @@ test('the code comes from the file: editing the source file changes the next rep
   assert.deepEqual(codeBlocks(report(dir, findings('EditRepoBefore', list))), [[' 1 int a = 1;', '>2 // TODO: 改掉', ' 3 int b = 2;']]);
   writeFileSync(join(dir, 'src/A.cs'), 'int a = 10;\r\n// FIXME: 換掉\r\nint b = 20;\r\n');
   assert.deepEqual(codeBlocks(report(dir, findings('EditRepoAfter', list))), [[' 1 int a = 10;', '>2 // FIXME: 換掉', ' 3 int b = 20;']]);
+});
+
+// The code of the report's first code block.
+const firstCode = (html) => html.match(/<pre class="code"><code>([\s\S]*?)<\/code><\/pre>/)[1];
+
+test('C# code is coloured with highlight.js classes', () => {
+  const dir = repo({ 'src/Mail.cs': 'public class Mail\n{\n    // TODO: 寄信\n    string To = "a";\n}' });
+  const html = report(dir, findings('HighlightRepo', [finding({ file: 'src/Mail.cs', lines: [3, 3], show: [[1, 5]] })]));
+  const code = firstCode(html);
+  assert.match(code, /<span class="hljs-keyword">public<\/span> <span class="hljs-keyword">class<\/span>/);
+  assert.match(code, /<span class="hljs-comment">\/\/ <span class="hljs-doctag">TODO:<\/span> 寄信<\/span>/);
+  assert.match(code, /<span class="hljs-string">&quot;a&quot;<\/span>/);
+  assert.deepEqual(codeBlocks(html), [[' 1 public class Mail', ' 2 {', '>3     // TODO: 寄信', ' 4     string To = "a";', ' 5 }']]);
+});
+
+test('a file whose extension highlight.js does not know is shown whole and escaped, with no colour', () => {
+  const dir = repo({ 'conf/app.zzz': 'public class <b>&\n// TODO: "x"\nend' });
+  const html = report(dir, findings('PlainRepo', [finding({ file: 'conf/app.zzz', lines: [2, 2], show: [[1, 3]] })]));
+  assert.doesNotMatch(firstCode(html), /hljs-/);
+  assert.match(firstCode(html), /public class &lt;b&gt;&amp;/);
+  assert.deepEqual(codeBlocks(html), [[' 1 public class <b>&', '>2 // TODO: "x"', ' 3 end']]);
+});
+
+test('a token that spans lines is split per line: each line closes the spans it opens and keeps its colour', () => {
+  const dir = repo({ 'src/Old.cs': 'int a = 1;\n/* int b = 2;\n   int c = 3;\n   int d = 4; */\nint e = 5;' });
+  const html = report(dir, findings('MultiLineRepo', [finding({ kind: 'commented-out', file: 'src/Old.cs', lines: [3, 4], show: [[3, 5]] })]));
+  assert.deepEqual(codeBlocks(html), [['>3    int c = 3;', '>4    int d = 4; */', ' 5 int e = 5;']]);
+  const lines = firstCode(html).split(/(?=<span class="l(?: hit)?">)/);
+  for (const line of lines) {
+    assert.equal(line.match(/<span\b/g).length, line.match(/<\/span>/g).length, line);
+  }
+  assert.match(lines[0], /<span class="hljs-comment">   int c = 3;<\/span>/);
+  assert.match(lines[1], /<span class="hljs-comment">   int d = 4; \*\/<\/span>/);
+  assert.doesNotMatch(lines[2], /hljs-comment/);
 });
