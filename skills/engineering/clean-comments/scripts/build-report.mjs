@@ -66,12 +66,24 @@ const shownTime = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.ge
 const escape = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
+// The file's lines, split the one way both the checks and the report count them: LF or CRLF, and a final newline
+// does not start another line. Undefined when the file cannot be read.
+function readLines(file) {
+  let text;
+  try {
+    text = readFileSync(file, 'utf8');
+  } catch {
+    return undefined;
+  }
+  return text === '' ? [] : text.replace(/\r?\n$/, '').split(/\r?\n/);
+}
+
 // The file's lines as HTML, one string per line, read fresh so the report always shows the real code.
 function sourceLines(file) {
-  const text = readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
+  const lines = readLines(file);
   const language = extname(file).slice(1);
-  if (!hljs.getLanguage(language)) return text.split('\n').map(escape);
-  return splitLines(hljs.highlight(text, { language, ignoreIllegals: true }).value);
+  if (!hljs.getLanguage(language)) return lines.map(escape);
+  return splitLines(hljs.highlight(lines.join('\n'), { language, ignoreIllegals: true }).value);
 }
 
 // Splits highlighted HTML into lines, closing the spans still open at each line end and reopening them on the
@@ -257,23 +269,12 @@ function problems(data) {
     }
 
     if (!fileOk) return;
-    const count = lineCount(f.file);
+    const count = readLines(f.file)?.length;
     if (count === undefined) return say(`${p}file`, `${JSON.stringify(f.file)} does not exist or is not a file; give the path from the repo root`);
     const past = `goes past the end of ${f.file}, which has ${count} lines`;
     if (linesOk && f.lines[1] > count) say(`${p}lines`, past);
     if (showOk && f.show.some((r) => r[1] > count)) say(`${p}show`, past);
   }
-}
-
-// How many lines the file has (a final newline does not start another), or undefined when it cannot be read.
-function lineCount(file) {
-  let text;
-  try {
-    text = readFileSync(file, 'utf8');
-  } catch {
-    return undefined;
-  }
-  return text === '' ? 0 : text.replace(/\r?\n$/, '').split(/\r?\n/).length;
 }
 
 function fail(lines) {
