@@ -27,7 +27,7 @@
   --hl-string: #a3361f;
   --hl-number: #8a4b00;
   --hl-comment: #5a5a5a;
-  --sans: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+  --sans: "Fira Sans Report", "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
   --mono: "Cascadia Mono", Consolas, "SF Mono", Menlo, "Microsoft JhengHei", monospace;
   color-scheme: light;
 }

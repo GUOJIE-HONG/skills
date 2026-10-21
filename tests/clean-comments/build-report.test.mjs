@@ -287,3 +287,23 @@ test('with lang "zh-TW" the interface is Traditional Chinese and the page is mar
   assert.match(html, /<p class="none">這次沒有找到。<\/p>/);
   assert.doesNotMatch(html, /Comment and code disagree|None found|aria-label="The four kinds"/);
 });
+
+test('the report embeds Fira Sans 400, 600, and 700 for Latin text only, so CJK falls through to the system face', () => {
+  const dir = repo({ 'src/A.cs': numbered(3) });
+  const html = report(dir, findings('FontRepo', [finding()]));
+  const faces = [...html.matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]);
+  assert.deepEqual(faces.map((f) => f.match(/font-weight:\s*(\d+)/)[1]), ['400', '600', '700']);
+  const covers = (face, ch) =>
+    face.match(/unicode-range:\s*([^;]+)/)[1].split(',').some((part) => {
+      const [lo, hi = lo] = part.trim().replace(/^U\+/i, '').split('-').map((h) => parseInt(h, 16));
+      return ch.codePointAt(0) >= lo && ch.codePointAt(0) <= hi;
+    });
+  for (const face of faces) {
+    assert.match(face, /font-family:\s*"Fira Sans Report"/);
+    const font = Buffer.from(face.match(/src:\s*url\(data:font\/woff2;base64,([A-Za-z0-9+/=]+)\)/)[1], 'base64');
+    assert.equal(font.subarray(0, 4).toString('latin1'), 'wOF2');
+    for (const ch of 'Az09é—') assert.ok(covers(face, ch), `covers ${ch}`);
+    for (const ch of '中文，。「') assert.ok(!covers(face, ch), `leaves ${ch} to the system face`);
+  }
+  assert.match(html, /--sans:\s*"Fira Sans Report",\s*"Microsoft JhengHei"/);
+});
