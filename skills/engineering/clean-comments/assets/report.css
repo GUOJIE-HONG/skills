@@ -138,9 +138,12 @@ details[open]::details-content { height: auto; }
 .l.gap::before { content: ""; position: absolute; left: 3.5em; right: 16px; top: 50%; border-top: 1px dashed var(--ln); }
 
 .hljs-keyword, .hljs-literal { color: var(--hl-keyword); }
-/* C# marks class names as a bare .hljs-title and method names as .hljs-title inside .hljs-function. */
-.hljs-type, .hljs-built_in, .hljs-title, .hljs-title.class_ { color: var(--hl-type); }
-.hljs-title.function_, .hljs-function .hljs-title { color: var(--hl-func); }
+.hljs-type, .hljs-built_in, .hljs-title.class_ { color: var(--hl-type); }
+.hljs-title.function_ { color: var(--hl-func); }
+/* C# marks class names as a bare .hljs-title and method names as .hljs-title inside .hljs-function; other
+   languages use a bare .hljs-title for other things, so these apply to C# only. */
+.language-cs .hljs-title { color: var(--hl-type); }
+.language-cs .hljs-function .hljs-title { color: var(--hl-func); }
 .hljs-string { color: var(--hl-string); }
 .hljs-number { color: var(--hl-number); }
 .hljs-comment { color: var(--hl-comment); font-style: italic; }

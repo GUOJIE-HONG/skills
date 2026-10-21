@@ -20,7 +20,7 @@ const unescape = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&
 // Each code block in the report as plain lines: ">12 text" for a marked line, " 12 text" for another, "…" for the
 // break between two `show` ranges.
 function codeBlocks(html) {
-  return [...html.matchAll(/<pre class="code"><code>([\s\S]*?)<\/code><\/pre>/g)].map((m) =>
+  return [...html.matchAll(/<pre class="code"><code[^>]*>([\s\S]*?)<\/code><\/pre>/g)].map((m) =>
     m[1].split(/(?=<span class="l(?: hit| gap)?">)/).map((line) => {
       const cls = line.match(/^<span class="(l(?: hit| gap)?)">/)[1];
       if (cls === 'l gap') return '…';
@@ -191,7 +191,7 @@ test('the code comes from the file: editing the source file changes the next rep
 });
 
 // The code of the report's first code block.
-const firstCode = (html) => html.match(/<pre class="code"><code>([\s\S]*?)<\/code><\/pre>/)[1];
+const firstCode = (html) => html.match(/<pre class="code"><code[^>]*>([\s\S]*?)<\/code><\/pre>/)[1];
 
 test('C# code is coloured with highlight.js classes', () => {
   const dir = repo({ 'src/Mail.cs': 'public class Mail\n{\n    // TODO: 寄信\n    string To = "a";\n}' });
@@ -201,6 +201,26 @@ test('C# code is coloured with highlight.js classes', () => {
   assert.match(code, /<span class="hljs-comment">\/\/ <span class="hljs-doctag">TODO:<\/span> 寄信<\/span>/);
   assert.match(code, /<span class="hljs-string">&quot;a&quot;<\/span>/);
   assert.deepEqual(codeBlocks(html), [[' 1 public class Mail', ' 2 {', '>3     // TODO: 寄信', ' 4     string To = "a";', ' 5 }']]);
+});
+
+test('a bare highlight.js title gets the type or function colour in C# code only, not in another language', () => {
+  const dir = repo({ 'src/Mail.cs': 'public class Mail\n{\n    public void Send() { }\n}', 'src/main.go': 'package main\n\nfunc main() {}' });
+  const html = report(dir, findings('TitleRepo', [
+    finding({ file: 'src/Mail.cs', lines: [1, 1], show: [[1, 4]] }),
+    finding({ file: 'src/main.go', lines: [3, 3], show: [[1, 3]] }),
+  ]));
+  const [csharp, go] = [...html.matchAll(/<pre class="code">(<code[^>]*>)([\s\S]*?)<\/code><\/pre>/g)].map((m) => ({ tag: m[1], code: m[2] }));
+  assert.match(csharp.code, /<span class="hljs-title">Mail<\/span>/);
+  assert.match(go.code, /<span class="hljs-title">main<\/span>/);
+  assert.equal(csharp.tag, '<code class="language-cs">');
+  assert.notEqual(go.tag, csharp.tag);
+
+  // Every CSS selector that matches a bare .hljs-title (not .class_ or .function_), with the colour it sets.
+  const css = html.match(/<style>([\s\S]*?)<\/style>/)[1].replace(/\/\*[\s\S]*?\*\//g, '');
+  const bareTitles = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].flatMap(([, selectors, body]) =>
+    selectors.split(',').map((s) => s.trim()).filter((s) => /\.hljs-title(?![\w.-])/.test(s)).map((s) => `${s} → ${body.match(/color:\s*([^;]+)/)[1]}`),
+  );
+  assert.deepEqual(bareTitles, ['.language-cs .hljs-title → var(--hl-type)', '.language-cs .hljs-function .hljs-title → var(--hl-func)']);
 });
 
 test('a file whose extension highlight.js does not know is shown whole and escaped, with no colour', () => {

@@ -78,11 +78,16 @@ function readLines(file) {
   return text === '' ? [] : text.replace(/\r?\n$/, '').split(/\r?\n/);
 }
 
-// The file's lines as HTML, one string per line, read fresh so the report always shows the real code.
-function sourceLines(file) {
-  const lines = readLines(file);
+// The highlight.js language named by the file's extension, or undefined when highlight.js does not know it.
+function languageOf(file) {
   const language = extname(file).slice(1);
-  if (!hljs.getLanguage(language)) return lines.map(escape);
+  return hljs.getLanguage(language) ? language : undefined;
+}
+
+// The file's lines as HTML, one string per line, read fresh so the report always shows the real code.
+function sourceLines(file, language) {
+  const lines = readLines(file);
+  if (!language) return lines.map(escape);
   return splitLines(hljs.highlight(lines.join('\n'), { language, ignoreIllegals: true }).value);
 }
 
@@ -101,7 +106,8 @@ function splitLines(html) {
 }
 
 function code(f) {
-  const lines = sourceLines(f.file);
+  const language = languageOf(f.file);
+  const lines = sourceLines(f.file, language);
   const [from, to] = f.lines;
   const ranges = f.show.map(([start, end]) => {
     const rows = [];
@@ -110,7 +116,7 @@ function code(f) {
     }
     return rows.join('');
   });
-  return `<pre class="code"><code>${ranges.join('<span class="l gap"></span>')}</code></pre>`;
+  return `<pre class="code"><code${language ? ` class="language-${language}"` : ''}>${ranges.join('<span class="l gap"></span>')}</code></pre>`;
 }
 
 const byPlace = (a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : a.lines[0] - b.lines[0]);
