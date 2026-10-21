@@ -31,6 +31,19 @@ const LABELS = {
       'commented-out': { name: '被註解掉的程式碼', question: '可以刪掉嗎？', explain: 'git 記得舊版本，不需要留在檔案裡。' },
     },
   },
+  en: {
+    htmlLang: 'en',
+    path: 'Path',
+    before: 'Before',
+    none: 'None found this run.',
+    nav: 'The four kinds',
+    kinds: {
+      mismatch: { name: 'Comment and code disagree', question: 'Is the code wrong?', explain: 'These comments said something the code does not do. Each comment now matches the code; check that the code itself is right.' },
+      naming: { name: 'Unclear names', question: 'Rename it?', explain: "These names don't say what the code is for. clean-comments edits comments only, never names." },
+      todo: { name: 'TODO / FIXME', question: 'Still needed?', explain: 'Unfinished work. Do it, file an issue, or delete the line.' },
+      'commented-out': { name: 'Commented-out code', question: 'Delete it?', explain: "git keeps old versions; the file doesn't need to." },
+    },
+  },
 };
 
 const DOWN_ARROW = '<svg viewBox="0 0 16 16"><path d="M8 2v11M3.5 8.5 8 13l4.5-4.5"/></svg>';
@@ -123,7 +136,7 @@ function section({ kind, pict, items }, t, first) {
 }
 
 function page(data, now) {
-  const t = LABELS['zh-TW'];
+  const t = LABELS[data.lang];
   const groups = KINDS.map((k) => ({ ...k, items: data.findings.filter((f) => f.kind === k.kind).sort(byPlace) }));
   const first = groups.flatMap((g) => g.items)[0];
   const counts = groups
