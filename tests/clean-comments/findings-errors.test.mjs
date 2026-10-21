@@ -2,37 +2,17 @@
 // checks that it refuses: non-zero exit, every problem on stderr with its finding and field, and no report written.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, readdirSync, rmSync } from 'node:fs';
+import { readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'skills', 'engineering', 'clean-comments', 'scripts', 'build-report.mjs');
-
-function repo(files) {
-  const dir = mkdtempSync(join(tmpdir(), 'clean-comments-test-'));
-  for (const [path, text] of Object.entries(files)) {
-    mkdirSync(dirname(join(dir, path)), { recursive: true });
-    writeFileSync(join(dir, path), text);
-  }
-  return dir;
-}
-
-const numbered = (n) => Array.from({ length: n }, (_, i) => `line ${i + 1}`).join('\n');
-
-function finding(extra = {}) {
-  return { kind: 'todo', file: 'src/A.cs', lines: [1, 1], show: [[1, 1]], note: '一句說明。', ...extra };
-}
+import { join } from 'node:path';
+import { repo, run, numbered, finding } from './run-script.mjs';
 
 // Runs the script on findings that must be refused and returns its stderr lines. The repo name must be unique to the
 // test, so that a report written by mistake can be found.
 function refused(dir, findings) {
   const reports = () => readdirSync(tmpdir()).filter((f) => f.startsWith(`clean-comments-${findings.repo}-`));
   for (const old of reports()) rmSync(join(tmpdir(), old));
-  const findingsPath = join(mkdtempSync(join(tmpdir(), 'clean-comments-findings-')), 'findings.json');
-  writeFileSync(findingsPath, JSON.stringify(findings));
-  const r = spawnSync(process.execPath, [SCRIPT, findingsPath], { cwd: dir, encoding: 'utf8' });
+  const r = run(dir, findings);
   assert.notEqual(r.status, 0, 'the script should fail');
   assert.equal(r.stdout, '');
   assert.deepEqual(reports(), [], 'no report should be written');
@@ -163,9 +143,7 @@ test('values of the wrong type and malformed ranges are reported', () => {
 
 test('a findings file that is not JSON is reported', () => {
   const dir = repo({ 'src/A.cs': numbered(5) });
-  const findingsPath = join(mkdtempSync(join(tmpdir(), 'clean-comments-findings-')), 'findings.json');
-  writeFileSync(findingsPath, '{ "repo": "BadJsonRepo", ');
-  const r = spawnSync(process.execPath, [SCRIPT, findingsPath], { cwd: dir, encoding: 'utf8' });
+  const r = run(dir, '{ "repo": "BadJsonRepo", ');
   assert.notEqual(r.status, 0);
   assert.equal(r.stdout, '');
   assert.match(r.stderr, /not valid JSON/);

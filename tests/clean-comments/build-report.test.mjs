@@ -3,30 +3,10 @@
 // reads only its stdout, stderr, exit code, and the report it writes.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname, basename } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'skills', 'engineering', 'clean-comments', 'scripts', 'build-report.mjs');
-
-// A fake repo: { 'src/A.cs': 'line 1\nline 2' } becomes files under a fresh temp folder.
-function repo(files) {
-  const dir = mkdtempSync(join(tmpdir(), 'clean-comments-test-'));
-  for (const [path, text] of Object.entries(files)) {
-    mkdirSync(dirname(join(dir, path)), { recursive: true });
-    writeFileSync(join(dir, path), text);
-  }
-  return dir;
-}
-
-function run(dir, findings) {
-  const findingsPath = join(mkdtempSync(join(tmpdir(), 'clean-comments-findings-')), 'findings.json');
-  writeFileSync(findingsPath, JSON.stringify(findings));
-  const r = spawnSync(process.execPath, [SCRIPT, findingsPath], { cwd: dir, encoding: 'utf8' });
-  return { status: r.status, stdout: r.stdout, stderr: r.stderr };
-}
+import { repo, run, numbered, finding } from './run-script.mjs';
 
 // Runs the script and returns the report's HTML, failing the test when no report was written.
 function report(dir, findings) {
@@ -34,8 +14,6 @@ function report(dir, findings) {
   assert.equal(r.status, 0, r.stderr);
   return readFileSync(r.stdout.trim(), 'utf8');
 }
-
-const numbered = (n, make = (i) => `line ${i}`) => Array.from({ length: n }, (_, i) => make(i + 1)).join('\n');
 
 const unescape = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#(?:39|x27);/g, "'").replace(/&amp;/g, '&');
 
@@ -65,10 +43,6 @@ function rowsOf(sectionHtml) {
     else out.push(`${file} ${m[2]} ${unescape(m[3])}`);
   }
   return out;
-}
-
-function finding(extra = {}) {
-  return { kind: 'todo', file: 'src/A.cs', lines: [1, 1], show: [[1, 1]], note: '一句說明。', ...extra };
 }
 
 function findings(repoName, list, extra = {}) {
