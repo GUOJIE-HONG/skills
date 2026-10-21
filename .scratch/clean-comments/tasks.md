@@ -5,9 +5,10 @@ Spec: #76. Integration branch: `feat/clean-comments`.
 - [x] #77 最小可跑：改寫註解並產生報告
 - [ ] #78 findings 錯誤檢查
 - [ ] #79 報告程式碼語法上色
-- [ ] #80 英文介面
+- [x] #80 英文介面
 - [ ] #81 內嵌字型並收掉設計原型 — 刪原型、改 ignore 規則與 brief 路徑已在 #77 完成，只剩內嵌字型
 - [ ] #82 手動驗收與發布（人工）
+- [ ] code review 時補：SKILL.md 寫明 findings 的 `note` 用報告語言（使用者在設計討論時決定「一句說明也跟著 repo 語言」，#80 沒加）
 
 ## Decisions
 
@@ -19,3 +20,4 @@ Spec: #76. Integration branch: `feat/clean-comments`.
 - agent 改完所有註解後才寫 findings，因為改寫會移動行號、script 執行時才讀檔。（#77 agent）
 - 沒給路徑時 `scope` 寫 `.`。（#77 agent）
 - 0 筆區塊用 spec 的「這次沒有找到。」，不用原型較長的寫法。（#77 agent）
+- zh-TW 報告的 `<html lang>` 用 `zh-Hant`，跟原型和 #77 一致；英文用 `en`。（#80 agent）
