@@ -59,7 +59,7 @@ Dark mode is a first-class mode. Slides must stay legible from the back of a cla
 
 # Product: clean-comments report
 
-Covers the one HTML report the `clean-comments` skill (`skills/engineering/clean-comments/`, not yet built) writes after a run. Its visual design is recorded in its surface brief and its own CSS, not in DESIGN.md.
+Covers the one HTML report the `clean-comments` skill (`skills/engineering/clean-comments/`) writes after a run. Its visual design is recorded in its surface brief and its own CSS, not in DESIGN.md.
 
 ## Platform
 
