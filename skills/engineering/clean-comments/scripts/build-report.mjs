@@ -188,7 +188,7 @@ function problems(data) {
 
   text(data, '', 'repo');
   text(data, '', 'scope');
-  oneOf(data, '', 'lang', ['zh-TW', 'en']);
+  oneOf(data, '', 'lang', Object.keys(LABELS));
   if (data.findings === undefined) say('findings', 'missing');
   else if (!Array.isArray(data.findings)) say('findings', 'must be a list of findings');
   else data.findings.forEach((f, i) => checkFinding(f, `findings[${i}]`));
