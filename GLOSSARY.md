@@ -91,3 +91,9 @@ _Avoid_: clip, 影片 (alone)
 **Course project**:
 Everything one Course is made of, kept together in one place.
 _Avoid_: course folder, workspace
+
+### Comment cleanup
+
+**Outside reference**:
+The part of a code comment that points the reader away from the code, to a document, spec section, ticket, meeting, discussion or date, instead of saying what the code is for.
+_Avoid_: citation, cross-reference, 引述, 詳見
