@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 // usage: node build-report.mjs <findings.json>   (run from the repo root)
-// Builds the clean-comments report from the findings file and prints its path. Node 20+, built-ins only.
+// Builds the clean-comments report from the findings file and prints its path. Node 20+, built-ins and the
+// vendored highlight.js only.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { extname, join } from 'node:path';
+import hljs from '../vendor/highlight.js/highlight.min.mjs';
 
 const CSS = readFileSync(new URL('../assets/report.css', import.meta.url), 'utf8');
 
@@ -56,7 +58,24 @@ const escape = (s) =>
 
 // The file's lines as HTML, one string per line, read fresh so the report always shows the real code.
 function sourceLines(file) {
-  return readFileSync(file, 'utf8').split(/\r?\n/).map(escape);
+  const text = readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
+  const language = extname(file).slice(1);
+  if (!hljs.getLanguage(language)) return text.split('\n').map(escape);
+  return splitLines(hljs.highlight(text, { language, ignoreIllegals: true }).value);
+}
+
+// Splits highlighted HTML into lines, closing the spans still open at each line end and reopening them on the
+// next line, so a token that spans lines (a block comment, a multi-line string) keeps its colour on every line.
+function splitLines(html) {
+  const open = [];
+  return html.split('\n').map((line) => {
+    const start = open.join('');
+    for (const [tag] of line.matchAll(/<span[^>]*>|<\/span>/g)) {
+      if (tag === '</span>') open.pop();
+      else open.push(tag);
+    }
+    return start + line + '</span>'.repeat(open.length);
+  });
 }
 
 function code(f) {
