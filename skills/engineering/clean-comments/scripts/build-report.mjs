@@ -146,7 +146,115 @@ ${groups.map((g) => section(g, t, first)).join('\n\n')}
 // The repo name as it can appear in a file name on any OS.
 const fileSafe = (s) => String(s).replace(/[\\/:*?"<>|\s]+/g, '-');
 
-const data = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+const isObject = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isRange = (r) => Array.isArray(r) && r.length === 2 && r.every((n) => Number.isInteger(n) && n >= 1) && r[0] <= r[1];
+const RANGE = '[first, last], whole line numbers from 1 with first <= last';
+const range = (r) => `[${r.join(', ')}]`;
+
+// Every mistake in the findings file as "<field>: <why>", so the agent can fix them all before the next run.
+function problems(data) {
+  if (!isObject(data)) return ['the file must hold one JSON object with repo, scope, lang, and findings'];
+  const out = [];
+  const say = (field, why) => out.push(`${field}: ${why}`);
+  // Each check reports what is wrong with one field and returns whether later checks can rely on it.
+  const text = (obj, at, key) => {
+    const v = obj[key];
+    if (v === undefined) say(at + key, 'missing');
+    else if (typeof v !== 'string') say(at + key, 'must be text');
+    else if (v.trim() === '') say(at + key, 'empty');
+    else return true;
+    return false;
+  };
+  const oneOf = (obj, at, key, allowed) => {
+    const v = obj[key];
+    if (v === undefined) say(at + key, 'missing');
+    else if (!allowed.includes(v)) say(at + key, `${JSON.stringify(v)} is not one of ${allowed.join(', ')}`);
+    else return true;
+    return false;
+  };
+
+  text(data, '', 'repo');
+  text(data, '', 'scope');
+  oneOf(data, '', 'lang', ['zh-TW', 'en']);
+  if (data.findings === undefined) say('findings', 'missing');
+  else if (!Array.isArray(data.findings)) say('findings', 'must be a list of findings');
+  else data.findings.forEach((f, i) => checkFinding(f, `findings[${i}]`));
+  return out;
+
+  function checkFinding(f, at) {
+    if (!isObject(f)) return say(at, 'must be an object with kind, file, lines, show, and note');
+    const p = `${at}.`;
+    const kindOk = oneOf(f, p, 'kind', KINDS.map((k) => k.kind));
+    const fileOk = text(f, p, 'file');
+    text(f, p, 'note');
+
+    const linesOk = isRange(f.lines);
+    if (f.lines === undefined) say(`${p}lines`, 'missing');
+    else if (!linesOk) say(`${p}lines`, `must be ${RANGE}`);
+    const showOk = Array.isArray(f.show) && f.show.length > 0 && f.show.every(isRange);
+    if (f.show === undefined) say(`${p}show`, 'missing');
+    else if (!showOk) say(`${p}show`, `must be a non-empty list of ${RANGE}`);
+
+    if (f.kind === 'mismatch') {
+      if (f.oldComment === undefined) say(`${p}oldComment`, "missing; a mismatch keeps the old comment's exact text");
+      else text(f, p, 'oldComment');
+    } else if (kindOk && f.oldComment !== undefined) {
+      say(`${p}oldComment`, `only a mismatch has one; remove it from this ${f.kind} finding`);
+    }
+
+    if (showOk) {
+      f.show.slice(1).forEach((r, j) => {
+        const prev = f.show[j];
+        if (r[0] < prev[0]) say(`${p}show`, `${range(r)} comes after ${range(prev)}; list the ranges from top to bottom`);
+        else if (r[0] <= prev[1]) say(`${p}show`, `${range(r)} overlaps ${range(prev)}; merge them or split them apart`);
+      });
+      if (linesOk && !f.show.some(([start, end]) => start <= f.lines[0] && f.lines[1] <= end)) {
+        say(`${p}lines`, `${range(f.lines)} is not inside any one show range; widen a show range to cover it`);
+      }
+    }
+
+    if (!fileOk) return;
+    const count = lineCount(f.file);
+    if (count === undefined) return say(`${p}file`, `${JSON.stringify(f.file)} does not exist or is not a file; give the path from the repo root`);
+    const past = `goes past the end of ${f.file}, which has ${count} lines`;
+    if (linesOk && f.lines[1] > count) say(`${p}lines`, past);
+    if (showOk && f.show.some((r) => r[1] > count)) say(`${p}show`, past);
+  }
+}
+
+// How many lines the file has (a final newline does not start another), or undefined when it cannot be read.
+function lineCount(file) {
+  let text;
+  try {
+    text = readFileSync(file, 'utf8');
+  } catch {
+    return undefined;
+  }
+  return text === '' ? 0 : text.replace(/\r?\n$/, '').split(/\r?\n/).length;
+}
+
+function fail(lines) {
+  console.error(lines.join('\n'));
+  process.exit(1);
+}
+
+const findingsPath = process.argv[2];
+if (!findingsPath) fail(['usage: node build-report.mjs <findings.json>   (run from the repo root)']);
+let data;
+try {
+  data = readFileSync(findingsPath, 'utf8');
+} catch (e) {
+  fail([`${findingsPath} could not be read; no report was written.`, `  ${e.message}`]);
+}
+try {
+  data = JSON.parse(data);
+} catch (e) {
+  fail([`${findingsPath} is not valid JSON; no report was written.`, `  ${e.message}`]);
+}
+const found = problems(data);
+if (found.length) {
+  fail([`${findingsPath} has ${found.length} problem(s); no report was written. Fix them all and run again.`, ...found.map((p) => `  ${p}`)]);
+}
 const now = new Date();
 const out = join(tmpdir(), `clean-comments-${fileSafe(data.repo)}-${fileStamp(now)}.html`);
 writeFileSync(out, page(data, now));

@@ -80,6 +80,6 @@ From the repo root, pass the findings file by its path:
 node "<this skill's folder>/scripts/build-report.mjs" "<findings file>"
 ```
 
-It needs Node 20 or later. The report shows code the script reads from the files itself. When the script reports problems, fix the findings file and run it again.
+It needs Node 20 or later. The report shows code the script reads from the files itself. When the script reports problems instead, it writes no report; fix the findings file as each message says and run it again.
 
 Finish by giving the user the report path it prints, and remind them to review the rewrites with `git diff`.
