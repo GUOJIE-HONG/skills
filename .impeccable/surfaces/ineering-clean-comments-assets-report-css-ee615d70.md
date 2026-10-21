@@ -2,12 +2,12 @@
 version: 1
 slug: "ineering-clean-comments-assets-report-css-ee615d70"
 primary_target: "skills/engineering/clean-comments/assets/report.css"
-related_targets: [".scratch/clean-comments/report-template.html"]
+related_targets: ["skills/engineering/clean-comments/scripts/build-report.mjs"]
 ---
 
 # clean-comments report
 
-Mode: Operate. One HTML report per run, written by the skill's script from a findings list. Until the script exists, the design lives in `.scratch/clean-comments/report-template.html` (synthetic data); the script lifts its CSS and markup and the prototype is then deleted.
+Mode: Operate. One HTML report per run, written by the skill's script from a findings list. The CSS lives in `assets/report.css`; the markup is written by `scripts/build-report.mjs`.
 
 Audience and job: a developer who just ran `clean-comments`, judging the items the skill could not decide (mismatch, bad name, TODO/FIXME, commented-out code), beside their editor and `git diff`. Read once, then thrown away. Hundreds of items possible.
 
@@ -35,7 +35,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 - Header: top row (repo, path, time); under it a full-width four-cell count strip (36px yellow tabular numerals, label, down-arrow jump link); 2x2 on phones.
 - Latin and digits in Fira Sans (OFL) Latin subset 400/600/700, inlined as base64 WOFF2; CJK uses system faces. The skill must vendor the font files with their OFL license, as open-course does with `rail-font-OFL.txt`.
 - Pictograms are 3.2-stroke or filled silhouettes in a black square.
-- Detector ignores for the prototype are file-scoped in `.impeccable/config.json`; move them to the real asset path when the script lands.
+- Detector ignores are file-scoped in `.impeccable/config.json` to `assets/report.css` and `scripts/build-report.mjs`.
 
 ## Unresolved
 
