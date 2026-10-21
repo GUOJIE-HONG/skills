@@ -215,3 +215,41 @@ test('the code comes from the file: editing the source file changes the next rep
   writeFileSync(join(dir, 'src/A.cs'), 'int a = 10;\r\n// FIXME: 換掉\r\nint b = 20;\r\n');
   assert.deepEqual(codeBlocks(report(dir, findings('EditRepoAfter', list))), [[' 1 int a = 10;', '>2 // FIXME: 換掉', ' 3 int b = 20;']]);
 });
+
+test('with lang "en" every interface text is English and the page is marked English', () => {
+  const dir = repo({ 'src/A.cs': numbered(10) });
+  const html = report(dir, findings('EnglishRepo', [
+    finding({ kind: 'mismatch', lines: [2, 2], show: [[2, 2]], note: 'Says it retries.', oldComment: '// retries 3 times' }),
+    finding({ kind: 'naming', lines: [3, 3], show: [[3, 3]], note: 'Helper says nothing.' }),
+    finding({ kind: 'todo', lines: [4, 4], show: [[4, 4]], note: 'Unfinished.' }),
+  ], { lang: 'en' }));
+  assert.match(html, /<html lang="en">/);
+  assert.doesNotMatch(html, /\p{Script=Han}/u);
+  const header = html.match(/<header[\s\S]*?<\/header>/)[0];
+  assert.match(header, /<span>Path <code>src\/<\/code><\/span>/);
+  assert.match(header, /<nav class="wrap" aria-label="The four kinds">/);
+  const counts = [...header.matchAll(/<span class="cl">([^<]+)<\/span>/g)].map((m) => m[1]);
+  assert.deepEqual(counts, ['Comment and code disagree', 'Unclear names', 'TODO / FIXME', 'Commented-out code']);
+
+  const [mismatch, naming, todo, commented] = sections(html).map(([, s]) => unescape(s));
+  assert.match(mismatch, /<h2>Comment and code disagree<span class="q">Is the code wrong\?<\/span><\/h2>/);
+  assert.match(mismatch, /<strong>Is the code wrong\?<\/strong>These comments said something the code does not do\. Each comment now matches the code; check that the code itself is right\.<\/p>/);
+  assert.match(mismatch, /<span class="tag">Before<\/span>/);
+  assert.match(naming, /<h2>Unclear names<span class="q">Rename it\?<\/span><\/h2>/);
+  assert.match(naming, /<strong>Rename it\?<\/strong>These names don't say what the code is for\. clean-comments edits comments only, never names\.<\/p>/);
+  assert.match(todo, /<h2>TODO \/ FIXME<span class="q">Still needed\?<\/span><\/h2>/);
+  assert.match(todo, /<strong>Still needed\?<\/strong>Unfinished work\. Do it, file an issue, or delete the line\.<\/p>/);
+  assert.match(commented, /<h2>Commented-out code<\/h2>/);
+  assert.match(commented, /<p class="none">None found this run\.<\/p>/);
+});
+
+test('with lang "zh-TW" the interface is Traditional Chinese and the page is marked Traditional Chinese', () => {
+  const dir = repo({ 'src/A.cs': numbered(10) });
+  const html = report(dir, findings('ChineseRepo', [finding({ kind: 'mismatch', lines: [2, 2], show: [[2, 2]], oldComment: '// 舊' })], { lang: 'zh-TW' }));
+  assert.match(html, /<html lang="zh-Hant">/);
+  assert.match(html, /<span>路徑 <code>src\/<\/code><\/span>/);
+  assert.match(html, /<nav class="wrap" aria-label="四種項目">/);
+  assert.match(html, /<span class="tag">改之前<\/span>/);
+  assert.match(html, /<p class="none">這次沒有找到。<\/p>/);
+  assert.doesNotMatch(html, /Comment and code disagree|None found|aria-label="The four kinds"/);
+});
