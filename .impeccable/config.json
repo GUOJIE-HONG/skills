@@ -1,0 +1,53 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          "skills/engineering/clean-comments/assets/report.css"
+        ],
+        "createdAt": "2026-10-21T02:55:51.789Z",
+        "reason": "user decided: clean-comments report design is not part of DESIGN.md (open-course only)"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "*",
+        "files": [
+          "skills/engineering/clean-comments/assets/report.css"
+        ],
+        "createdAt": "2026-10-21T02:55:52.083Z",
+        "reason": "user decided: clean-comments report design is not part of DESIGN.md (open-course only)"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "*",
+        "files": [
+          "skills/engineering/clean-comments/assets/report.css"
+        ],
+        "createdAt": "2026-10-21T02:55:52.364Z",
+        "reason": "user decided: clean-comments report design is not part of DESIGN.md (open-course only)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "skills/engineering/clean-comments/assets/report.css"
+        ],
+        "createdAt": "2026-10-21T02:55:52.681Z",
+        "reason": "model: flagged spans are full-width highlighted code lines, editor convention"
+      },
+      {
+        "rule": "icon-tile-stack",
+        "value": "*",
+        "files": [
+          "skills/engineering/clean-comments/scripts/build-report.mjs"
+        ],
+        "createdAt": "2026-10-21T03:02:18.107Z",
+        "reason": "model: pictogram square sits beside the h2 in a flex row (not stacked); it is the sign pictogram the reviewer told us to keep"
+      }
+    ]
+  }
+}

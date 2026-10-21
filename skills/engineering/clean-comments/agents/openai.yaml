@@ -1,0 +1,6 @@
+interface:
+  display_name: "Clean Comments"
+  short_description: "Rewrite comments to say what the code is for, report what needs judgement"
+  default_prompt: "Use $clean-comments to clean up the comments in this repo."
+policy:
+  allow_implicit_invocation: false
