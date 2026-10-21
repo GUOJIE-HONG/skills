@@ -84,11 +84,16 @@ function languageOf(file) {
   return hljs.getLanguage(language) ? language : undefined;
 }
 
-// The file's lines as HTML, one string per line, read fresh so the report always shows the real code.
+const highlighted = new Map();
+
+// The file's lines as HTML, one string per line, read from disk so the report shows the real code. Each file is
+// read and highlighted once per run, however many findings it has.
 function sourceLines(file, language) {
-  const lines = readLines(file);
-  if (!language) return lines.map(escape);
-  return splitLines(hljs.highlight(lines.join('\n'), { language, ignoreIllegals: true }).value);
+  if (!highlighted.has(file)) {
+    const lines = readLines(file);
+    highlighted.set(file, language ? splitLines(hljs.highlight(lines.join('\n'), { language, ignoreIllegals: true }).value) : lines.map(escape));
+  }
+  return highlighted.get(file);
 }
 
 // Splits highlighted HTML into lines, closing the spans still open at each line end and reopening them on the
