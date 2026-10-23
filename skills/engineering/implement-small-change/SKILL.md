@@ -49,7 +49,7 @@ When a hard stop exposes an unresolved decision or cross-layer behavior:
 
 1. Explicitly tell the user that `$implement-small-change` is pausing because the request has hidden scope.
 2. Write a concise impact brief containing the requested outcome, discovered symbols and callers, affected layers or contracts, plausible interpretations, and decisions that must be resolved.
-3. Ask the user to run `/grill-softly` with that brief, and end this skill's workflow.
+3. Ask the user to resolve those decisions with that brief, for example in the grilling or planning skill they use, and end this skill's workflow.
 
 If the problem is difficult to reproduce or the cause remains uncertain rather than merely ambiguous, hand off to `$diagnosing-bugs`.
 
