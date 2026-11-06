@@ -2,7 +2,7 @@
 
 <!-- impeccable:product-schema 1 -->
 
-Scope: this file covers two reader-facing outputs and nothing else in the repo. The sections directly below cover the pages the `open-course` skill builds (`skills/learning/open-course/`): the Syllabus (`index.html`), and per Lesson a Handout and Slides. The `clean-comments` report has its own block at the end of this file. DESIGN.md and its sidecar belong to open-course only.
+Scope: this file covers three reader-facing outputs and nothing else in the repo. The sections directly below cover the pages the `open-course` skill builds (`skills/learning/open-course/`): the Syllabus (`index.html`), and per Lesson a Handout and Slides. The `clean-comments` report and the `show-grill-clearly` questionnaire each have their own block at the end of this file. DESIGN.md and its sidecar belong to open-course only.
 
 ## Platform
 
@@ -106,3 +106,55 @@ No real run exists yet; design previews use a synthetic findings list, labelled 
 ## Accessibility & Inclusion
 
 Dark mode is a first-class mode. zh-TW on Windows is the release check.
+
+---
+
+# Product: show-grill-clearly questionnaire
+
+Covers the one HTML questionnaire the `show-grill-clearly` skill (`skills/engineering/show-grill-clearly/`) builds when a grilling session has decisions that are hard to follow in chat. Its visual design is recorded in its surface brief and the template itself, not in DESIGN.md.
+
+## Platform
+
+web
+
+## Users
+
+- **A developer in the middle of a grill session with an agent**: the agent has several open decisions about their own work; the questionnaire opens in the desktop browser beside the chat. Often six or more questions in one round. They decide each one, sometimes add a note instead of or beside a choice, then copy a reply prompt back into the chat.
+
+## Product Purpose
+
+Make every open decision clear enough to answer without the chat transcript, and turn the answers into a reply prompt the agent can act on without guessing. Success: the developer answers every question they can, knows which ones are still blank, and pastes one prompt back.
+
+## Positioning
+
+The questionnaire collects decisions; it never makes them. A recommendation is shown but never preselected, and a blank question stays open in the reply prompt.
+
+## Operating Context
+
+- Each question carries: id, title, the rewritten source question, 1–3 context facts, one scenario, 2–4 options each with a consequence note, optional recommendation, required flag. Above the questions: title, one-sentence lede, up to six confirmed facts (recap).
+- Answers are a single choice per question plus an optional free-text note.
+- The reply prompt's wording and rules are part of the contract with the agent.
+- Opened as a `file://` page; drafts persist in `localStorage` when the browser allows it, and the page says so when it does not.
+
+## Capabilities and Constraints
+
+- One template, `assets/questionnaire-template.html`, is the renderer, the interaction, and the payload validator; the builders (`scripts/build-questionnaire.ps1`, `.sh`) only inject the JSON payload into its `questionnaire-data` script tag and open the result.
+- Payload fields, limits, and validation messages are fixed by the skill; markup, styling, and interaction may change.
+- Single self-contained file, nothing fetched, works offline. Light and dark follow the system.
+- User-facing text is Traditional Chinese; zh-TW on Windows is the primary case.
+- An invalid payload renders an error page with a copyable error list, never a half questionnaire.
+
+## Evidence on Hand
+
+No committed real payload; design previews use a synthetic payload, labelled as such.
+
+## Product Principles
+
+1. The original question stays intact and decidable on its own.
+2. Recommendations advise, never decide; blanks stay open.
+3. Findable at many questions: where you are and what is still blank is always visible.
+4. Offline and self-contained: one file, nothing fetched.
+
+## Accessibility & Inclusion
+
+Dark mode is a first-class mode. Every answer is reachable by keyboard.

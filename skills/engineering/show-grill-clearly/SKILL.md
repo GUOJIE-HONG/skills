@@ -51,7 +51,7 @@ Each builder writes one self-contained HTML questionnaire to a unique temporary 
 
 ## 4. Hand back and pause
 
-Return the clickable artifact path and the builder's launch result. Ask the user to answer, select **整理回復 prompt**, and paste the result into the originating conversation. Pause the owning grill.
+Return the clickable artifact path and the builder's launch result. Ask the user to answer, select **複製回復 prompt** (or press `C`), and paste the result into the originating conversation. Pause the owning grill.
 
 On return:
 
