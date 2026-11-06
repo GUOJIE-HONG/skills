@@ -240,7 +240,7 @@
     .rules { margin: 0; padding: 0; list-style: none; border-top: 1.5px solid var(--rule); }
     .rules li { padding: 12px 0; border-bottom: 1.5px solid var(--rule); font-size: 16px; }
     .rules strong { font-weight: 700; }
-    .notice { margin: 20px 0 0; padding: 12px 14px; border: 1.5px solid var(--warn); color: var(--warn); font-size: 15px; }
+    .notice { max-width: 1360px; margin: 0 auto 28px; padding: 12px 14px; border: 1.5px solid var(--warn); color: var(--warn); font-size: 15px; }
     .hub h2 { display: flex; align-items: baseline; gap: 12px; margin: 40px 0 12px; font-size: 20px; }
     .hub-side h2:first-child { margin-top: 0; }
     .meta { font-size: 14px; font-weight: 400; color: var(--soft); }
@@ -363,6 +363,7 @@
   </header>
 
   <main class="stage" id="stage">
+    <p class="notice" id="no-persist" role="alert" hidden>無法保存草稿：重新整理或關閉頁面會失去尚未複製的答案。請一次答完，或隨時按<strong>複製回復 prompt</strong> 備份。</p>
     <section class="view hub" id="hub" aria-labelledby="title">
       <div class="hub-main">
         <h1 id="title" tabindex="-1"></h1>
@@ -372,7 +373,6 @@
           <li>標示<strong>建議</strong>的選項不會自動採用；<strong>留白的題目會列為待確認</strong>。</li>
           <li>也可以只寫補充說明，由 agent 依你的說明判斷。</li>
         </ul>
-        <p class="notice" id="no-persist" hidden>無法保存草稿：重新整理或關閉頁面會失去尚未複製的答案。請一次答完，或隨時按<strong>複製回復 prompt</strong> 備份。</p>
         <div id="recap-section" hidden>
           <h2>目前已確認</h2>
           <ul class="recap" id="recap-list"></ul>
