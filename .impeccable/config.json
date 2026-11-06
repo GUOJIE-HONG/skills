@@ -47,6 +47,33 @@
         ],
         "createdAt": "2026-10-21T03:02:18.107Z",
         "reason": "model: pictogram square sits beside the h2 in a flex row (not stacked); it is the sign pictogram the reviewer told us to keep"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          "skills/engineering/show-grill-clearly/assets/questionnaire-template.html"
+        ],
+        "createdAt": "2026-11-06T02:53:31.995Z",
+        "reason": "model: PRODUCT.md scopes DESIGN.md to open-course only (same user decision as clean-comments); this design lives in its surface brief"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "*",
+        "files": [
+          "skills/engineering/show-grill-clearly/assets/questionnaire-template.html"
+        ],
+        "createdAt": "2026-11-06T02:53:32.065Z",
+        "reason": "model: PRODUCT.md scopes DESIGN.md to open-course only (same user decision as clean-comments); this design lives in its surface brief"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "*",
+        "files": [
+          "skills/engineering/show-grill-clearly/assets/questionnaire-template.html"
+        ],
+        "createdAt": "2026-11-06T02:53:32.134Z",
+        "reason": "model: PRODUCT.md scopes DESIGN.md to open-course only (same user decision as clean-comments); this design lives in its surface brief"
       }
     ]
   }
