@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.3
+
+- `ptns`: Codex can now hand progress to an existing session you choose, using the session tools available in the environment. The receiving session first restates the goal and next step and asks any questions; the sender resolves misunderstandings and waits for confirmation before sending a separate go-ahead. Messages that exceed the tool's size limit use a temporary handoff file outside the repo, and the receiver must confirm it read the contents. If sending or reading fails, you get the full text to copy instead. The skill creates no new sessions; Claude Code's existing handoff flow is unchanged.
+
 ## 1.8.2
 
 - `show-grill-clearly`: the questionnaire has a new look and flow. It shows one question at a time, with a large number, the question, and its options as numbered keys. A black strip across the top has one cell per question, showing its state: green once chosen, amber for a required question still blank, dashed when only a note was written. Click a cell to jump to that question. You can answer from the keyboard: `1`–`4` choose, `0` clears the choice, `Enter` goes to the next question, `N` jumps to the next unanswered one, and `C` copies the reply prompt from any question. The page opens on an overview that lists what is already confirmed, every question with its state, and the reply prompt. The prompt updates as you answer, so the old "整理回復 prompt" step is gone; the button is now **複製回復 prompt**, and the page tells you if you change an answer after copying. A choice can now be cleared back to blank. The payload format, its validation, and the reply prompt's wording are unchanged. Light and dark mode and phone widths are supported. A Latin subset of Fira Sans Bold (OFL) is embedded for numbers, so the page still loads nothing from the network.
