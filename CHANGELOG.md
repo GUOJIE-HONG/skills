@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.4
+
+- `ptns`: handoffs now end with an understanding report and wait for your explicit instruction to continue. The receiving session may inspect related files and documents read-only, then reports the goal, constraints, progress, proposed next step, and questions. The sender no longer automatically gives the go-ahead; task breakdowns, recorded prior authorization, and clarification replies do not authorize pending work. This applies to Claude Code, Codex, and copyable prompts.
+
 ## 1.8.3
 
 - `ptns`: Codex can now hand progress to an existing session you choose, using the session tools available in the environment. The receiving session first restates the goal and next step and asks any questions; the sender resolves misunderstandings and waits for confirmation before sending a separate go-ahead. Messages that exceed the tool's size limit use a temporary handoff file outside the repo, and the receiver must confirm it read the contents. If sending or reading fails, you get the full text to copy instead. The skill creates no new sessions; Claude Code's existing handoff flow is unchanged.
