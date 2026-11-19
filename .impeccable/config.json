@@ -74,6 +74,42 @@
         ],
         "createdAt": "2026-11-06T02:53:32.134Z",
         "reason": "model: PRODUCT.md scopes DESIGN.md to open-course only (same user decision as clean-comments); this design lives in its surface brief"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          "skills/engineering/why-change/assets/report.css"
+        ],
+        "createdAt": "2026-11-19T16:25:56.297Z",
+        "reason": "model: PRODUCT.md scopes DESIGN.md to open-course only (same user decision as clean-comments); the why-change report follows GitHub Primer, recorded in its surface brief"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "*",
+        "files": [
+          "skills/engineering/why-change/assets/report.css"
+        ],
+        "createdAt": "2026-11-19T16:25:56.297Z",
+        "reason": "model: PRODUCT.md scopes DESIGN.md to open-course only (same user decision as clean-comments); the why-change report follows GitHub Primer, recorded in its surface brief"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "*",
+        "files": [
+          "skills/engineering/why-change/assets/report.css"
+        ],
+        "createdAt": "2026-11-19T16:25:56.297Z",
+        "reason": "model: PRODUCT.md scopes DESIGN.md to open-course only (same user decision as clean-comments); the why-change report follows GitHub Primer, recorded in its surface brief"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "*",
+        "files": [
+          "skills/engineering/why-change/assets/report.css"
+        ],
+        "createdAt": "2026-11-19T16:25:56.297Z",
+        "reason": "model: PRODUCT.md scopes DESIGN.md to open-course only (same user decision as clean-comments); the why-change report follows GitHub Primer, recorded in its surface brief"
       }
     ]
   }
