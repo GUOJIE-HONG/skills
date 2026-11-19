@@ -97,3 +97,13 @@ _Avoid_: course folder, workspace
 **Outside reference**:
 The part of a code comment that points the reader away from the code, to a document, spec section, ticket, meeting, discussion or date, instead of saying what the code is for.
 _Avoid_: citation, cross-reference, 引述, 詳見
+
+### Change reporting
+
+**Change report**:
+The page that explains finished bug fixes or refactors to the user: for each change, what was wrong, how it was changed, why that way, and the risks the change brings.
+_Avoid_: fix report, 修改報告, 報告 (alone)
+
+**Suspected risk**:
+A risk of a change that reasoning about the code suggests but that cannot be pinned to a code location, kept in the Change report and marked 待確認.
+_Avoid_: Evidence gap, Unverified point, assumption

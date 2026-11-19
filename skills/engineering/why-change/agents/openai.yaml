@@ -1,0 +1,6 @@
+interface:
+  display_name: "Why Change"
+  short_description: "Explain a finished bug fix or refactor in an HTML report"
+  default_prompt: "Use $why-change to write a Change report for the bug fixes or refactors just made."
+policy:
+  allow_implicit_invocation: false
