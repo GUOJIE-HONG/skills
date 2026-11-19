@@ -121,11 +121,12 @@ const highlight = (lines, language) =>
 
 const diffs = new Map();
 
-// The hunks `git diff <range> -- <file>` prints, each row with its old and new line numbers, or { error }.
+// The hunks `git diff <range> -- <file>` prints, each row with its old and new line numbers, or { error }. The path
+// is literal, so a name like `src/[id].js` does not match other files as a glob.
 function diffOf(rangeArgs, file) {
   const key = `${rangeArgs.join(' ')}\0${file}`;
   if (!diffs.has(key)) {
-    const r = spawnSync('git', ['-c', 'core.quotepath=false', 'diff', '--no-color', '--no-ext-diff', '-U3', ...rangeArgs, '--', file], {
+    const r = spawnSync('git', ['--literal-pathspecs', '-c', 'core.quotepath=false', 'diff', '--no-color', '--no-ext-diff', '-U3', ...rangeArgs, '--', file], {
       encoding: 'utf8',
       maxBuffer: 64 * 1024 * 1024,
     });
@@ -143,6 +144,11 @@ function parseHunks(text) {
   let newNo;
   for (const raw of text.split('\n')) {
     const line = raw.replace(/\r$/, '');
+    // Another file's diff starts here; its header lines are not code.
+    if (line.startsWith('diff ')) {
+      hunk = undefined;
+      continue;
+    }
     const head = line.match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@ ?(.*)$/);
     if (head) {
       oldNo = Number(head[1]);

@@ -66,6 +66,14 @@ test('a diff longer than 30 rows starts folded; a short one does not', () => {
   assert.doesNotMatch(blocks[1], /<details/);
 });
 
+test('a file name with glob characters shows only that file', () => {
+  const edit = (i) => (i === 2 ? 'changed' : `line ${i}`);
+  const dir = repo({ 'src/[id].js': numbered(3), 'src/i.js': numbered(3) }, { 'src/[id].js': numbered(3, edit), 'src/i.js': numbered(3, edit) });
+  const page = html(dir, report([change({ diffs: [{ file: 'src/[id].js' }] })]));
+  assert.deepEqual(diffRows(page), ['@@', '1 1 line 1', '2  −line 2', ' 2 +changed', '3 3 line 3']);
+  assert.match(page, /<span class="plus">\+1<\/span> <span class="minus">−1<\/span>/);
+});
+
 test('a range of two commits shows that commit\'s diff', () => {
   const dir = repo({ 'src/a.js': numbered(3) });
   const page = html(dir, report([change()], { range: '4b825dc642cb6eb9a060e54bf8d69288fbee4904 HEAD' }));
