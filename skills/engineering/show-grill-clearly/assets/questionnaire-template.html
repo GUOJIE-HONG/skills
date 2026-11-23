@@ -1014,23 +1014,31 @@
         save(); refresh();
       }
 
+      // The Clipboard API rejects in embedded viewers, unfocused windows and
+      // iframes without clipboard-write, where execCommand still copies.
       function copyText(text) {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          return navigator.clipboard.writeText(text);
-        }
-        return new Promise(function (resolve, reject) {
-          var scratch = document.createElement('textarea');
-          scratch.value = text;
-          scratch.setAttribute('readonly', '');
-          scratch.style.position = 'fixed';
-          scratch.style.left = '-9999px';
-          document.body.appendChild(scratch);
-          scratch.select();
-          var ok = false;
-          try { ok = document.execCommand('copy'); } catch (e) {}
-          document.body.removeChild(scratch);
-          if (ok) resolve(); else reject();
+        var api = navigator.clipboard && navigator.clipboard.writeText
+          ? navigator.clipboard.writeText(text)
+          : Promise.reject();
+        return api.catch(function () {
+          if (!execCopy(text)) throw new Error('copy failed');
         });
+      }
+
+      function execCopy(text) {
+        var previous = document.activeElement;
+        var scratch = document.createElement('textarea');
+        scratch.value = text;
+        scratch.setAttribute('readonly', '');
+        scratch.style.position = 'fixed';
+        scratch.style.left = '-9999px';
+        document.body.appendChild(scratch);
+        scratch.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(scratch);
+        if (previous && previous.focus) previous.focus({ preventScroll: true });
+        return ok;
       }
 
       function copy() {
@@ -1043,7 +1051,7 @@
             var output = document.getElementById('summary');
             output.focus();
             output.select();
-            setStatus('自動複製失敗：回復 prompt 已選取，請按 Ctrl+C（Mac 為 ⌘C）複製。', true);
+            setStatus('自動複製失敗，剪貼簿仍是舊內容：回復 prompt 已選取，請按 Ctrl+C（Mac 為 ⌘C）複製後再貼上。', true);
           }
         );
       }
